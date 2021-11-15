@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CFoundation",
+        "repositoryURL": "https://github.com/ayham-achami/CFoundation.git",
+        "state": {
+          "branch": "mainline",
+          "revision": "1f7e99da4ed4cb0ed95f98b6b6ec4d2b8404a10f",
+          "version": null
+        }
+      },
+      {
+        "package": "Realm",
+        "repositoryURL": "https://github.com/realm/realm-cocoa.git",
+        "state": {
+          "branch": null,
+          "revision": "cef59658a3e447bf6994e20af6ec408633963d52",
+          "version": "10.11.0"
+        }
+      },
+      {
+        "package": "RealmDatabase",
+        "repositoryURL": "https://github.com/realm/realm-core",
+        "state": {
+          "branch": null,
+          "revision": "71db56caba8f8ef0398eedfffb82a908cb94ccec",
+          "version": "11.1.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
