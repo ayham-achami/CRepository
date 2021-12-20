@@ -25,6 +25,7 @@
 
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
+
 /// Хранилище
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, iOSApplicationExtension 13.0, OSXApplicationExtension 10.15, *)
 public protocol AsyncApparentRepository {

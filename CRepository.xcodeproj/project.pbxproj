@@ -11,12 +11,15 @@
 		91959EC6F519C2869DA97F81 /* Pods_CRepositoryTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC6A0C71B8295603B059A63E /* Pods_CRepositoryTests.framework */; };
 		DF307BCD273D3D4C00540031 /* AsyncApparentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF307BCA273D3D4C00540031 /* AsyncApparentRepository.swift */; };
 		DF307BCE273D3D4C00540031 /* AsyncRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF307BCB273D3D4C00540031 /* AsyncRepository.swift */; };
-		DF307BCF273D3D4C00540031 /* AsyncRealmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF307BCC273D3D4C00540031 /* AsyncRealmRepository.swift */; };
+		DF3BFFC42770881500A1D5B4 /* SyncRealmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3BFFC32770881400A1D5B4 /* SyncRealmRepository.swift */; };
+		DF3BFFC62770882C00A1D5B4 /* AsyncRealmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3BFFC52770882C00A1D5B4 /* AsyncRealmRepository.swift */; };
+		DF3BFFC82770885500A1D5B4 /* RealmCombineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3BFFC72770885500A1D5B4 /* RealmCombineRepository.swift */; };
 		DFBEE824274237610058E5AB /* RealmAsyncRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */; };
 		DFBEE82C27423B2A0058E5AB /* CombineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE826274238EE0058E5AB /* CombineRepository.swift */; };
-		DFBEE82D27423B2A0058E5AB /* RealmCombineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE827274238EE0058E5AB /* RealmCombineRepository.swift */; };
 		DFBEE82E27423B2A0058E5AB /* CombineApparentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE828274238EE0058E5AB /* CombineApparentRepository.swift */; };
 		DFBEE83227423F730058E5AB /* RealmCombineRepositoryTestes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE83127423F730058E5AB /* RealmCombineRepositoryTestes.swift */; };
+		DFBEE8382742579A0058E5AB /* SyncRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE8352742579A0058E5AB /* SyncRepository.swift */; };
+		DFBEE8392742579A0058E5AB /* SyncApparentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE8362742579A0058E5AB /* SyncApparentRepository.swift */; };
 		E7C190FC061241B081865FA3 /* Pods_Playground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8D59FA633CADA1A934ACD55 /* Pods_Playground.framework */; };
 		F085199326C524CE00EDBCAB /* CRepository.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F085198926C524CE00EDBCAB /* CRepository.framework */; };
 		F08519EE26C54D7700EDBCAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08519ED26C54D7700EDBCAB /* AppDelegate.swift */; };
@@ -44,9 +47,6 @@
 		F0C2709426CAAA5C00211F15 /* CRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707526CAAA5C00211F15 /* CRepository.swift */; };
 		F0C2709626CAAA5C00211F15 /* RepositoryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707826CAAA5C00211F15 /* RepositoryError.swift */; };
 		F0C2709826CAAA5C00211F15 /* Localization+String.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707B26CAAA5C00211F15 /* Localization+String.swift */; };
-		F0C2709A26CAAA5C00211F15 /* SyncRealmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707E26CAAA5C00211F15 /* SyncRealmRepository.swift */; };
-		F0C2709B26CAAA5C00211F15 /* SyncRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707F26CAAA5C00211F15 /* SyncRepository.swift */; };
-		F0C2709C26CAAA5C00211F15 /* SyncApparentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2708026CAAA5C00211F15 /* SyncApparentRepository.swift */; };
 		F0C2709E26CAAAD600211F15 /* CRepository.h in Headers */ = {isa = PBXBuildFile; fileRef = F0C2707C26CAAA5C00211F15 /* CRepository.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
@@ -72,12 +72,15 @@
 		D8D59FA633CADA1A934ACD55 /* Pods_Playground.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Playground.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF307BCA273D3D4C00540031 /* AsyncApparentRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncApparentRepository.swift; sourceTree = "<group>"; };
 		DF307BCB273D3D4C00540031 /* AsyncRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncRepository.swift; sourceTree = "<group>"; };
-		DF307BCC273D3D4C00540031 /* AsyncRealmRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncRealmRepository.swift; sourceTree = "<group>"; };
+		DF3BFFC32770881400A1D5B4 /* SyncRealmRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRealmRepository.swift; sourceTree = "<group>"; };
+		DF3BFFC52770882C00A1D5B4 /* AsyncRealmRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncRealmRepository.swift; sourceTree = "<group>"; };
+		DF3BFFC72770885500A1D5B4 /* RealmCombineRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmCombineRepository.swift; sourceTree = "<group>"; };
 		DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmAsyncRepositoryTests.swift; sourceTree = "<group>"; };
 		DFBEE826274238EE0058E5AB /* CombineRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CombineRepository.swift; sourceTree = "<group>"; };
-		DFBEE827274238EE0058E5AB /* RealmCombineRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmCombineRepository.swift; sourceTree = "<group>"; };
 		DFBEE828274238EE0058E5AB /* CombineApparentRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CombineApparentRepository.swift; sourceTree = "<group>"; };
 		DFBEE83127423F730058E5AB /* RealmCombineRepositoryTestes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmCombineRepositoryTestes.swift; sourceTree = "<group>"; };
+		DFBEE8352742579A0058E5AB /* SyncRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRepository.swift; sourceTree = "<group>"; };
+		DFBEE8362742579A0058E5AB /* SyncApparentRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncApparentRepository.swift; sourceTree = "<group>"; };
 		F085198926C524CE00EDBCAB /* CRepository.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CRepository.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F085199226C524CE00EDBCAB /* CRepositoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CRepositoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F085199926C524CE00EDBCAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -116,9 +119,6 @@
 		F0C2707826CAAA5C00211F15 /* RepositoryError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RepositoryError.swift; sourceTree = "<group>"; };
 		F0C2707B26CAAA5C00211F15 /* Localization+String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Localization+String.swift"; sourceTree = "<group>"; };
 		F0C2707C26CAAA5C00211F15 /* CRepository.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CRepository.h; sourceTree = "<group>"; };
-		F0C2707E26CAAA5C00211F15 /* SyncRealmRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRealmRepository.swift; sourceTree = "<group>"; };
-		F0C2707F26CAAA5C00211F15 /* SyncRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRepository.swift; sourceTree = "<group>"; };
-		F0C2708026CAAA5C00211F15 /* SyncApparentRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncApparentRepository.swift; sourceTree = "<group>"; };
 		F0C2708126CAAA5C00211F15 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -178,8 +178,8 @@
 			isa = PBXGroup;
 			children = (
 				DF307BCB273D3D4C00540031 /* AsyncRepository.swift */,
-				DF307BCC273D3D4C00540031 /* AsyncRealmRepository.swift */,
 				DF307BCA273D3D4C00540031 /* AsyncApparentRepository.swift */,
+				DF3BFFC52770882C00A1D5B4 /* AsyncRealmRepository.swift */,
 			);
 			path = Async;
 			sourceTree = "<group>";
@@ -188,10 +188,20 @@
 			isa = PBXGroup;
 			children = (
 				DFBEE826274238EE0058E5AB /* CombineRepository.swift */,
-				DFBEE827274238EE0058E5AB /* RealmCombineRepository.swift */,
 				DFBEE828274238EE0058E5AB /* CombineApparentRepository.swift */,
+				DF3BFFC72770885500A1D5B4 /* RealmCombineRepository.swift */,
 			);
 			path = Combine;
+			sourceTree = "<group>";
+		};
+		DFBEE8332742579A0058E5AB /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				DFBEE8352742579A0058E5AB /* SyncRepository.swift */,
+				DFBEE8362742579A0058E5AB /* SyncApparentRepository.swift */,
+				DF3BFFC32770881400A1D5B4 /* SyncRealmRepository.swift */,
+			);
+			path = Sync;
 			sourceTree = "<group>";
 		};
 		F085197F26C524CE00EDBCAB = {
@@ -264,8 +274,6 @@
 		F0C26FEB26C6A8B700211F15 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				F0C26FEC26C6A8ED00211F15 /* Company.swift */,
-				F0C26FEE26C6A93E00211F15 /* ProductInfo.swift */,
 			);
 			name = Models;
 			path = CRepositoryTests/Models;
@@ -284,7 +292,7 @@
 				F0C2706B26CAAA5B00211F15 /* Repository */,
 				F0C2705D26CAAA5B00211F15 /* Extensions */,
 				F0C2707A26CAAA5C00211F15 /* Localization */,
-				F0C2707D26CAAA5C00211F15 /* Sync */,
+				DFBEE8332742579A0058E5AB /* Sync */,
 				DF307BC9273D3D4C00540031 /* Async */,
 				DFBEE825274238DC0058E5AB /* Combine */,
 			);
@@ -300,6 +308,8 @@
 				DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */,
 				DFBEE83127423F730058E5AB /* RealmCombineRepositoryTestes.swift */,
 				F0C26FEB26C6A8B700211F15 /* Models */,
+				F0C26FEC26C6A8ED00211F15 /* Company.swift */,
+				F0C26FEE26C6A93E00211F15 /* ProductInfo.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -357,17 +367,6 @@
 				F0C2707B26CAAA5C00211F15 /* Localization+String.swift */,
 			);
 			path = Localization;
-			sourceTree = "<group>";
-		};
-		F0C2707D26CAAA5C00211F15 /* Sync */ = {
-			isa = PBXGroup;
-			children = (
-				F0C2707F26CAAA5C00211F15 /* SyncRepository.swift */,
-				F0C2707E26CAAA5C00211F15 /* SyncRealmRepository.swift */,
-				F0C2708026CAAA5C00211F15 /* SyncApparentRepository.swift */,
-			);
-			name = Sync;
-			path = CRepository/Sync;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -639,25 +638,25 @@
 				F0C2708226CAAA5C00211F15 /* RepositoryCreator.swift in Sources */,
 				F0C2708326CAAA5C00211F15 /* Realm+Repository.swift in Sources */,
 				F0C2709026CAAA5C00211F15 /* RepositoryConfiguration.swift in Sources */,
-				DF307BCF273D3D4C00540031 /* AsyncRealmRepository.swift in Sources */,
 				F0C2709626CAAA5C00211F15 /* RepositoryError.swift in Sources */,
 				F0C2709826CAAA5C00211F15 /* Localization+String.swift in Sources */,
 				F0C2709226CAAA5C00211F15 /* MigrationController.swift in Sources */,
 				DF307BCE273D3D4C00540031 /* AsyncRepository.swift in Sources */,
+				DF3BFFC62770882C00A1D5B4 /* AsyncRealmRepository.swift in Sources */,
 				F0C2708526CAAA5C00211F15 /* SafeRepository.swift in Sources */,
+				DF3BFFC42770881500A1D5B4 /* SyncRealmRepository.swift in Sources */,
 				F0C2709426CAAA5C00211F15 /* CRepository.swift in Sources */,
-				F0C2709C26CAAA5C00211F15 /* SyncApparentRepository.swift in Sources */,
 				F0C2709126CAAA5C00211F15 /* Sorted.swift in Sources */,
 				F0C2708626CAAA5C00211F15 /* RepositoryReformation.swift in Sources */,
 				F0C2708F26CAAA5C00211F15 /* RepositoryNotificationController.swift in Sources */,
-				F0C2709B26CAAA5C00211F15 /* SyncRepository.swift in Sources */,
 				DFBEE82C27423B2A0058E5AB /* CombineRepository.swift in Sources */,
+				DFBEE8392742579A0058E5AB /* SyncApparentRepository.swift in Sources */,
 				F0C2708426CAAA5C00211F15 /* Realm+CascadeDeleteing.swift in Sources */,
 				DF307BCD273D3D4C00540031 /* AsyncApparentRepository.swift in Sources */,
 				DFBEE82E27423B2A0058E5AB /* CombineApparentRepository.swift in Sources */,
-				F0C2709A26CAAA5C00211F15 /* SyncRealmRepository.swift in Sources */,
-				DFBEE82D27423B2A0058E5AB /* RealmCombineRepository.swift in Sources */,
+				DFBEE8382742579A0058E5AB /* SyncRepository.swift in Sources */,
 				F0C2709326CAAA5C00211F15 /* MigrationControllerProducer.swift in Sources */,
+				DF3BFFC82770885500A1D5B4 /* RealmCombineRepository.swift in Sources */,
 				F0C2708E26CAAA5C00211F15 /* RepositoryNotificationToken.swift in Sources */,
 				F0C2708D26CAAA5C00211F15 /* RepositoryObservable.swift in Sources */,
 			);
