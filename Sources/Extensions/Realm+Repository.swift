@@ -45,7 +45,7 @@ public func realmPath(for realmConfiguration: Realm.Configuration, and repositor
 extension Object: Manageable {}
 
 // MARK: - Results
-public extension Results {
+public extension Results where Element: KeypathSortable {
 
     func filter(_ predicate: NSPredicate?) -> Results<Element> {
         guard let predicate = predicate else { return self }
