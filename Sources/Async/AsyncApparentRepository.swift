@@ -112,7 +112,7 @@ public extension AsyncApparentRepository {
 
 // MARK: - AsyncApparentRepository + AsyncRepository
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, iOSApplicationExtension 13.0, OSXApplicationExtension 10.15, *)
-public extension AsyncApparentRepository where Self: SyncRepository {
+public extension AsyncApparentRepository where Self: AsyncRepository {
     
     func apparent<T, M>(_ type: T.Type,
                         _ predicate: NSPredicate?,
@@ -125,7 +125,7 @@ public extension AsyncApparentRepository where Self: SyncRepository {
     func first<T>(_ type: T.Type,
                   _ predicate: NSPredicate?,
                   _ sorted: Sorted?) async throws -> T where T: ManageableRepresented {
-        let firstElement: T? = (try fetch(predicate, sorted)).first
+        let firstElement: T? = (try await fetch(predicate, sorted)).first
         guard let first = firstElement else { throw RepositoryFetchError.notFound }
         return first
     }
@@ -133,7 +133,7 @@ public extension AsyncApparentRepository where Self: SyncRepository {
     func last<T>(_ type: T.Type,
                  _ predicate: NSPredicate?,
                  _ sorted: Sorted?) async throws -> T where T: ManageableRepresented {
-        let lastElement: T? = (try fetch(predicate, sorted)).last
+        let lastElement: T? = (try await fetch(predicate, sorted)).last
         guard let last = lastElement else { throw RepositoryFetchError.notFound }
         return last
     }
