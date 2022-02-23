@@ -137,13 +137,25 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func delete<T>(_ model: T, with primaryKey: AnyHashable, cascading: Bool) async throws where T: ManageableRepresented {
+    public func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) async throws where T: ManageableRepresented {
         try await AsyncRealm(self) { realm, safe in
             guard let object = realm.object(ofType: try safe.safeConvert(T.RepresentedType.self),
                                             forPrimaryKey: primaryKey) else {
                 throw RepositoryFetchError.notFound
             }
             try safe.safePerform(in: realm) { realm in
+                cascading ? realm.cascadeDelete(try safe.safeConvert(object)) :
+                realm.delete(try safe.safeConvert(object))
+            }
+        }.perform()
+    }
+    
+    public func delete<T>(_ model: T, cascading: Bool) async throws where T: ManageableRepresented,
+                                                                          T.RepresentedType: ManageableSource,
+                                                                          T.RepresentedType.ManageableType == T {
+        try await AsyncRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm in
+                let object = T.RepresentedType.init(from: model)
                 cascading ? realm.cascadeDelete(try safe.safeConvert(object)) :
                 realm.delete(try safe.safeConvert(object))
             }

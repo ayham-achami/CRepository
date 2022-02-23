@@ -105,11 +105,21 @@ public final class RealmSyncRepository: SyncRepository, SafeRepository {
             .map { .init(from: $0) }
     }
     
-    public func delete<T>(_ model: T, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented {
+    public func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented {
         guard let object = realm.object(ofType: try Self.safeConvert(T.RepresentedType.self),
                                         forPrimaryKey: primaryKey) else {
             throw RepositoryFetchError.notFound
         }
+        try Self.safePerform(in: realm) { realm in
+            cascading ? realm.cascadeDelete(try Self.safeConvert(object)) :
+                realm.delete(try Self.safeConvert(object))
+        }
+    }
+    
+    public func delete<T>(_ model: T, cascading: Bool) throws where T: ManageableRepresented,
+                                                                    T.RepresentedType: ManageableSource,
+                                                                    T.RepresentedType.ManageableType == T {
+        let object = T.RepresentedType.init(from: model)
         try Self.safePerform(in: realm) { realm in
             cascading ? realm.cascadeDelete(try Self.safeConvert(object)) :
                 realm.delete(try Self.safeConvert(object))

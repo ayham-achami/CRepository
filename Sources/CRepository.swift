@@ -76,7 +76,7 @@ public extension ManageableRepresented {
 }
 
 /// Протокол создания объекта модели из манаджабел объект
-public protocol ManageableSource {
+public protocol ManageableSource: Manageable {
 
     associatedtype ManageableType: ManageableRepresented
 

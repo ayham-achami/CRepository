@@ -70,9 +70,18 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     
     /// Удалить объект из хранилища
     /// - Parameters:
-    ///   - manageable: Объект для удаления
+    ///   - manageable: Тип объекта для удаления
+    ///   - primaryKey: Ключ для поиска объекта, который необходимо удалить
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
     func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented
+    
+    /// Удалить объект из хранилища
+    /// - Parameters:
+    ///   - manageable: Объекта для удаления
+    ///   - cascading: Удалить ли все созависимые объект (вложенные)
+    func delete<T>(_ model: T, cascading: Bool)  -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
+                                                                                           T.RepresentedType: ManageableSource,
+                                                                                           T.RepresentedType.ManageableType == T
     
     /// удалить все объекты данного типа из хранилища
     ///

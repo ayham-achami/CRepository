@@ -162,6 +162,19 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
+    public func delete<T>(_ model: T, cascading: Bool)  -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
+                                                                                                  T.RepresentedType: ManageableSource,
+                                                                                                  T.RepresentedType.ManageableType == T {
+        CombineRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm in
+                let object = T.RepresentedType.init(from: model)
+                cascading ? realm.cascadeDelete(try safe.safeConvert(object)) :
+                    realm.delete(try safe.safeConvert(object))
+            }
+            return
+        }.eraseToAnyPublisher()
+    }
+    
     public func deleteAll<T>(of type: T.Type,
                              _ predicate: NSPredicate?,
                              cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented {

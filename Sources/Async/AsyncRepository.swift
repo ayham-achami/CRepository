@@ -72,10 +72,19 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     
     /// Удалить объект из хранилища
     /// - Parameters:
-    ///   - model: Объект для удаления
+    ///   - model: Тип объекта для удаления
     ///   - primaryKey: Ключ для поиска объекта, который необходимо удалить
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
-    func delete<T>(_ model: T, with primaryKey: AnyHashable, cascading: Bool) async throws where T: ManageableRepresented
+    func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) async throws where T: ManageableRepresented
+    
+    
+    /// Удалить объект из хранилища
+    /// - Parameters:
+    ///   - model: Объект для удаления
+    ///   - cascading: Удалить ли все созависимые объект (вложенные)
+    func delete<T>(_ model: T, cascading: Bool) async throws where T: ManageableRepresented,
+                                                                   T.RepresentedType: ManageableSource,
+                                                                   T.RepresentedType.ManageableType == T
     
     /// Удалить все объекты данного типа из хранилища
     ///
@@ -148,17 +157,6 @@ public extension AsyncRepository {
                                                                T.Element.RepresentedType: ManageableSource,
                                                                T.Element.RepresentedType.ManageableType == T.Element {
         try await save(models, update: true)
-    }
-    
-    /// Удалить объект из хранилища
-    /// - Parameters:
-    ///   - model: Объект для удаления
-    ///   - primaryKey: primaryKey для модели
-    ///   - cascading: Удалить ли все созависимые объект (вложенные)
-    /// - Throws: `RepositoryError` если не удалось вытащить объекты из хранилища
-    /// - Throws: `RepositoryError` если не удалось удалить объект
-    func delete<T>(_ model: T, with primaryKey: AnyHashable, cascading: Bool) async throws where T: ManageableRepresented {
-        try await delete(model, with: primaryKey, cascading: false)
     }
     
     /// удалить все объекты данного типа из хранилища

@@ -65,10 +65,18 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
     
     /// Удалить объект из хранилища
     /// - Parameters:
-    ///   - model: Объект для удаления
+    ///   - model: Тип объекта для удаления
     ///   - primaryKey: Ключ для поиска объекта, который необходимо удалить
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
-    func delete<T>(_ model: T, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented
+    func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented
+    
+    /// Удалить объект из хранилища
+    /// - Parameters:
+    ///   - model: Объект для удаления
+    ///   - cascading: Удалить ли все созависимые объект (вложенные)
+    func delete<T>(_ model: T, cascading: Bool) throws where T: ManageableRepresented,
+                                                             T.RepresentedType: ManageableSource,
+                                                             T.RepresentedType.ManageableType == T
     
     /// Удалить все объекты данного типа из хранилища
     ///
