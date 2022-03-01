@@ -210,8 +210,8 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
     public func watch<T>(_ predicate: NSPredicate?,
                          _ sorted: Sorted?,
                          prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
-                                                                                                        T.RepresentedType: ManageableSource,
-                                                                                                        T.RepresentedType.ManageableType == T {
+                                                                                                   T.RepresentedType: ManageableSource,
+                                                                                                   T.RepresentedType.ManageableType == T {
         do {
             var collection = realm.objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)

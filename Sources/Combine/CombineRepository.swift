@@ -109,8 +109,8 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     func watch<T>(_ predicate: NSPredicate?,
                   _ sorted: Sorted?,
                   prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
-                                                                                                 T.RepresentedType: ManageableSource,
-                                                                                                 T.RepresentedType.ManageableType == T
+                                                                                            T.RepresentedType: ManageableSource,
+                                                                                            T.RepresentedType.ManageableType == T
     
     /// Следить за количеством указанного типа объектов в хранилище
     ///
@@ -123,8 +123,8 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     func watchCount<T>(of type: T.Type,
                        _ predicate: NSPredicate?,
                        _ sorted: Sorted?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
-                                                                       T.RepresentedType: ManageableSource,
-                                                                       T.RepresentedType.ManageableType == T
+                                                                            T.RepresentedType: ManageableSource,
+                                                                            T.RepresentedType.ManageableType == T
     
     /// Удаляет все записи из хранилища
     func reset() -> AnyPublisher<EmptyObject, Error>
