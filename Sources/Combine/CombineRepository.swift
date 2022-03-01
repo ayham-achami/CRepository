@@ -103,12 +103,28 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// - Parameters:
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
+    ///   - prefix: Количество среза первых объектов
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate?,
-                  _ sorted: Sorted?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
+                  _ sorted: Sorted?,
+                  prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                  T.RepresentedType: ManageableSource,
                                                                                                  T.RepresentedType.ManageableType == T
+    
+    /// Следить за количеством указанного типа объектов в хранилище
+    ///
+    /// - Parameters:
+    ///   - type: Тип объекта за которыми необходимо следить
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Количество объектов указанного типа
+    /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
+    func watchCount<T>(of type: T.Type,
+                       _ predicate: NSPredicate?,
+                       _ sorted: Sorted?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
+                                                                       T.RepresentedType: ManageableSource,
+                                                                       T.RepresentedType.ManageableType == T
     
     /// Удаляет все записи из хранилища
     func reset() -> AnyPublisher<EmptyObject, Error>
@@ -165,13 +181,31 @@ public extension CombineRepository {
     /// - Parameters:
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
+    ///   - prefix: Количество среза первых объектов
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
-                                                                                                       T.RepresentedType: ManageableSource,
-                                                                                                       T.RepresentedType.ManageableType == T {
-        watch(predicate, sorted)
+                  _ sorted: Sorted? = nil,
+                  prefix: Int? = nil) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
+                                                                                                  T.RepresentedType: ManageableSource,
+                                                                                                  T.RepresentedType.ManageableType == T {
+        watch(predicate, sorted, prefix: prefix)
+    }
+    
+    /// Следить за количеством указанного типа объектов в хранилище
+    ///
+    /// - Parameters:
+    ///   - type: Тип объекта за которыми необходимо следить
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Количество объектов указанного типа
+    /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
+    func watchCount<T>(of type: T.Type,
+                       _ predicate: NSPredicate? = nil,
+                       _ sorted: Sorted? = nil) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
+                                                                                  T.RepresentedType: ManageableSource,
+                                                                                  T.RepresentedType.ManageableType == T {
+        watchCount(of: type, predicate, sorted)
     }
 }
 #endif

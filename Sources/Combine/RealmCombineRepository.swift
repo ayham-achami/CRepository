@@ -208,13 +208,18 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
     }
     
     public func watch<T>(_ predicate: NSPredicate?,
-                         _ sorted: Sorted?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
+                         _ sorted: Sorted?,
+                         prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                         T.RepresentedType: ManageableSource,
                                                                                                         T.RepresentedType.ManageableType == T {
         do {
-            return realm.objects(try Self.safeConvert(T.RepresentedType.self))
+            var collection = realm.objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
+            if let prefix = prefix {
+                collection = collection.prefix(prefix).base
+            }
+            return collection
                 .changesetPublisher
                 .subscribe(on: notificationQueue)
                 .freeze()
@@ -232,6 +237,26 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
                         throw error
                     }
                 }
+                .share()
+                .eraseToAnyPublisher()
+        } catch {
+            return Fail(error: error).eraseToAnyPublisher()
+        }
+    }
+    
+    public func watchCount<T>(of type: T.Type,
+                              _ predicate: NSPredicate?,
+                              _ sorted: Sorted?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
+                                                                                   T.RepresentedType: ManageableSource,
+                                                                                   T.RepresentedType.ManageableType == T {
+        do {
+            return realm.objects(try Self.safeConvert(T.RepresentedType.self))
+                .filter(predicate)
+                .sort(sorted)
+                .collectionPublisher
+                .subscribe(on: notificationQueue)
+                .freeze()
+                .map { $0.count }
                 .share()
                 .eraseToAnyPublisher()
         } catch {
