@@ -93,6 +93,11 @@ class RealmCombineRepositoryTestes: XCTestCase {
             expectation.fulfill()
         }
         
+        let watchCount = repository.watchCount(of: Company.self)
+            .sink(receiveCompletion: {_ in }, receiveValue: {
+                print("Count company: \($0)")
+            })
+        
         let watch: AnyPublisher<RepositoryNotificationCase<Company>, Error> = repository.watch()
         let cancellable = watch
             .receive(on: DispatchQueue.main)
@@ -131,6 +136,7 @@ class RealmCombineRepositoryTestes: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
         wait(for: [expectation], timeout: 10)
         addTeardownBlock {
+            watchCount.cancel()
             cancellable.cancel()
         }
     }
