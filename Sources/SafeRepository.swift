@@ -78,4 +78,17 @@ public extension SafeRepository {
             }
         }
     }
+    
+    static func handleResults<T>(_ results: Results<Object>, with prefix: Int?) throws -> [T] where T: ManageableRepresented,
+                                                                                                    T.RepresentedType: ManageableSource,
+                                                                                                    T.RepresentedType.ManageableType == T {
+        let manageables: [T.RepresentedType] = try results.compactMap { try Self.safeConvert($0, to: T.RepresentedType.self) }
+        let result: [T]
+        if let prefix = prefix {
+            result = manageables.prefix(prefix).map { T.init(from: $0) }
+        } else {
+            result = manageables.map { T.init(from: $0) }
+        }
+        return result
+    }
 }

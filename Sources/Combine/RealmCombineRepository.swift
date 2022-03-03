@@ -213,26 +213,19 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
                                                                                                    T.RepresentedType: ManageableSource,
                                                                                                    T.RepresentedType.ManageableType == T {
         do {
-            var collection = realm.objects(try Self.safeConvert(T.RepresentedType.self))
+            return realm.objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
-            if let prefix = prefix {
-                collection = collection.prefix(prefix).base
-            }
-            return collection
                 .changesetPublisher
                 .subscribe(on: notificationQueue)
                 .freeze()
                 .tryMap { changset -> RepositoryNotificationCase<T> in
                     switch changset {
                     case .initial(let new):
-                        let manageables: [T.RepresentedType] = try new.compactMap { try Self.safeConvert($0, to: T.RepresentedType.self) }
-                        let us: [T] = manageables.map { T.init(from: $0) }
-                        return RepositoryNotificationCase.initial(us)
+                        return RepositoryNotificationCase.initial(try Self.handleResults(new, with: prefix))
                     case .update(let updated, deletions: let deletions, insertions: let insertions, modifications: let modifications):
-                        let manageables: [T.RepresentedType] = try updated.compactMap { try Self.safeConvert($0, to: T.RepresentedType.self) }
-                        let us: [T] = manageables.map { T.init(from: $0) }
-                        return RepositoryNotificationCase.update(us, deletions, insertions, modifications)
+                        return RepositoryNotificationCase.update(try Self.handleResults(updated, with: prefix),
+                                                                 deletions, insertions, modifications)
                     case .error(let error):
                         throw error
                     }
