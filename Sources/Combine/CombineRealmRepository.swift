@@ -1,5 +1,5 @@
 //
-//  RealmCombineRepository.swift
+//  CombineRealmRepository.swift
 //
 //  The MIT License (MIT)
 //
@@ -29,7 +29,7 @@ import RealmSwift
 import Foundation
 
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, iOSApplicationExtension 13.0, OSXApplicationExtension 10.15, *)
-public final class RealmCombineRepository: CombineRepository, SafeRepository {
+public final class CombineRealmRepository: CombineRepository, SafeRepository {
     
     // MARK: - Private
     
@@ -75,10 +75,10 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
     
     class CombineRealm<Output> {
         
-        weak var repository: RealmCombineRepository?
+        weak var repository: CombineRealmRepository?
         let attemptToFulfill: (Realm, SafeRepository.Type) throws -> Output
         
-        init(_ repository: RealmCombineRepository,
+        init(_ repository: CombineRealmRepository,
              _ attemptToFulfill: @escaping (Realm, SafeRepository.Type) throws -> Output) {
             self.repository = repository
             self.attemptToFulfill = attemptToFulfill
@@ -86,8 +86,10 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
         
         func eraseToAnyPublisher() -> AnyPublisher<Output, Error> {
             Future { [weak self] promise in
-                guard let self = self,
-                      let repository = self.repository else { return promise(.failure(RepositoryError.transaction)) }
+                guard
+                    let self = self,
+                    let repository = self.repository
+                else { return promise(.failure(RepositoryError.transaction)) }
                 do {
                     return promise(.success(try self.attemptToFulfill(repository.realm, type(of: repository))))
                 } catch {
@@ -99,9 +101,9 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
     
     // MARK: - Public
     
-    public func save<T>(_ model: T, update: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
-                                                                                            T == T.RepresentedType.ManageableType,
-                                                                                            T.RepresentedType: ManageableSource {
+    public func save<T>(_ model: T, update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                                     T == T.RepresentedType.ManageableType,
+                                                                                     T.RepresentedType: ManageableSource {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 realm.add(try safe.safeConvert(T.RepresentedType.init(from: model)),
@@ -111,17 +113,15 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func save<T>(_ models: T,
-                        update: Bool) -> AnyPublisher<EmptyObject, Error> where T: Sequence,
-                                                                                T.Element: ManageableRepresented,
-                                                                                T.Element == T.Element.RepresentedType.ManageableType,
-                                                                                T.Element.RepresentedType: ManageableSource {
+    public func saveAll<T>(_ models: [T],
+                           update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                            T == T.RepresentedType.ManageableType,
+                                                                            T.RepresentedType: ManageableSource {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
-                realm.add(try models.map { try safe.safeConvert(T.Element.RepresentedType.init(from: $0)) },
+                realm.add(try models.map { try safe.safeConvert(T.RepresentedType.init(from: $0)) },
                           update: update.policy)
             }
-            return
         }.eraseToAnyPublisher()
     }
     
@@ -148,7 +148,7 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
     
     public func delete<T>(_ model: T.Type,
                           with primaryKey: AnyHashable,
-                          cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented {
+                          cascading: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented {
         CombineRealm(self) { realm, safe in
             guard let object = realm.object(ofType: try safe.safeConvert(T.RepresentedType.self),
                                             forPrimaryKey: primaryKey) else {
@@ -162,9 +162,9 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func delete<T>(_ model: T, cascading: Bool)  -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
-                                                                                                  T.RepresentedType: ManageableSource,
-                                                                                                  T.RepresentedType.ManageableType == T {
+    public func delete<T>(_ model: T, cascading: Bool)  -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                                           T.RepresentedType: ManageableSource,
+                                                                                           T.RepresentedType.ManageableType == T {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 let object = T.RepresentedType.init(from: model)
@@ -177,7 +177,7 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
     
     public func deleteAll<T>(of type: T.Type,
                              _ predicate: NSPredicate?,
-                             cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented {
+                             cascading: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 let objects = realm
@@ -189,7 +189,7 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func reset() -> AnyPublisher<EmptyObject, Error> {
+    public func reset() -> AnyPublisher<Void, Error> {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 realm.deleteAll()
@@ -198,7 +198,7 @@ public final class RealmCombineRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func perform(_ updateAction: @escaping () throws -> Void) -> AnyPublisher<EmptyObject, Error> {
+    public func perform(_ updateAction: @escaping () throws -> Void) -> AnyPublisher<Void, Error> {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { _ in
                 try updateAction()

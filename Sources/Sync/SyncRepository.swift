@@ -149,23 +149,14 @@ public extension SyncRepository {
         try saveAll(modules, update: true)
     }
     
-    /// Удалить объект из хранилища
-    /// - Parameters:
-    ///   - model: Объект для удаления
-    ///   - primaryKey: primaryKey для модели
-    ///   - cascading: Удалить ли все созависимые объект (вложенные)
-    /// - Throws: `RepositoryError` если не удалось вытащить объекты из хранилища
-    /// - Throws: `RepositoryError` если не удалось удалить объект
-    func delete<T>(_ model: T, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented {
-        try delete(model, with: primaryKey, cascading: false)
-    }
-    
     /// удалить все объекты данного типа из хранилища
-    ///
+    /// - Parameters:
+    ///   - type: Объект для удаления
+    ///   - predicate: Определение логических условий для ограничения поиска выборки или фильтрации в памяти.
     /// - Parameter type: тип записи
     /// - Throws: `RepositoryError` если не удалось вытащить объекты из хранилища
     /// - Throws: `RepositoryError` если не удалось удалить объект
-    func deleteAll<T>(of type: T.Type, _ predicate: NSPredicate?, cascading: Bool) throws where T: ManageableRepresented {
+    func deleteAll<T>(of type: T.Type, _ predicate: NSPredicate?) throws where T: ManageableRepresented {
         try deleteAll(of: type, predicate, cascading: false)
     }
     

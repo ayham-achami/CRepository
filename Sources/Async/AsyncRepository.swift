@@ -51,10 +51,9 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     /// - Parameters:
     ///   - models: Массив моделей для сохранения
     ///   - update: Обновить ли объект если объект уже существует в хранилище
-    func save<T>(_ models: T, update: Bool) async throws where T: Sequence,
-                                                               T.Element: ManageableRepresented,
-                                                               T.Element.RepresentedType: ManageableSource,
-                                                               T.Element.RepresentedType.ManageableType == T.Element
+    func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableRepresented,
+                                                                    T.RepresentedType: ManageableSource,
+                                                                    T.RepresentedType.ManageableType == T
     
     /// Вытащить записи из хранилища для указанного primaryKey
     /// - Parameter primaryKey: primaryKey для модели
@@ -76,7 +75,6 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     ///   - primaryKey: Ключ для поиска объекта, который необходимо удалить
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
     func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) async throws where T: ManageableRepresented
-    
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -152,26 +150,26 @@ public extension AsyncRepository {
     /// создает-сохраняет все объекты данного типа в хранилище
     ///
     /// - Parameter modules: объекты для сохранения
-    func save<T>(_ models: T, update: Bool) async throws where T: Sequence,
-                                                               T.Element: ManageableRepresented,
-                                                               T.Element.RepresentedType: ManageableSource,
-                                                               T.Element.RepresentedType.ManageableType == T.Element {
-        try await save(models, update: true)
+    func saveAll<T>(_ models: [T]) async throws where T: ManageableRepresented,
+                                                      T.RepresentedType: ManageableSource,
+                                                      T.RepresentedType.ManageableType == T {
+        try await saveAll(models, update: true)
     }
-    
+
     /// удалить все объекты данного типа из хранилища
-    ///
-    /// - Parameter type: тип записи
-    /// - Throws: `RepositoryError` если не удалось вытащить объекты из хранилища
-    /// - Throws: `RepositoryError` если не удалось удалить объект
-    func deleteAll<T>(of type: T.Type, _ predicate: NSPredicate?, cascading: Bool) async throws where T: ManageableRepresented {
-        try await deleteAll(of: type, predicate, cascading: false)
+    /// - Parameters:
+    ///   - type: тип записи
+    ///   - predicate: Определение логических условий для ограничения поиска выборки или фильтрации в памяти.
+    func deleteAll<T>(of type: T.Type,
+                      _ predicate: NSPredicate? = nil,
+                      cascading: Bool) async throws where T: ManageableRepresented {
+        try await deleteAll(of: type, predicate, cascading: cascading)
     }
     
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
-    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - predicate: Определение логических условий для ограничения поиска выборки или фильтрации в памяти.
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления

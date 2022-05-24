@@ -1,5 +1,5 @@
 //
-//  RealmSyncRepository.swift
+//  SyncRealmRepository.swift
 //
 //  The MIT License (MIT)
 //
@@ -27,7 +27,7 @@ import RealmSwift
 import Foundation
 
 /// Реализация репозитория с Realm
-public final class RealmSyncRepository: SyncRepository, SafeRepository {
+public final class SyncRealmRepository: SyncRepository, SafeRepository {
     
     // MARK: - Private
     

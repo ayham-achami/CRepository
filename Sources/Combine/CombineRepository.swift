@@ -39,9 +39,9 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// - Parameters:
     ///   - model: Объект для сохранения
     ///   - update: Обновить ли объект если объект уже существует в хранилище
-    func save<T>(_ model: T, update: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
-                                                                                     T.RepresentedType: ManageableSource,
-                                                                                     T.RepresentedType.ManageableType == T
+    func save<T>(_ model: T, update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                              T.RepresentedType: ManageableSource,
+                                                                              T.RepresentedType.ManageableType == T
     
     /// Создает-сохраняет объект записи в хранилище
     /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
@@ -51,10 +51,9 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// - Parameters:
     ///   - models: Массив моделей для сохранения
     ///   - update: Обновить ли объект если объект уже существует в хранилище
-    func save<T>(_ models: T, update: Bool) -> AnyPublisher<EmptyObject, Error> where T: Sequence,
-                                                                                      T.Element: ManageableRepresented,
-                                                                                      T.Element.RepresentedType: ManageableSource,
-                                                                                      T.Element.RepresentedType.ManageableType == T.Element
+    func saveAll<T>(_ models: [T], update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                                    T.RepresentedType: ManageableSource,
+                                                                                    T.RepresentedType.ManageableType == T
     
     /// Вытащить записи из хранилища для указанного primaryKey
     /// - Parameter primaryKey: primaryKey для модели
@@ -73,15 +72,15 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - manageable: Тип объекта для удаления
     ///   - primaryKey: Ключ для поиска объекта, который необходимо удалить
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
-    func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented
+    func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented
     
     /// Удалить объект из хранилища
     /// - Parameters:
     ///   - manageable: Объекта для удаления
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
-    func delete<T>(_ model: T, cascading: Bool)  -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
-                                                                                           T.RepresentedType: ManageableSource,
-                                                                                           T.RepresentedType.ManageableType == T
+    func delete<T>(_ model: T, cascading: Bool)  -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                                    T.RepresentedType: ManageableSource,
+                                                                                    T.RepresentedType.ManageableType == T
     
     /// удалить все объекты данного типа из хранилища
     ///
@@ -91,12 +90,12 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
     func deleteAll<T>(of type: T.Type,
                       _ predicate: NSPredicate?,
-                      cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented
+                      cascading: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented
     
     /// Выполнять замыкание обновления в сессии изменения хранилища
     ///
     /// - Parameter updateAction: замыкание обновления, в котором изменяем объект базы данных
-    func perform(_ updateAction: @escaping () throws -> Void) -> AnyPublisher<EmptyObject, Error>
+    func perform(_ updateAction: @escaping () throws -> Void) -> AnyPublisher<Void, Error>
     
     /// Следить за событиями записи в хранилище
     ///
@@ -104,7 +103,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
-    /// - Returns: Объект типа `RepositoryNotificationToken`
+    /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate?,
                   _ sorted: Sorted?,
@@ -127,7 +126,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
                                                                             T.RepresentedType.ManageableType == T
     
     /// Удаляет все записи из хранилища
-    func reset() -> AnyPublisher<EmptyObject, Error>
+    func reset() -> AnyPublisher<Void, Error>
 }
 
 // MARK: - AsyncRepository + Default
@@ -137,20 +136,19 @@ public extension CombineRepository {
     /// Создает-сохраняет объект записи в хранилище
     /// - Parameters:
     ///   - model: Объект для сохранения
-    func save<T>(_ model: T) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented,
-                                                                       T.RepresentedType: ManageableSource,
-                                                                       T.RepresentedType.ManageableType == T {
+    func save<T>(_ model: T) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                T.RepresentedType: ManageableSource,
+                                                                T.RepresentedType.ManageableType == T {
         save(model, update: true)
     }
     
     /// Создает-сохраняет объект записи в хранилище
     /// - Parameters:
     ///   - models: Массив моделей для сохранения
-    func save<T>(_ models: T) -> AnyPublisher<EmptyObject, Error> where T: Sequence,
-                                                                        T.Element: ManageableRepresented,
-                                                                        T.Element.RepresentedType: ManageableSource,
-                                                                        T.Element.RepresentedType.ManageableType == T.Element {
-        save(models, update: true)
+    func saveAll<T>(_ models: [T]) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
+                                                                      T.RepresentedType: ManageableSource,
+                                                                      T.RepresentedType.ManageableType == T {
+        saveAll(models, update: true)
     }
     
     /// Вытащить записи из хранилища для указанного типа записи
@@ -158,7 +156,7 @@ public extension CombineRepository {
     /// - Parameters:
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
-    /// - Returns: Promse с массивом объектов записи
+    /// - Returns: Publisher с массивом объектов записи
     func fetch<T>(_ predicate: NSPredicate? = nil,
                   _ sorted: Sorted? = nil) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
         fetch(predicate, sorted)
@@ -172,7 +170,7 @@ public extension CombineRepository {
     ///   - cascading: Удалить ли все созависимые объект (вложенные)
     func deleteAll<T>(of type: T.Type,
                       _ predicate: NSPredicate? = nil,
-                      cascading: Bool) -> AnyPublisher<EmptyObject, Error> where T: ManageableRepresented {
+                      cascading: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented {
         deleteAll(of: type, predicate, cascading: cascading)
     }
     
@@ -182,7 +180,7 @@ public extension CombineRepository {
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
-    /// - Returns: Объект типа `RepositoryNotificationToken`
+    /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate? = nil,
                   _ sorted: Sorted? = nil,

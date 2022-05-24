@@ -106,13 +106,12 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func save<T>(_ models: T, update: Bool) async throws where T: Sequence,
-                                                                      T.Element: ManageableRepresented,
-                                                                      T.Element.RepresentedType: ManageableSource,
-                                                                      T.Element.RepresentedType.ManageableType == T.Element {
+    public func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableRepresented,
+                                                                           T.RepresentedType: ManageableSource,
+                                                                           T.RepresentedType.ManageableType == T {
         try await AsyncRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
-                realm.add(try models.map { try safe.safeConvert(T.Element.RepresentedType.init(from: $0)) }, update: update.policy)
+                realm.add(try models.map { try safe.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
             }
         }.perform()
     }
@@ -185,7 +184,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
                          _ sorted: Sorted?) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                                  T.RepresentedType: ManageableSource,
                                                                                                  T.RepresentedType.ManageableType == T {
-        let realm = try Realm(configuration: realmConfiguration)
+        let realm = try await Realm(configuration: realmConfiguration)
         let objects = await realm
             .objects(try Self.safeConvert(T.RepresentedType.self))
             .filter(predicate)

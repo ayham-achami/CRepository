@@ -28,9 +28,6 @@ import Foundation
 /// Базовый протокол объектов хранилища
 public protocol Manageable: AnyObject {}
 
-/// Пустой объект
-public typealias EmptyObject = Void
-
 /// Протокол контроля управляемого объекта в сессии миграции
 public protocol DynamicManageable {
 
