@@ -91,7 +91,8 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
                     let repository = self.repository
                 else { return promise(.failure(RepositoryError.transaction)) }
                 do {
-                    return promise(.success(try self.attemptToFulfill(repository.realm, type(of: repository))))
+                    let realm = try Realm(configuration: repository.realmConfiguration)
+                    return promise(.success(try self.attemptToFulfill(realm, type(of: repository))))
                 } catch {
                     return promise(.failure(error))
                 }
@@ -213,11 +214,13 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
                                                                                                    T.RepresentedType: ManageableSource,
                                                                                                    T.RepresentedType.ManageableType == T {
         do {
-            return realm.objects(try Self.safeConvert(T.RepresentedType.self))
+            return try Realm(configuration: realmConfiguration)
+                .objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
                 .changesetPublisher
                 .subscribe(on: notificationQueue)
+                .threadSafeReference()
                 .freeze()
                 .tryMap { changset -> RepositoryNotificationCase<T> in
                     switch changset {
@@ -243,11 +246,13 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
                                                                                    T.RepresentedType: ManageableSource,
                                                                                    T.RepresentedType.ManageableType == T {
         do {
-            return realm.objects(try Self.safeConvert(T.RepresentedType.self))
+            return try Realm(configuration: realmConfiguration)
+                .objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
                 .collectionPublisher
                 .subscribe(on: notificationQueue)
+                .threadSafeReference()
                 .freeze()
                 .map { $0.count }
                 .share()
