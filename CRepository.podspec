@@ -1,14 +1,14 @@
 Pod::Spec.new do |spec|
   spec.name         = "CRepository"
   spec.version      = "1.0.0"
-  spec.summary      = "Компоненты и утилиты для iOS"
+  spec.summary      = "Библиотека компонентов для работы с базой данных."
   spec.description  = <<-DESC
-  Библиотека содержит компоненты для работы прилолжением iOS
+  Библиотека компонентов для работы с базой данных.
                    DESC
   spec.license      = { :type => "MIT", :file => "LICENSE" }
   spec.author       = { "Ayham Hylam" => "Ayham Hylam" }
   spec.homepage     = "https://github.com/ayham-achami/CRepository.git"
-  spec.ios.deployment_target = "11.0"
+  spec.ios.deployment_target = "13.0"
   spec.source       = {
       :git => "git@github.com:ayham-achami/CRepository.git",
       :tag => spec.version.to_s
