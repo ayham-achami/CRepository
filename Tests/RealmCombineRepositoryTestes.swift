@@ -126,11 +126,11 @@ class RealmCombineRepositoryTestes: XCTestCase {
         
         let companies1 = [Company(id: 1, name: "tested_1", logoId: 1),
                           Company(id: 2, name: "tested_2", logoId: nil)]
-        _ = repository.save(companies1, update: true)
+        _ = repository.saveAll(companies1, update: true)
         Thread.sleep(forTimeInterval: 1)
         let companies2 = [Company(id: 2, name: "new_tested_2", logoId: 2),
                           Company(id: 3, name: "tested_3", logoId: nil)]
-        _ = repository.save(companies2, update: true)
+        _ = repository.saveAll(companies2, update: true)
         Thread.sleep(forTimeInterval: 1)
         _ = repository.deleteAll(of: Company.self, NSPredicate(format: "id=2"), cascading: true)
         Thread.sleep(forTimeInterval: 1)
