@@ -85,7 +85,7 @@ class RealmAsyncRepositoryTests: XCTestCase {
                               ProductInfo(id: 2, name: "tested_2")]
         // When
         do {
-            try await repository.save(productsToSave, update: true)
+            try await repository.saveAll(productsToSave, update: true)
             let products: [ProductInfo] = try await repository.fetch()
             // Then
             XCTAssertFalse(products.isEmpty)

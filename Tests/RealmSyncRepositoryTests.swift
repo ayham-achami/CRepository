@@ -98,7 +98,7 @@ final class RealmSyncRepositoryTests: XCTestCase {
         do {
             try repository.reset()
             try repository.save(productToSave, update: true)
-            try repository.delete(productToSave, with: productToSave.id, cascading: true)
+            try repository.delete(ProductInfo.self, with: productToSave.id, cascading: true)
             let products: [ProductInfo] = try repository.fetch()
             // Then
             products.forEach {
