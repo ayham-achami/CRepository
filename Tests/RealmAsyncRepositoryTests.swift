@@ -101,7 +101,8 @@ class RealmAsyncRepositoryTests: XCTestCase {
     
     func testAsyncSaveAllFetchPaging() async {
         // Given
-        let productsToSave = (0...100).map {
+        let objectsCount = 120
+        let productsToSave = (0...120).map {
             ProductInfo(id: $0, name: "tested_\($0)")
         }
         // When
@@ -109,7 +110,10 @@ class RealmAsyncRepositoryTests: XCTestCase {
             try await repository.saveAll(productsToSave, update: true)
             let page = Page(limit: 5, offset: 10)
             let products: [ProductInfo] = try await repository.fetch(page: page)
+            let extraPage = Page(limit: 5, offset: objectsCount)
+            let extraProducts: [ProductInfo] = try await repository.fetch(page: extraPage)
             // Then
+            XCTAssertTrue(extraProducts.isEmpty)
             XCTAssertFalse(products.isEmpty)
             XCTAssertTrue(products.count == page.limit)
             if let first = products.first {

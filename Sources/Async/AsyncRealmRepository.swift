@@ -132,6 +132,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
                 .filter(predicate)
                 .sort(sorted)
             if let page {
+                guard (page.offset + page.limit) < objects.count else { return [] }
                 return try objects[page.offset..<(page.offset + page.limit)]
                     .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
                     .map { .init(from: $0) }
