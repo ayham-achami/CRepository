@@ -99,6 +99,27 @@ class RealmAsyncRepositoryTests: XCTestCase {
         }
     }
     
+    func testAsyncSaveAllFetchPaging() async {
+        // Given
+        let productsToSave = (0...100).map {
+            ProductInfo(id: $0, name: "tested_\($0)")
+        }
+        // When
+        do {
+            try await repository.saveAll(productsToSave, update: true)
+            let page = Page(limit: 5, offset: 10)
+            let products: [ProductInfo] = try await repository.fetch(page: page)
+            // Then
+            XCTAssertFalse(products.isEmpty)
+            XCTAssertTrue(products.count == page.limit)
+            if let first = products.first {
+                XCTAssertEqual(page.offset, first.id)
+            }
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
     func testAsyncNotification() async {
         // Given
         let expectation = XCTestExpectation()
@@ -141,15 +162,15 @@ class RealmAsyncRepositoryTests: XCTestCase {
         do {
             let product1 = ProductInfo(id: 1, name: "tested_1")
             try await repository.save(product1, update: true)
-            Thread.sleep(forTimeInterval: 1)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
             
             let product2 = ProductInfo(id: 2, name: "tested_2")
             try await repository.save(product2, update: true)
-            Thread.sleep(forTimeInterval: 2)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
             
             let product3 = ProductInfo(id: 2, name: "tested_3")
             try await repository.save(product3, update: true)
-            Thread.sleep(forTimeInterval: 3)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
         } catch {
             XCTFail("Fail \(#function) error: \(error)")
         }
