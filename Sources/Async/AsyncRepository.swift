@@ -65,9 +65,10 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     ///   - model: Тип записи
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
+    ///   - page: Требуемая страница списка
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
-    func fetch<T>( _ predicate: NSPredicate?, _ sorted: Sorted?) async throws -> [T] where T: ManageableRepresented
+    func fetch<T>( _ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableRepresented
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -129,8 +130,9 @@ public extension AsyncRepository {
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T: ManageableRepresented>(_ predicate: NSPredicate? = nil,
-                                         _ sorted: Sorted? = nil) async throws -> [T] {
-        try await fetch(predicate, sorted)
+                                         _ sorted: Sorted? = nil,
+                                         page: Page? = nil) async throws -> [T] {
+        try await fetch(predicate, sorted, page: page)
     }
     
     /// Создает-сохраняет объект записи в хранилище
@@ -142,8 +144,8 @@ public extension AsyncRepository {
     ///   - model: Объект для сохранения
     /// - Throws: `RepositoryError` Если не удалось сохранить объект
     func save<T>(_ model: T) async throws where T: ManageableRepresented,
-                                          T.RepresentedType: ManageableSource,
-                                          T.RepresentedType.ManageableType == T {
+                                                T.RepresentedType: ManageableSource,
+                                                T.RepresentedType.ManageableType == T {
         try await save(model, update: true)
     }
     
