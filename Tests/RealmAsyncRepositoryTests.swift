@@ -149,8 +149,8 @@ class RealmAsyncRepositoryTests: XCTestCase {
         token.observable.update {
             print("Thread: ", Thread.current)
             switch $0 {
-            case .update(let models, let delete, let inset, let modificate):
-                print("UPDATE: \(delete), \(inset), \(modificate)")
+            case .update(let models, let delete, let insert, let modificate):
+                print("UPDATE: \(delete), \(insert), \(modificate)")
                 print(models)
                 print("Current updates count: \(currentUpdatesCount)")
                 fulfill()
