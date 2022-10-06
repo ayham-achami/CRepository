@@ -190,8 +190,8 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
     
     public func watch<T>(_ predicate: NSPredicate?,
                          _ sorted: [Sorted]) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
-                                                                                                 T.RepresentedType: ManageableSource,
-                                                                                                 T.RepresentedType.ManageableType == T {
+                                                                                                  T.RepresentedType: ManageableSource,
+                                                                                                  T.RepresentedType.ManageableType == T {
         let realm = try Realm(configuration: realmConfiguration, queue: nil)
         let objects = await realm
             .objects(try Self.safeConvert(T.RepresentedType.self))
