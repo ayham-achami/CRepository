@@ -106,7 +106,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate?,
-                  _ sorted: Sorted?,
+                  _ sorted: [Sorted],
                   prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                             T.RepresentedType: ManageableSource,
                                                                                             T.RepresentedType.ManageableType == T
@@ -116,14 +116,12 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
-    ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watchCount<T>(of type: T.Type,
-                       _ predicate: NSPredicate?,
-                       _ sorted: Sorted?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
-                                                                            T.RepresentedType: ManageableSource,
-                                                                            T.RepresentedType.ManageableType == T
+                       _ predicate: NSPredicate?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
+                                                                                    T.RepresentedType: ManageableSource,
+                                                                                    T.RepresentedType.ManageableType == T
     
     /// Удаляет все записи из хранилища
     func reset() -> AnyPublisher<Void, Error>
@@ -183,7 +181,7 @@ public extension CombineRepository {
     /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil,
+                  _ sorted: [Sorted] = [],
                   prefix: Int? = nil) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                   T.RepresentedType: ManageableSource,
                                                                                                   T.RepresentedType.ManageableType == T {
@@ -199,11 +197,10 @@ public extension CombineRepository {
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watchCount<T>(of type: T.Type,
-                       _ predicate: NSPredicate? = nil,
-                       _ sorted: Sorted? = nil) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
-                                                                                  T.RepresentedType: ManageableSource,
-                                                                                  T.RepresentedType.ManageableType == T {
-        watchCount(of: type, predicate, sorted)
+                       _ predicate: NSPredicate? = nil) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
+                                                                                          T.RepresentedType: ManageableSource,
+                                                                                          T.RepresentedType.ManageableType == T {
+        watchCount(of: type, predicate)
     }
 }
 #endif

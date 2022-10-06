@@ -55,7 +55,6 @@ final class ManageableSpeaker: Object, ManageableSource {
     @Persisted var isPinned: Bool = false
     @Persisted var entryTime: Date = Date()
     
-    
     required convenience init(from speaker: Speaker) {
         self.init()
         self.id = speaker.id

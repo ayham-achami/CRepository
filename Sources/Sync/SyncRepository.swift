@@ -101,9 +101,9 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate?,
-                  _ sorted: Sorted?) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
-                                                                                    T.RepresentedType: ManageableSource,
-                                                                                    T.RepresentedType.ManageableType == T
+                  _ sorted: [Sorted]) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
+                                                                                     T.RepresentedType: ManageableSource,
+                                                                                     T.RepresentedType.ManageableType == T
     
     /// Удаляет все записи из хранилища
     ///
@@ -168,7 +168,7 @@ public extension SyncRepository {
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
+                  _ sorted: [Sorted] = []) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                           T.RepresentedType: ManageableSource,
                                                                                           T.RepresentedType.ManageableType == T {
         try watch(predicate, sorted)
