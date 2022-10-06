@@ -108,7 +108,7 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate?,
-                  _ sorted: Sorted?) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
+                  _ sorted: [Sorted]) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                     T.RepresentedType: ManageableSource,
                                                                                     T.RepresentedType.ManageableType == T
     
@@ -176,9 +176,9 @@ public extension AsyncRepository {
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
-                                                                                                T.RepresentedType: ManageableSource,
-                                                                                                T.RepresentedType.ManageableType == T {
+                  _ sorted: [Sorted] = []) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
+                                                                                           T.RepresentedType: ManageableSource,
+                                                                                           T.RepresentedType.ManageableType == T {
         try await watch(predicate, sorted)
     }
 }

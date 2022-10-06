@@ -56,6 +56,13 @@ public extension Results where Element: KeypathSortable {
         guard let sorted = sorted else { return self }
         return self.sorted(byKeyPath: sorted.key, ascending: sorted.ascending)
     }
+    
+    func sort(_ sorted: [Sorted]) -> Results<Element> {
+        let sortedDescriptors: [RealmSwift.SortDescriptor] = sorted.map {
+            .init(keyPath: $0.key, ascending: $0.ascending)
+        }
+        return self.sorted(by: sortedDescriptors)
+    }
 }
 
 // MARK: - NotificationToken + RepositoryNotificationController

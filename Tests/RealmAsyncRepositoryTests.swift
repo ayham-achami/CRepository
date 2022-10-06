@@ -129,7 +129,9 @@ class RealmAsyncRepositoryTests: XCTestCase {
         let expectation = XCTestExpectation()
         // Then
         do {
-            let token: RepositoryNotificationToken<ProductInfo> = try await repository.watch()
+            let token: RepositoryNotificationToken<Speaker> = try await repository.watch(nil,
+                                                                                         [Sorted("isPinned", false),
+                                                                                          Sorted("entryTime")])
             await testWatch(token: token, expectation)
         } catch {
             XCTFail("Fail \(#function) error: \(error)")
@@ -149,8 +151,8 @@ class RealmAsyncRepositoryTests: XCTestCase {
         token.observable.update {
             print("Thread: ", Thread.current)
             switch $0 {
-            case .update(let models, let delete, let insert, let modificate):
-                print("UPDATE: \(delete), \(insert), \(modificate)")
+            case .update(let models, let delete, let insert, let modified):
+                print("UPDATE: \(delete), \(insert), \(modified)")
                 print(models)
                 print("Current updates count: \(currentUpdatesCount)")
                 fulfill()
@@ -164,16 +166,16 @@ class RealmAsyncRepositoryTests: XCTestCase {
             expectation.fulfill()
         }
         do {
-            let product1 = ProductInfo(id: 1, name: "tested_1")
-            try await repository.save(product1, update: true)
+            let speaker1 = Speaker(id: 1, name: "tested_1", isPinned: false, entryTime: Date())
+            try await repository.save(speaker1, update: true)
             try await Task.sleep(nanoseconds: 1_000_000_000)
             
-            let product2 = ProductInfo(id: 2, name: "tested_2")
-            try await repository.save(product2, update: true)
+            let speaker2 = Speaker(id: 2, name: "tested_2", isPinned: true, entryTime: Date())
+            try await repository.save(speaker2, update: true)
             try await Task.sleep(nanoseconds: 1_000_000_000)
             
-            let product3 = ProductInfo(id: 2, name: "tested_3")
-            try await repository.save(product3, update: true)
+            let speaker3 = Speaker(id: 3, name: "tested_3", isPinned: false, entryTime: Date())
+            try await repository.save(speaker3, update: true)
             try await Task.sleep(nanoseconds: 1_000_000_000)
         } catch {
             XCTFail("Fail \(#function) error: \(error)")
