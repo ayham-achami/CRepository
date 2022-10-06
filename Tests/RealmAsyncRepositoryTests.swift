@@ -102,7 +102,7 @@ class RealmAsyncRepositoryTests: XCTestCase {
     func testAsyncSaveAllFetchPaging() async {
         // Given
         let objectsCount = 120
-        let productsToSave = (0...120).map {
+        let productsToSave = (0...objectsCount).map {
             ProductInfo(id: $0, name: "tested_\($0)")
         }
         // When
