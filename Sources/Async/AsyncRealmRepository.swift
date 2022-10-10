@@ -126,13 +126,21 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) async throws -> [T] where T: ManageableRepresented {
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableRepresented {
         try await AsyncRealm(self) { realm, safe in
-            try realm.objects(try safe.safeConvert(T.RepresentedType.self))
+            let objects = realm.objects(try safe.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
-                .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
-                .map { .init(from: $0) }
+            if let page {
+                guard (page.offset + page.limit) < objects.count else { return [] }
+                return try objects[page.offset..<(page.offset + page.limit)]
+                    .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
+                    .map { .init(from: $0) }
+            } else {
+                return try objects
+                    .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
+                    .map { .init(from: $0) }
+            }
         }.perform()
     }
     
@@ -181,10 +189,10 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
     }
     
     public func watch<T>(_ predicate: NSPredicate?,
-                         _ sorted: Sorted?) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
-                                                                                                 T.RepresentedType: ManageableSource,
-                                                                                                 T.RepresentedType.ManageableType == T {
-        let realm = try await Realm(configuration: realmConfiguration)
+                         _ sorted: [Sorted]) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
+                                                                                                  T.RepresentedType: ManageableSource,
+                                                                                                  T.RepresentedType.ManageableType == T {
+        let realm = try Realm(configuration: realmConfiguration, queue: nil)
         let objects = await realm
             .objects(try Self.safeConvert(T.RepresentedType.self))
             .filter(predicate)

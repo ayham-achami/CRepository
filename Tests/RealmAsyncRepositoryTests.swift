@@ -99,12 +99,39 @@ class RealmAsyncRepositoryTests: XCTestCase {
         }
     }
     
+    func testAsyncSaveAllFetchPaging() async {
+        // Given
+        let objectsCount = 120
+        let productsToSave = (0...objectsCount).map {
+            ProductInfo(id: $0, name: "tested_\($0)")
+        }
+        // When
+        do {
+            try await repository.saveAll(productsToSave, update: true)
+            let page = Page(limit: 5, offset: 10)
+            let products: [ProductInfo] = try await repository.fetch(page: page)
+            let extraPage = Page(limit: 5, offset: objectsCount)
+            let extraProducts: [ProductInfo] = try await repository.fetch(page: extraPage)
+            // Then
+            XCTAssertTrue(extraProducts.isEmpty)
+            XCTAssertFalse(products.isEmpty)
+            XCTAssertTrue(products.count == page.limit)
+            if let first = products.first {
+                XCTAssertEqual(page.offset, first.id)
+            }
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
     func testAsyncNotification() async {
         // Given
         let expectation = XCTestExpectation()
         // Then
         do {
-            let token: RepositoryNotificationToken<ProductInfo> = try await repository.watch()
+            let token: RepositoryNotificationToken<Speaker> = try await repository.watch(nil,
+                                                                                         [Sorted("isPinned", false),
+                                                                                          Sorted("entryTime")])
             await testWatch(token: token, expectation)
         } catch {
             XCTFail("Fail \(#function) error: \(error)")
@@ -124,8 +151,8 @@ class RealmAsyncRepositoryTests: XCTestCase {
         token.observable.update {
             print("Thread: ", Thread.current)
             switch $0 {
-            case .update(let models, let delete, let inset, let modificate):
-                print("UPDATE: \(delete), \(inset), \(modificate)")
+            case .update(let models, let delete, let insert, let modified):
+                print("UPDATE: \(delete), \(insert), \(modified)")
                 print(models)
                 print("Current updates count: \(currentUpdatesCount)")
                 fulfill()
@@ -139,17 +166,17 @@ class RealmAsyncRepositoryTests: XCTestCase {
             expectation.fulfill()
         }
         do {
-            let product1 = ProductInfo(id: 1, name: "tested_1")
-            try await repository.save(product1, update: true)
-            Thread.sleep(forTimeInterval: 1)
+            let speaker1 = Speaker(id: 1, name: "tested_1", isPinned: false, entryTime: Date())
+            try await repository.save(speaker1, update: true)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
             
-            let product2 = ProductInfo(id: 2, name: "tested_2")
-            try await repository.save(product2, update: true)
-            Thread.sleep(forTimeInterval: 2)
+            let speaker2 = Speaker(id: 2, name: "tested_2", isPinned: true, entryTime: Date())
+            try await repository.save(speaker2, update: true)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
             
-            let product3 = ProductInfo(id: 2, name: "tested_3")
-            try await repository.save(product3, update: true)
-            Thread.sleep(forTimeInterval: 3)
+            let speaker3 = Speaker(id: 3, name: "tested_3", isPinned: false, entryTime: Date())
+            try await repository.save(speaker3, update: true)
+            try await Task.sleep(nanoseconds: 1_000_000_000)
         } catch {
             XCTFail("Fail \(#function) error: \(error)")
         }

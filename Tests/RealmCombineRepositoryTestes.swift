@@ -93,12 +93,14 @@ class RealmCombineRepositoryTestes: XCTestCase {
             expectation.fulfill()
         }
         
-        let watchCount = repository.watchCount(of: Company.self)
+        let watchCount = repository.watchCount(of: Speaker.self)
             .sink(receiveCompletion: {_ in }, receiveValue: {
-                print("Count company: \($0)")
+                print("Count speakers: \($0)")
             })
         
-        let watch: AnyPublisher<RepositoryNotificationCase<Company>, Error> = repository.watch()
+        let watch: AnyPublisher<RepositoryNotificationCase<Speaker>, Error> = repository.watch(nil,
+                                                                                               [Sorted("isPinned", false),
+                                                                                                Sorted("entryTime")])
         let cancellable = watch
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
@@ -123,16 +125,18 @@ class RealmCombineRepositoryTestes: XCTestCase {
                 fulfill()
             }
         })
-        
-        let companies1 = [Company(id: 1, name: "tested_1", logoId: 1),
-                          Company(id: 2, name: "tested_2", logoId: nil)]
-        _ = repository.saveAll(companies1, update: true)
+        let olddate = Date(timeIntervalSince1970: 1662441751)
+        let secondSpeakerDate = Date(timeIntervalSince1970: 1662268951)
+        let speakers1 = [Speaker(id: 1, name: "tested_1", isPinned: false, entryTime: olddate),
+                         Speaker(id: 2, name: "tested_2", isPinned: true, entryTime: secondSpeakerDate),
+                         Speaker(id: 3, name: "tested_3", isPinned: false, entryTime: Date())]
+        _ = repository.saveAll(speakers1, update: true)
         Thread.sleep(forTimeInterval: 1)
-        let companies2 = [Company(id: 2, name: "new_tested_2", logoId: 2),
-                          Company(id: 3, name: "tested_3", logoId: nil)]
-        _ = repository.saveAll(companies2, update: true)
+        let speakers2 = [Speaker(id: 2, name: "tested_2_EDIT", isPinned: true, entryTime: secondSpeakerDate),
+                         Speaker(id: 3, name: "tested_3", isPinned: true, entryTime: Date())]
+        _ = repository.saveAll(speakers2, update: true)
         Thread.sleep(forTimeInterval: 1)
-        _ = repository.deleteAll(of: Company.self, NSPredicate(format: "id=2"), cascading: true)
+        _ = repository.deleteAll(of: Speaker.self, NSPredicate(format: "id=2"), cascading: true)
         Thread.sleep(forTimeInterval: 1)
         wait(for: [expectation], timeout: 10)
         addTeardownBlock {

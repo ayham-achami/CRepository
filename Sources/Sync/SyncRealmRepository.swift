@@ -140,9 +140,9 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
     }
     
     public func watch<T>(_ predicate: NSPredicate?,
-                         _ sorted: Sorted?) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
-                                                                                           T.RepresentedType: ManageableSource,
-                                                                                           T.RepresentedType.ManageableType == T {
+                         _ sorted: [Sorted]) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
+                                                                                            T.RepresentedType: ManageableSource,
+                                                                                            T.RepresentedType.ManageableType == T {
         let objects = realm
             .objects(try Self.safeConvert(T.RepresentedType.self))
             .filter(predicate)
