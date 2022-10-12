@@ -209,6 +209,17 @@ public extension CombineRepository {
         fetch(predicate, sorted)
     }
     
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Publisher с массивом объектов записи
+    func fetch<T>(_ predicate: NSPredicate? = nil,
+                  _ sorted: Sorted? = nil) -> AnyPublisher<[T], Error> where T: ManageableSource {
+        fetch(predicate, sorted)
+    }
+    
     /// Удалить все объекты данного типа из хранилища
     ///
     /// - Parameters:

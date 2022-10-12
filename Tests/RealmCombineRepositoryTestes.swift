@@ -177,7 +177,7 @@ class RealmCombineRepositoryTestes: XCTestCase {
         _ = repository.saveAll(speakers1, update: true)
         Thread.sleep(forTimeInterval: 1)
         
-        let publisher: AnyPublisher<[ManageableSpeaker], Error> = repository.fetch(nil, nil)
+        let publisher: AnyPublisher<[ManageableSpeaker], Error> = repository.fetch()
         let subscription = publisher.compactMap { speakers in
             self.repository.perform {
                 speakers.forEach { speaker in
