@@ -88,7 +88,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
-    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<[T], Error> where T: ManageableRepresented
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) -> AnyPublisher<[T], Error> where T: ManageableRepresented
     
     /// Вытащить Manageable записи из хранилища для указанного типа записи
     ///
@@ -96,7 +96,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
-    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<[T], Error> where T: ManageableSource
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) -> AnyPublisher<[T], Error> where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -205,7 +205,7 @@ public extension CombineRepository {
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
     func fetch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
+                  _ sorted: [Sorted] = []) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
         fetch(predicate, sorted)
     }
     
@@ -216,7 +216,7 @@ public extension CombineRepository {
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
     func fetch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) -> AnyPublisher<[T], Error> where T: ManageableSource {
+                  _ sorted: [Sorted] = []) -> AnyPublisher<[T], Error> where T: ManageableSource {
         fetch(predicate, sorted)
     }
     

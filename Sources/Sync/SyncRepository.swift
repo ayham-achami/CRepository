@@ -76,7 +76,7 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
-    func fetch<T>( _ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableRepresented
+    func fetch<T>( _ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableRepresented
     
     /// Вытащить Manageable записи из хранилища для указанного типа записи
     /// - Parameters:
@@ -84,7 +84,7 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
-    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableSource
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -147,7 +147,7 @@ public extension SyncRepository {
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T: ManageableRepresented>(_ predicate: NSPredicate? = nil,
-                                         _ sorted: Sorted? = nil) throws -> [T] {
+                                         _ sorted: [Sorted] = []) throws -> [T] {
         try fetch(predicate, sorted)
     }
     
@@ -159,7 +159,7 @@ public extension SyncRepository {
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T: ManageableSource>(_ predicate: NSPredicate? = nil,
-                                    _ sorted: Sorted? = nil) throws -> [T] {
+                                    _ sorted: [Sorted] = []) throws -> [T] {
         try fetch(predicate, sorted)
     }
     

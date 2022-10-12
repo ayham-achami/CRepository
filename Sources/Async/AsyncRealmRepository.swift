@@ -152,7 +152,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableRepresented {
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted], page: Page?) async throws -> [T] where T: ManageableRepresented {
         try await AsyncRealm(self) { realm, safe in
             let objects = realm.objects(try safe.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
@@ -170,7 +170,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableSource {
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted], page: Page?) async throws -> [T] where T: ManageableSource {
         try await AsyncRealm(self) { realm, safe in
             let objects = realm.objects(try safe.safeConvert(T.self))
                 .filter(predicate)
@@ -222,7 +222,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func perform(_ updateAction: @autoclosure @escaping () throws -> Void) async throws {
+    public func perform(_ updateAction: @escaping () throws -> Void) async throws {
         try await AsyncRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { _ in
                 try updateAction()
@@ -269,7 +269,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
     
     public func apparents<T, M>(_ type: T.Type,
                                 _ predicate: NSPredicate?,
-                                _ sorted: Sorted?) async throws -> [M] where M: ManageableSource,
+                                _ sorted: [Sorted]) async throws -> [M] where M: ManageableSource,
                                                                              M == T.RepresentedType,
                                                                              M.ManageableType == T {
         try await AsyncRealm(self) { realm, safe in

@@ -118,7 +118,7 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         return manageable
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableRepresented {
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableRepresented {
         try realm.objects(try Self.safeConvert(T.RepresentedType.self))
             .filter(predicate)
             .sort(sorted)
@@ -126,7 +126,7 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
             .map { .init(from: $0) }
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableSource {
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableSource {
         try realm.objects(try Self.safeConvert(T.self))
             .filter(predicate)
             .sort(sorted)
@@ -203,7 +203,7 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
     
     public func apparents<T, M>(_ type: T.Type,
                                 _ predicate: NSPredicate?,
-                                _ sorted: Sorted?) throws -> [M] where M: ManageableSource,
+                                _ sorted: [Sorted]) throws -> [M] where M: ManageableSource,
                                                                        M == T.RepresentedType,
                                                                        M.ManageableType == T {
         realm.objects(try Self.safeConvert(T.RepresentedType.self))

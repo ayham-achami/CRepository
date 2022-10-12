@@ -52,6 +52,7 @@ public extension Results where Element: KeypathSortable {
         return filter(predicate)
     }
 
+    @available(*, deprecated, message: "Use sort(_ sorted: [Sorted])")
     func sort(_ sorted: Sorted?) -> Results<Element> {
         guard let sorted = sorted else { return self }
         return self.sorted(byKeyPath: sorted.key, ascending: sorted.ascending)

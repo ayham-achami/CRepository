@@ -91,7 +91,7 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     ///   - page: Требуемая страница списка
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
-    func fetch<T>( _ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableRepresented
+    func fetch<T>( _ predicate: NSPredicate?, _ sorted: [Sorted], page: Page?) async throws -> [T] where T: ManageableRepresented
     
     /// Вытащить Manageable записи из хранилища для указанного типа записи
     ///
@@ -101,7 +101,7 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     ///   - page: Требуемая страница списка
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
-    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableSource
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted], page: Page?) async throws -> [T] where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -131,7 +131,7 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     ///
     /// - Parameter closure: замыкания
     /// - Throws: `RepositoryError`
-    func perform(_ updateAction: @autoclosure @escaping () throws -> Void) async throws
+    func perform(_ updateAction: @escaping () throws -> Void) async throws
     
     /// Следить за событиями записи в хранилище
     ///
@@ -165,7 +165,7 @@ public extension AsyncRepository {
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T: ManageableRepresented>(_ predicate: NSPredicate? = nil,
-                                         _ sorted: Sorted? = nil,
+                                         _ sorted: [Sorted] = [],
                                          page: Page? = nil) async throws -> [T] {
         try await fetch(predicate, sorted, page: page)
     }
@@ -178,7 +178,7 @@ public extension AsyncRepository {
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T: ManageableSource>(_ predicate: NSPredicate? = nil,
-                                    _ sorted: Sorted? = nil,
+                                    _ sorted: [Sorted] = [],
                                     page: Page? = nil) async throws -> [T] {
         try await fetch(predicate, sorted, page: page)
     }
