@@ -139,7 +139,8 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         try Self.safePerform(in: realm) { _ in try closure() }
     }
     
-    public func watch<T>(_ predicate: NSPredicate?,
+    public func watch<T>(with keyPaths: [String]?,
+                         _ predicate: NSPredicate?,
                          _ sorted: [Sorted]) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                             T.RepresentedType: ManageableSource,
                                                                                             T.RepresentedType.ManageableType == T {
@@ -148,7 +149,7 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
             .filter(predicate)
             .sort(sorted)
         let observable = RepositoryObservable<RepositoryNotificationCase<T>>()
-        let token = objects.observe { changes in
+        let token = objects.observe(keyPaths: keyPaths) { changes in
             switch changes {
             case .initial(let new):
                 let manageables = new.compactMap { try? Self.safeConvert($0, to: T.RepresentedType.self) }

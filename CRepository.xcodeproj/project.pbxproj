@@ -331,11 +331,11 @@
 		F0C2706B26CAAA5B00211F15 /* Repository */ = {
 			isa = PBXGroup;
 			children = (
+				6BC3ABB028EC51330087B9BE /* Page.swift */,
 				F0C2707126CAAA5B00211F15 /* Sorted.swift */,
 				F0C2707026CAAA5B00211F15 /* RepositoryConfiguration.swift */,
 				F0C2706C26CAAA5B00211F15 /* Notification */,
 				F0C2707226CAAA5B00211F15 /* Migration */,
-				6BC3ABB028EC51330087B9BE /* Page.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";

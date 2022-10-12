@@ -208,7 +208,8 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func watch<T>(_ predicate: NSPredicate?,
+    public func watch<T>(with keyPaths: [String]? = nil,
+                         _ predicate: NSPredicate?,
                          _ sorted: [Sorted],
                          prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                    T.RepresentedType: ManageableSource,
@@ -218,7 +219,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
                 .objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
-                .changesetPublisher
+                .changesetPublisher(keyPaths: keyPaths)
                 .subscribe(on: notificationQueue)
                 .threadSafeReference()
                 .freeze()
@@ -241,6 +242,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
     }
     
     public func watchCount<T>(of type: T.Type,
+                              with keyPaths: [String]? = nil,
                               _ predicate: NSPredicate?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
                                                                                            T.RepresentedType: ManageableSource,
                                                                                            T.RepresentedType.ManageableType == T {
@@ -248,7 +250,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
             return try Realm(configuration: realmConfiguration)
                 .objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
-                .collectionPublisher
+                .collectionPublisher(keyPaths: keyPaths)
                 .subscribe(on: notificationQueue)
                 .threadSafeReference()
                 .freeze()

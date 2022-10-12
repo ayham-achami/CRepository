@@ -188,7 +188,8 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func watch<T>(_ predicate: NSPredicate?,
+    public func watch<T>(with keyPaths: [String]?,
+                         _ predicate: NSPredicate?,
                          _ sorted: [Sorted]) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                                   T.RepresentedType: ManageableSource,
                                                                                                   T.RepresentedType.ManageableType == T {
@@ -198,7 +199,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
             .filter(predicate)
             .sort(sorted)
         let observable = RepositoryObservable<RepositoryNotificationCase<T>>()
-        let token = objects.observe(on: self.notificationQueue) { changes in
+        let token = objects.observe(keyPaths: keyPaths, on: self.notificationQueue) { changes in
             switch changes {
             case .initial(let new):
                 let manageables = new.compactMap { try? Self.safeConvert($0, to: T.RepresentedType.self) }

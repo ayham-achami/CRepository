@@ -100,12 +100,14 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: <#Description#>
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
     /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate?,
+    func watch<T>(with keyPaths: [String]?,
+                  _ predicate: NSPredicate?,
                   _ sorted: [Sorted],
                   prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                             T.RepresentedType: ManageableSource,
@@ -115,10 +117,12 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
+    ///   - keyPaths: <#Description#>
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watchCount<T>(of type: T.Type,
+                       with keyPaths: [String]?,
                        _ predicate: NSPredicate?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
                                                                                     T.RepresentedType: ManageableSource,
                                                                                     T.RepresentedType.ManageableType == T
@@ -175,32 +179,36 @@ public extension CombineRepository {
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: <#Description#>
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
     /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate? = nil,
+    func watch<T>(with keyPaths: [String]? = nil,
+                  _ predicate: NSPredicate? = nil,
                   _ sorted: [Sorted] = [],
                   prefix: Int? = nil) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                   T.RepresentedType: ManageableSource,
                                                                                                   T.RepresentedType.ManageableType == T {
-        watch(predicate, sorted, prefix: prefix)
+        watch(with: keyPaths, predicate, sorted, prefix: prefix)
     }
     
     /// Следить за количеством указанного типа объектов в хранилище
     ///
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
+    ///   - keyPaths: <#Description#>
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watchCount<T>(of type: T.Type,
+                       with keyPaths: [String]? = nil,
                        _ predicate: NSPredicate? = nil) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
                                                                                           T.RepresentedType: ManageableSource,
                                                                                           T.RepresentedType.ManageableType == T {
-        watchCount(of: type, predicate)
+        watchCount(of: type, with: keyPaths, predicate)
     }
 }
 #endif

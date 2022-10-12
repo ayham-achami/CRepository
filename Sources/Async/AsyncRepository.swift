@@ -103,11 +103,13 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: <#Description#>
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate?,
+    func watch<T>(with keyPaths: [String]?,
+                  _ predicate: NSPredicate?,
                   _ sorted: [Sorted]) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                            T.RepresentedType: ManageableSource,
                                                                                            T.RepresentedType.ManageableType == T
@@ -171,15 +173,17 @@ public extension AsyncRepository {
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: <#Description#>
     ///   - predicate: Определение логических условий для ограничения поиска выборки или фильтрации в памяти.
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate? = nil,
+    func watch<T>(with keyPaths: [String]? = nil,
+                  _ predicate: NSPredicate? = nil,
                   _ sorted: [Sorted] = []) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                                 T.RepresentedType: ManageableSource,
                                                                                                 T.RepresentedType.ManageableType == T {
-        try await watch(predicate, sorted)
+        try await watch(with: keyPaths, predicate, sorted)
     }
 }
 #endif

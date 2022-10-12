@@ -30,7 +30,7 @@ import Combine
 
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, iOSApplicationExtension 13.0, OSXApplicationExtension 10.15, *)
 class RealmCombineRepositoryTestes: XCTestCase {
-
+    
     private var repository: CombineRealmRepository!
     
     override func setUpWithError() throws {
@@ -98,36 +98,37 @@ class RealmCombineRepositoryTestes: XCTestCase {
                 print("Count speakers: \($0)")
             })
         
-        let watch: AnyPublisher<RepositoryNotificationCase<Speaker>, Error> = repository.watch(nil,
+        let watch: AnyPublisher<RepositoryNotificationCase<Speaker>, Error> = repository.watch(with: ["id"],
+                                                                                               nil,
                                                                                                [Sorted("isPinned", false),
                                                                                                 Sorted("entryTime")])
         let cancellable = watch
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
-            switch completion {
-            case .finished:
-                break
-            case let .failure(error):
-                XCTFail("Fail \(#function) error: \(error)")
-            }
-            expectation.fulfill()
-        }, receiveValue: {
-            print("Thread: ", Thread.current)
-            switch $0 {
-            case .update(let models, let del, let ins, let modif):
-                print("UPDATE: \(del), \(ins), \(modif)")
-                print(models)
-                print("Current updates count: \(currentUpdatesCount)")
-                fulfill()
-            case .initial(let new):
-                print("INITIAL")
-                print(new)
-                fulfill()
-            }
-        })
-        let olddate = Date(timeIntervalSince1970: 1662441751)
+                switch completion {
+                case .finished:
+                    break
+                case let .failure(error):
+                    XCTFail("Fail \(#function) error: \(error)")
+                }
+                expectation.fulfill()
+            }, receiveValue: {
+                print("Thread: ", Thread.current)
+                switch $0 {
+                case .update(let models, let del, let ins, let modif):
+                    print("UPDATE: \(del), \(ins), \(modif)")
+                    print(models)
+                    print("Current updates count: \(currentUpdatesCount)")
+                    fulfill()
+                case .initial(let new):
+                    print("INITIAL")
+                    print(new)
+                    fulfill()
+                }
+            })
+        let oldDate = Date(timeIntervalSince1970: 1662441751)
         let secondSpeakerDate = Date(timeIntervalSince1970: 1662268951)
-        let speakers1 = [Speaker(id: 1, name: "tested_1", isPinned: false, entryTime: olddate),
+        let speakers1 = [Speaker(id: 1, name: "tested_1", isPinned: false, entryTime: oldDate),
                          Speaker(id: 2, name: "tested_2", isPinned: true, entryTime: secondSpeakerDate),
                          Speaker(id: 3, name: "tested_3", isPinned: false, entryTime: Date())]
         _ = repository.saveAll(speakers1, update: true)
