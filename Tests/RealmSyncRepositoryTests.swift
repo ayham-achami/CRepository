@@ -126,12 +126,10 @@ final class RealmSyncRepositoryTests: XCTestCase {
     
     func testManageableSyncSaveAllFetch() {
         // Given
-        let productsToSave: [ManageableProductInfo] = (0...2).map { element in
-            let product = ManageableProductInfo()
-            product.id = element
-            product.name = "tested_\(element)"
-            return product
-        }
+        // Given
+        let productsToSave = [ManageableProductInfo(id: 0, name: "tested_0"),
+                              ManageableProductInfo(id: 1, name: "tested_1"),
+                              ManageableProductInfo(id: 2, name: "tested_2")]
         // When
         do {
             try repository.reset()

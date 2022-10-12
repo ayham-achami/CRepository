@@ -47,12 +47,18 @@ final class ManageableProductInfo: Object, ManageableSource {
     
     override class func primaryKey() -> String? { "id" }
     
-        @objc dynamic var id: Int = .zero
-        @objc dynamic var name: String = ""
+    @objc dynamic var id: Int = .zero
+    @objc dynamic var name: String = ""
     
-        required convenience init(from company: ProductInfo) {
-            self.init()
-            self.id = company.id
-            self.name = company.name
-        }
+    required convenience init(from company: ProductInfo) {
+        self.init()
+        self.id = company.id
+        self.name = company.name
+    }
+    
+    convenience init(id: Int, name: String) {
+        self.init()
+        self.id = id
+        self.name = name
+    }
 }

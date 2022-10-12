@@ -133,12 +133,9 @@ class RealmAsyncRepositoryTests: XCTestCase {
     
     func testManageableAsyncSaveAllFetch() async {
         // Given
-        let productsToSave: [ManageableProductInfo] = (0...2).map { element in
-            let product = ManageableProductInfo()
-            product.id = element
-            product.name = "tested_\(element)"
-            return product
-        }
+        let productsToSave = [ManageableProductInfo(id: 0, name: "tested_0"),
+                              ManageableProductInfo(id: 1, name: "tested_1"),
+                              ManageableProductInfo(id: 2, name: "tested_2")]
         // When
         do {
             try await repository.saveAll(productsToSave, update: true)
