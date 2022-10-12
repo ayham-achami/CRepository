@@ -128,7 +128,7 @@ class RealmCombineRepositoryTestes: XCTestCase {
     
     func testNotification() {
         let expectation = XCTestExpectation()
-        let updatesCount = 3
+        let updatesCount = 4
         var currentUpdatesCount = 0
         let fulfill = { () -> Void in
             currentUpdatesCount += 1
@@ -141,7 +141,7 @@ class RealmCombineRepositoryTestes: XCTestCase {
                 print("Count speakers: \($0)")
             })
         
-        let watch: AnyPublisher<RepositoryNotificationCase<Speaker>, Error> = repository.watch(with: ["id"],
+        let watch: AnyPublisher<RepositoryNotificationCase<Speaker>, Error> = repository.watch(with: ["name"],
                                                                                                nil,
                                                                                                [Sorted("isPinned", false),
                                                                                                 Sorted("entryTime")])
@@ -176,16 +176,35 @@ class RealmCombineRepositoryTestes: XCTestCase {
                          Speaker(id: 3, name: "tested_3", isPinned: false, entryTime: Date())]
         _ = repository.saveAll(speakers1, update: true)
         Thread.sleep(forTimeInterval: 1)
+        
+        let publisher: AnyPublisher<[ManageableSpeaker], Error> = repository.fetch(nil, nil)
+        let subscription = publisher.compactMap { speakers in
+            self.repository.perform {
+                speakers.forEach { speaker in
+                    if speaker.id == 2 {
+                        speaker.name = "tested_2_EDIT"
+                    }
+                    if speaker.id == 3 {
+                        speaker.entryTime = Date(timeIntervalSinceNow: 60 * 60)
+                    }
+                }
+            }
+        }.sink { completion in
+            print("\(completion)")
+        } receiveValue: { _ in
+            print("Finish")
+        }
         let speakers2 = [Speaker(id: 2, name: "tested_2_EDIT", isPinned: true, entryTime: secondSpeakerDate),
                          Speaker(id: 3, name: "tested_3", isPinned: true, entryTime: Date())]
         _ = repository.saveAll(speakers2, update: true)
         Thread.sleep(forTimeInterval: 1)
-        _ = repository.deleteAll(of: Speaker.self, NSPredicate(format: "id=2"), cascading: true)
+        _ = repository.deleteAll(of: Speaker.self, NSPredicate(format: "id=3"), cascading: true)
         Thread.sleep(forTimeInterval: 1)
         wait(for: [expectation], timeout: 10)
         addTeardownBlock {
             watchCount.cancel()
             cancellable.cancel()
+            subscription.cancel()
         }
     }
 }
