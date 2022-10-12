@@ -59,6 +59,25 @@ class RealmCombineRepositoryTestes: XCTestCase {
         wait(for: [expectation], timeout: 10)
     }
     
+    func testManageableSave() {
+        // Given
+        let expectation = XCTestExpectation()
+        let companyToSave = ManageableCompany()
+        // When
+        _ = repository.save(companyToSave, update: true).sink { completion in
+            switch completion {
+            case .finished:
+                break
+            case let .failure(error):
+                XCTFail("Fail \(#function) error: \(error)")
+            }
+            expectation.fulfill()
+        } receiveValue: { _ in
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 10)
+    }
+    
     func testFetch() {
         // Given
         let expectation = XCTestExpectation()
@@ -66,6 +85,30 @@ class RealmCombineRepositoryTestes: XCTestCase {
         // When
         _ = repository.save(companyToSave, update: true)
             .zip(repository.fetch(with: 0) as AnyPublisher<Company, Error>)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    break
+                case let .failure(error):
+                    XCTFail("Fail \(#function) error: \(error)")
+                }
+                expectation.fulfill()
+            }, receiveValue: { _, company in
+                XCTAssertEqual(company.id, companyToSave.id)
+                XCTAssertEqual(company.name, companyToSave.name)
+                XCTAssertEqual(company.logoId, companyToSave.logoId)
+                expectation.fulfill()
+            })
+        wait(for: [expectation], timeout: 10)
+    }
+    
+    func testManageableFetch() {
+        // Given
+        let expectation = XCTestExpectation()
+        let companyToSave = ManageableCompany()
+        // When
+        _ = repository.save(companyToSave, update: true)
+            .zip(repository.fetch(with: 0) as AnyPublisher<ManageableCompany, Error>)
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:

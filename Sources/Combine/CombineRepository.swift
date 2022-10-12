@@ -43,6 +43,16 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
                                                                               T.RepresentedType: ManageableSource,
                                                                               T.RepresentedType.ManageableType == T
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func save<T>(_ model: T, update: Bool) -> AnyPublisher<Void, Error> where T: ManageableSource
+    
     /// Создает-сохраняет объект записи в хранилище
     /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
     ///         если объект имеет primary key и при обновлении в хранилище был найден
@@ -54,10 +64,23 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     func saveAll<T>(_ models: [T], update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
                                                                                     T.RepresentedType: ManageableSource,
                                                                                     T.RepresentedType.ManageableType == T
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - models: Массив моделей для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func saveAll<T>(_ models: [T], update: Bool) -> AnyPublisher<Void, Error> where T: ManageableSource
     
     /// Вытащить записи из хранилища для указанного primaryKey
     /// - Parameter primaryKey: primaryKey для модели
     func fetch<T>(with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableRepresented
+    
+    /// Вытащить Manageable записи из хранилища для указанного primaryKey
+    /// - Parameter primaryKey: primaryKey для модели
+    func fetch<T>(with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableSource
     
     /// Вытащить записи из хранилища для указанного типа записи
     ///
@@ -66,6 +89,14 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
     func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<[T], Error> where T: ManageableRepresented
+    
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Publisher с массивом объектов записи
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<[T], Error> where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -100,7 +131,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
-    ///   - keyPaths: <#Description#>
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
@@ -117,7 +148,7 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
-    ///   - keyPaths: <#Description#>
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
@@ -144,12 +175,26 @@ public extension CombineRepository {
         save(model, update: true)
     }
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    func save<T>(_ model: T) -> AnyPublisher<Void, Error> where T: ManageableSource {
+        save(model, update: true)
+    }
+    
     /// Создает-сохраняет объект записи в хранилище
     /// - Parameters:
     ///   - models: Массив моделей для сохранения
     func saveAll<T>(_ models: [T]) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
                                                                       T.RepresentedType: ManageableSource,
                                                                       T.RepresentedType.ManageableType == T {
+        saveAll(models, update: true)
+    }
+    
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Parameters:
+    ///   - models: Массив моделей для сохранения
+    func saveAll<T>(_ models: [T]) -> AnyPublisher<Void, Error> where T: ManageableSource {
         saveAll(models, update: true)
     }
     
@@ -179,7 +224,7 @@ public extension CombineRepository {
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
-    ///   - keyPaths: <#Description#>
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
@@ -198,7 +243,7 @@ public extension CombineRepository {
     ///
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
-    ///   - keyPaths: <#Description#>
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Количество объектов указанного типа

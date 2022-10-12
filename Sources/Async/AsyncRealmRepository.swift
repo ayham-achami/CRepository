@@ -106,12 +106,28 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
+    public func save<T>(_ model: T, update: Bool) async throws where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm -> Void in
+                realm.add(try safe.safeConvert(model), update: update.policy)
+            }
+        }.perform()
+    }
+    
     public func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableRepresented,
                                                                            T.RepresentedType: ManageableSource,
                                                                            T.RepresentedType.ManageableType == T {
         try await AsyncRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 realm.add(try models.map { try safe.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
+            }
+        }.perform()
+    }
+    
+    public func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm in
+                realm.add(try models.map { try safe.safeConvert($0) }, update: update.policy)
             }
         }.perform()
     }
@@ -123,6 +139,16 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
                 throw RepositoryFetchError.notFound
             }
             return .init(from: try safe.safeConvert(object, to: T.RepresentedType.self))
+        }.perform()
+    }
+    
+    public func fetch<T>(with primaryKey: AnyHashable) async throws -> T where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            guard let object = realm.object(ofType: try safe.safeConvert(T.self),
+                                            forPrimaryKey: primaryKey) else {
+                throw RepositoryFetchError.notFound
+            }
+            return try safe.safeConvert(object, to: T.self)
         }.perform()
     }
     
@@ -140,6 +166,22 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
                 return try objects
                     .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
                     .map { .init(from: $0) }
+            }
+        }.perform()
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            let objects = realm.objects(try safe.safeConvert(T.self))
+                .filter(predicate)
+                .sort(sorted)
+            if let page {
+                guard (page.offset + page.limit) < objects.count else { return [] }
+                return try objects[page.offset..<(page.offset + page.limit)]
+                    .compactMap { try safe.safeConvert($0, to: T.self) }
+            } else {
+                return try objects
+                    .compactMap { try safe.safeConvert($0, to: T.self) }
             }
         }.perform()
     }

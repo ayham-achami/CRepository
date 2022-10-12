@@ -42,6 +42,16 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     func save<T>(_ model: T, update: Bool) async throws where T: ManageableRepresented,
                                                               T.RepresentedType: ManageableSource,
                                                               T.RepresentedType.ManageableType == T
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    /// - Throws: `RepositoryError` Если не удалось сохранить объект
+    func save<T>(_ model: T, update: Bool) async throws where T: ManageableSource
     
     /// Создает-сохраняет объект записи в хранилище
     /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
@@ -55,20 +65,43 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
                                                                     T.RepresentedType: ManageableSource,
                                                                     T.RepresentedType.ManageableType == T
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - models: Массив моделей для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableSource
+    
     /// Вытащить записи из хранилища для указанного primaryKey
     /// - Parameter primaryKey: primaryKey для модели
     func fetch<T>(with primaryKey: AnyHashable) async throws -> T where T: ManageableRepresented
     
+    /// Вытащить Manageable записи из хранилища для указанного primaryKey
+    /// - Parameter primaryKey: primaryKey для модели
+    func fetch<T>(with primaryKey: AnyHashable) async throws -> T where T: ManageableSource
+    
     /// Вытащить записи из хранилища для указанного типа записи
     ///
     /// - Parameters:
-    ///   - model: Тип записи
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - page: Требуемая страница списка
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T>( _ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableRepresented
+    
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    ///   - page: Требуемая страница списка
+    /// - Returns: Массив объектов записи
+    /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -103,7 +136,7 @@ public protocol AsyncRepository: RepositoryCreator, RepositoryReformation, Async
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
-    ///   - keyPaths: <#Description#>
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`
@@ -137,6 +170,19 @@ public extension AsyncRepository {
         try await fetch(predicate, sorted, page: page)
     }
     
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Массив объектов записи
+    /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
+    func fetch<T: ManageableSource>(_ predicate: NSPredicate? = nil,
+                                    _ sorted: Sorted? = nil,
+                                    page: Page? = nil) async throws -> [T] {
+        try await fetch(predicate, sorted, page: page)
+    }
+    
     /// Создает-сохраняет объект записи в хранилище
     /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
     ///         если объект имеет primary key и при обновлении в хранилище был найден
@@ -151,12 +197,31 @@ public extension AsyncRepository {
         try await save(model, update: true)
     }
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    /// - Throws: `RepositoryError` Если не удалось сохранить объект
+    func save<T>(_ model: T) async throws where T: ManageableSource {
+        try await save(model, update: true)
+    }
+    
     /// создает-сохраняет все объекты данного типа в хранилище
     ///
     /// - Parameter modules: объекты для сохранения
     func saveAll<T>(_ models: [T]) async throws where T: ManageableRepresented,
                                                       T.RepresentedType: ManageableSource,
                                                       T.RepresentedType.ManageableType == T {
+        try await saveAll(models, update: true)
+    }
+    
+    /// создает-сохраняет все Manageable объекты данного типа в хранилище
+    ///
+    /// - Parameter modules: объекты для сохранения
+    func saveAll<T>(_ models: [T]) async throws where T: ManageableSource {
         try await saveAll(models, update: true)
     }
 
@@ -173,7 +238,7 @@ public extension AsyncRepository {
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
-    ///   - keyPaths: <#Description#>
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Определение логических условий для ограничения поиска выборки или фильтрации в памяти.
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`

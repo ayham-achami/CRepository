@@ -80,11 +80,23 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         }
     }
     
-    public func saveAll<T>(_ modules: [T], update: Bool) throws where T: ManageableRepresented,
+    public func save<T>(_ model: T, update: Bool) throws where T: ManageableSource {
+        try Self.safePerform(in: realm) { realm in
+            realm.add(try Self.safeConvert(model), update: update.policy)
+        }
+    }
+    
+    public func saveAll<T>(_ models: [T], update: Bool) throws where T: ManageableRepresented,
                                                                       T.RepresentedType: ManageableSource,
                                                                       T.RepresentedType.ManageableType == T {
         try Self.safePerform(in: realm) { realm in
-            realm.add(try modules.map { try Self.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
+            realm.add(try models.map { try Self.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
+        }
+    }
+    
+    public func saveAll<T>(_ models: [T], update: Bool) throws where T: ManageableSource {
+        try Self.safePerform(in: realm) { realm in
+            realm.add(try models.map { try Self.safeConvert($0) }, update: update.policy)
         }
     }
     
@@ -97,12 +109,28 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         return .init(from: manageable)
     }
     
+    public func fetch<T>(with primaryKey: AnyHashable) throws -> T where T: ManageableSource {
+        guard let object = realm.object(ofType: try Self.safeConvert(T.self),
+                                        forPrimaryKey: primaryKey) else {
+            throw RepositoryFetchError.notFound
+        }
+        let manageable = try Self.safeConvert(object, to: T.self)
+        return manageable
+    }
+    
     public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableRepresented {
         try realm.objects(try Self.safeConvert(T.RepresentedType.self))
             .filter(predicate)
             .sort(sorted)
             .compactMap { try Self.safeConvert($0, to: T.RepresentedType.self) }
             .map { .init(from: $0) }
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableSource {
+        try realm.objects(try Self.safeConvert(T.self))
+            .filter(predicate)
+            .sort(sorted)
+            .compactMap { try Self.safeConvert($0, to: T.self) }
     }
     
     public func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented {

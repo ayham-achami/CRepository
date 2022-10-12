@@ -55,6 +55,24 @@ final class RealmSyncRepositoryTests: XCTestCase {
         }
     }
     
+    func testManageableSyncSaveFetch() {
+        // Given
+        let productToSave = ManageableProductInfo()
+        // When
+        do {
+            try repository.reset()
+            try repository.save(productToSave, update: true)
+            let products: [ManageableProductInfo] = try repository.fetch()
+            // Then
+            products.forEach {
+                XCTAssertEqual($0.id, productToSave.id)
+                XCTAssertEqual($0.name, productToSave.name)
+            }
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
     func testSyncFetchWithPrimaryKey() {
         // Given
         let productToSave = ProductInfo(id: 300, name: "tested_300")
@@ -63,6 +81,21 @@ final class RealmSyncRepositoryTests: XCTestCase {
             try repository.reset()
             try repository.save(productToSave, update: true)
             let product: ProductInfo = try repository.fetch(with: productToSave.id)
+            // Then
+            XCTAssertEqual(product.id, productToSave.id)
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
+    func testManageableSyncFetchWithPrimaryKey() {
+        // Given
+        let productToSave = ManageableProductInfo()
+        // When
+        do {
+            try repository.reset()
+            try repository.save(productToSave, update: true)
+            let product: ManageableProductInfo = try repository.fetch(with: productToSave.id)
             // Then
             XCTAssertEqual(product.id, productToSave.id)
         } catch {
@@ -80,6 +113,30 @@ final class RealmSyncRepositoryTests: XCTestCase {
             try repository.reset()
             try repository.saveAll(productsToSave)
             let products: [ProductInfo] = try repository.fetch()
+            // Then
+            zip(products, productsToSave).forEach {
+                XCTAssertEqual($0.id, $1.id)
+                XCTAssertEqual($0.name, $1.name)
+            }
+            XCTAssertEqual(products.count, productsToSave.count)
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
+    func testManageableSyncSaveAllFetch() {
+        // Given
+        let productsToSave: [ManageableProductInfo] = (0...2).map { element in
+            let product = ManageableProductInfo()
+            product.id = element
+            product.name = "tested_\(element)"
+            return product
+        }
+        // When
+        do {
+            try repository.reset()
+            try repository.saveAll(productsToSave)
+            let products: [ManageableProductInfo] = try repository.fetch()
             // Then
             zip(products, productsToSave).forEach {
                 XCTAssertEqual($0.id, $1.id)
