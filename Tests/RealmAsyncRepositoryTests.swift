@@ -99,12 +99,17 @@ class RealmAsyncRepositoryTests: XCTestCase {
     func testManageableAsyncFetchWithPrimaryKey() async {
         // Given
         let productToSave = ManageableProductInfo()
+        productToSave.name = "beforeTest"
         // When
         do {
             try await repository.save(productToSave, update: true)
             let product: ManageableProductInfo = try await repository.fetch(with: productToSave.id)
+            try await repository.perform {
+                product.name = "AfterTest"
+            }
             // Then
             XCTAssertEqual(product.id, productToSave.id)
+            XCTAssertEqual(product.name, "AfterTest")
         } catch {
             XCTFail("Fail \(#function) error: \(error)")
         }

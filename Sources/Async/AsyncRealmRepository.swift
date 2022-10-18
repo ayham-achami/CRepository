@@ -28,6 +28,17 @@
 import RealmSwift
 import Foundation
 
+/// Глобальный актор для выполнения AsyncRealmRepository
+@globalActor
+private actor AsyncRealmActor {
+    
+    /// `AsyncRealmActor`
+    static var shared = AsyncRealmActor()
+    
+    /// Инициализация
+    private init() {}
+}
+
 /// Реализация репозитория с Realm
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, iOSApplicationExtension 13.0, OSXApplicationExtension 10.15, *)
 public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
@@ -85,9 +96,10 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
             self.attemptToFulfill = attemptToFulfill
         }
         
+        @AsyncRealmActor
         func perform() async throws -> Output {
-            try autoreleasepool {
-                guard let repository = repository else { throw RepositoryError.transaction }
+            guard let repository = await repository else { throw RepositoryError.transaction }
+            return try autoreleasepool {
                 let realm = try Realm(configuration: repository.realmConfiguration)
                 return try self.attemptToFulfill(realm, type(of: repository))
             }
