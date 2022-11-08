@@ -39,7 +39,7 @@ public protocol CombineApparentRepository {
     /// - Returns: Publisher с массивом объектов записи
     func apparents<T, M>(_ type: T.Type,
                          _ predicate: NSPredicate?,
-                         _ sorted: Sorted?) -> AnyPublisher<[M], Error> where M: ManageableSource,
+                         _ sorted: [Sorted]) -> AnyPublisher<[M], Error> where M: ManageableSource,
                                                                               M == T.RepresentedType,
                                                                               M.ManageableType == T
     
@@ -51,7 +51,7 @@ public protocol CombineApparentRepository {
     /// - Returns: Promise с объектом записи
     func apparent<T, M>(_ type: T.Type,
                         _ predicate: NSPredicate?,
-                        _ sorted: Sorted?) -> AnyPublisher<M, Error> where M: ManageableSource,
+                        _ sorted: [Sorted]) -> AnyPublisher<M, Error> where M: ManageableSource,
                                                                            M == T.RepresentedType,
                                                                            M.ManageableType == T
     
@@ -61,7 +61,7 @@ public protocol CombineApparentRepository {
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с объектом записи
     func first<T>(_ predicate: NSPredicate?,
-                  _ sorted: Sorted?) -> AnyPublisher<T, Error> where T: ManageableRepresented
+                  _ sorted: [Sorted]) -> AnyPublisher<T, Error> where T: ManageableRepresented
     
     /// Вытащить последнюю запись из хранилища для указанного типа записи
     /// - Parameters:
@@ -69,7 +69,7 @@ public protocol CombineApparentRepository {
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с объектом записи
     func last<T>(_ predicate: NSPredicate?,
-                 _ sorted: Sorted?) -> AnyPublisher<T, Error> where T: ManageableRepresented
+                 _ sorted: [Sorted]) -> AnyPublisher<T, Error> where T: ManageableRepresented
 }
 
 // MARK: - CombineApparentRepository + Default
@@ -79,7 +79,7 @@ public extension CombineApparentRepository {
     
     func apparents<T, M>(_ type: T.Type,
                          _ predicate: NSPredicate? = nil,
-                         _ sorted: Sorted? = nil) -> AnyPublisher<[M], Error> where M: ManageableSource,
+                         _ sorted: [Sorted] = []) -> AnyPublisher<[M], Error> where M: ManageableSource,
                                                                                     M == T.RepresentedType,
                                                                                     M.ManageableType == T {
         apparents(type, predicate, sorted)
@@ -87,19 +87,19 @@ public extension CombineApparentRepository {
     
     func apparent<T, M>(_ type: T.Type,
                         _ predicate: NSPredicate? = nil,
-                        _ sorted: Sorted? = nil) -> AnyPublisher<M, Error> where M: ManageableSource,
+                        _ sorted: [Sorted] = []) -> AnyPublisher<M, Error> where M: ManageableSource,
                                                                                  M == T.RepresentedType,
                                                                                  M.ManageableType == T {
         apparent(type, predicate, sorted)
     }
     
     func first<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) -> AnyPublisher<T, Error> where T: ManageableRepresented {
+                  _ sorted: [Sorted] = []) -> AnyPublisher<T, Error> where T: ManageableRepresented {
         first(predicate, sorted)
     }
     
     func last<T>(_ predicate: NSPredicate? = nil,
-                 _ sorted: Sorted? = nil) -> AnyPublisher<T, Error> where T: ManageableRepresented {
+                 _ sorted: [Sorted] = []) -> AnyPublisher<T, Error> where T: ManageableRepresented {
         last(predicate, sorted)
     }
 }

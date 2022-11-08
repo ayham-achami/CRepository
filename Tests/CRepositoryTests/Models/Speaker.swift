@@ -62,4 +62,12 @@ final class ManageableSpeaker: Object, ManageableSource {
         self.isPinned = speaker.isPinned
         self.entryTime = speaker.entryTime
     }
+    
+    convenience init(id: Int, name: String, isPinned: Bool, entryTime: Date) {
+        self.init()
+        self.id = id
+        self.name = name
+        self.isPinned = isPinned
+        self.entryTime = entryTime
+    }
 }

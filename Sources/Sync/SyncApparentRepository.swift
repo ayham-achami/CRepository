@@ -37,7 +37,7 @@ public protocol SyncApparentRepository {
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func apparents<T, M>(_ type: T.Type,
                          _ predicate: NSPredicate?,
-                         _ sorted: Sorted?) throws -> [M] where M: ManageableSource,
+                         _ sorted: [Sorted]) throws -> [M] where M: ManageableSource,
                                                                 M == T.RepresentedType,
                                                                 M.ManageableType == T
     
@@ -50,7 +50,7 @@ public protocol SyncApparentRepository {
     /// - Throws: `RepositoryError` Если не удалось вытащить объект из хранилища
     func apparent<T, M>(_ type: T.Type,
                         _ predicate: NSPredicate?,
-                        _ sorted: Sorted?) throws -> M where M: ManageableSource,
+                        _ sorted: [Sorted]) throws -> M where M: ManageableSource,
                                                              M == T.RepresentedType,
                                                              M.ManageableType == T
     
@@ -63,7 +63,7 @@ public protocol SyncApparentRepository {
     /// - Throws: `RepositoryError` Если не удалось вытащить объект из хранилища
     func first<T>(_ type: T.Type,
                   _ predicate: NSPredicate?,
-                  _ sorted: Sorted?) throws -> T where T: ManageableRepresented
+                  _ sorted: [Sorted]) throws -> T where T: ManageableRepresented
     
     /// Вытащить последнюю запись из хранилища для указанного типа записи
     /// - Parameters:
@@ -72,7 +72,7 @@ public protocol SyncApparentRepository {
     /// - Returns: Promise с объектом записи
     func last<T>(_ type: T.Type,
                  _ predicate: NSPredicate?,
-                 _ sorted: Sorted?) throws -> T where T: ManageableRepresented
+                 _ sorted: [Sorted]) throws -> T where T: ManageableRepresented
 }
 
 // MARK: - SyncApparentRepository + Default
@@ -80,7 +80,7 @@ public extension SyncApparentRepository {
     
     func apparents<T, M>(_ type: T.Type,
                          _ predicate: NSPredicate? = nil,
-                         _ sorted: Sorted? = nil) throws -> [M] where M: ManageableSource,
+                         _ sorted: [Sorted] = []) throws -> [M] where M: ManageableSource,
                                                                       M == T.RepresentedType,
                                                                       M.ManageableType == T {
         try apparents(type, predicate, sorted)
@@ -88,7 +88,7 @@ public extension SyncApparentRepository {
     
     func apparent<T, M>(_ type: T.Type,
                         _ predicate: NSPredicate? = nil,
-                        _ sorted: Sorted? = nil) throws -> M where M: ManageableSource,
+                        _ sorted: [Sorted] = []) throws -> M where M: ManageableSource,
                                                                    M == T.RepresentedType,
                                                                    M.ManageableType == T {
         try apparent(type, predicate, sorted)
@@ -96,13 +96,13 @@ public extension SyncApparentRepository {
     
     func first<T>(_ type: T.Type,
                   _ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) throws -> T where T: ManageableRepresented {
+                  _ sorted: [Sorted] = []) throws -> T where T: ManageableRepresented {
         try first(type, predicate, sorted)
     }
     
     func last<T>(_ type: T.Type,
                  _ predicate: NSPredicate? = nil,
-                 _ sorted: Sorted? = nil) throws -> T where T: ManageableRepresented {
+                 _ sorted: [Sorted] = []) throws -> T where T: ManageableRepresented {
         try last(type, predicate, sorted)
     }
 }
@@ -112,7 +112,7 @@ public extension SyncApparentRepository where Self: SyncRepository {
     
     func apparent<T, M>(_ type: T.Type,
                         _ predicate: NSPredicate?,
-                        _ sorted: Sorted?) throws -> M where M: ManageableSource,
+                        _ sorted: [Sorted]) throws -> M where M: ManageableSource,
                                                              M == T.RepresentedType,
                                                              M.ManageableType == T {
         .init(from: try first(type, predicate, sorted))
@@ -120,7 +120,7 @@ public extension SyncApparentRepository where Self: SyncRepository {
     
     func first<T>(_ type: T.Type,
                   _ predicate: NSPredicate?,
-                  _ sorted: Sorted?) throws -> T where T: ManageableRepresented {
+                  _ sorted: [Sorted]) throws -> T where T: ManageableRepresented {
         let firstElement: T? = (try fetch(predicate, sorted)).first
         guard let first = firstElement else { throw RepositoryFetchError.notFound }
         return first
@@ -128,7 +128,7 @@ public extension SyncApparentRepository where Self: SyncRepository {
     
     func last<T>(_ type: T.Type,
                  _ predicate: NSPredicate?,
-                 _ sorted: Sorted?) throws -> T where T: ManageableRepresented {
+                 _ sorted: [Sorted]) throws -> T where T: ManageableRepresented {
         let lastElement: T? = (try fetch(predicate, sorted)).last
         guard let last = lastElement else { throw RepositoryFetchError.notFound }
         return last

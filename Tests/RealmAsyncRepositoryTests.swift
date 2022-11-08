@@ -64,6 +64,24 @@ class RealmAsyncRepositoryTests: XCTestCase {
         }
     }
     
+    func testManageableAsyncSaveFetch() async {
+        // Given
+        let productToSave = ManageableProductInfo()
+        // When
+        do {
+            try await repository.save(productToSave, update: true)
+            let products: [ManageableProductInfo] = try await repository.fetch()
+            // Then
+            XCTAssertFalse(products.isEmpty)
+            products.forEach {
+                XCTAssertEqual($0.id, productToSave.id)
+                XCTAssertEqual($0.name, productToSave.name)
+            }
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
     func testAsyncFetchWithPrimaryKey() async {
         // Given
         let productToSave = ProductInfo(id: 300, name: "tested_300")
@@ -78,6 +96,25 @@ class RealmAsyncRepositoryTests: XCTestCase {
         }
     }
     
+    func testManageableAsyncFetchWithPrimaryKey() async {
+        // Given
+        let productToSave = ManageableProductInfo()
+        productToSave.name = "beforeTest"
+        // When
+        do {
+            try await repository.save(productToSave, update: true)
+            let product: ManageableProductInfo = try await repository.fetch(with: productToSave.id)
+            try await repository.perform {
+                product.name = "AfterTest"
+            }
+            // Then
+            XCTAssertEqual(product.id, productToSave.id)
+            XCTAssertEqual(product.name, "AfterTest")
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
     func testAsyncSaveAllFetch() async {
         // Given
         let productsToSave = [ProductInfo(id: 0, name: "tested_0"),
@@ -87,6 +124,27 @@ class RealmAsyncRepositoryTests: XCTestCase {
         do {
             try await repository.saveAll(productsToSave, update: true)
             let products: [ProductInfo] = try await repository.fetch()
+            // Then
+            XCTAssertFalse(products.isEmpty)
+            zip(products, productsToSave).forEach {
+                XCTAssertEqual($0.id, $1.id)
+                XCTAssertEqual($0.name, $1.name)
+            }
+            XCTAssertEqual(products.count, productsToSave.count)
+        } catch {
+            XCTFail("Fail \(#function) error: \(error)")
+        }
+    }
+    
+    func testManageableAsyncSaveAllFetch() async {
+        // Given
+        let productsToSave = [ManageableProductInfo(id: 0, name: "tested_0"),
+                              ManageableProductInfo(id: 1, name: "tested_1"),
+                              ManageableProductInfo(id: 2, name: "tested_2")]
+        // When
+        do {
+            try await repository.saveAll(productsToSave, update: true)
+            let products: [ManageableProductInfo] = try await repository.fetch()
             // Then
             XCTAssertFalse(products.isEmpty)
             zip(products, productsToSave).forEach {

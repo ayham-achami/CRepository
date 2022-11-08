@@ -1,6 +1,7 @@
 disabled_rules: # rule identifiers to exclude from running
   - nesting
   - trailing_whitespace
+  - void_function_in_ternary
 opt_in_rules: # some rules are only opt-in
   - empty_count
   # Find all the available rules by running:
@@ -22,8 +23,8 @@ force_try:
 # implicitly
 line_length: 250
 function_body_length:
-  warning: 64
-  error: 65
+  warning: 70
+  error: 71
 function_parameter_count:
   warning: 8
   error: 9

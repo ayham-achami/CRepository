@@ -43,6 +43,16 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
                                                                               T.RepresentedType: ManageableSource,
                                                                               T.RepresentedType.ManageableType == T
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func save<T>(_ model: T, update: Bool) -> AnyPublisher<Void, Error> where T: ManageableSource
+    
     /// Создает-сохраняет объект записи в хранилище
     /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
     ///         если объект имеет primary key и при обновлении в хранилище был найден
@@ -54,10 +64,23 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     func saveAll<T>(_ models: [T], update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
                                                                                     T.RepresentedType: ManageableSource,
                                                                                     T.RepresentedType.ManageableType == T
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Note: Будь аккуратным с использованием этого метода с флагом update = false
+    ///         если объект имеет primary key и при обновлении в хранилище был найден
+    ///         объект с таким же primary key, то метод выбрасывает фатальную ошибку
+    ///
+    /// - Parameters:
+    ///   - models: Массив моделей для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func saveAll<T>(_ models: [T], update: Bool) -> AnyPublisher<Void, Error> where T: ManageableSource
     
     /// Вытащить записи из хранилища для указанного primaryKey
     /// - Parameter primaryKey: primaryKey для модели
     func fetch<T>(with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableRepresented
+    
+    /// Вытащить Manageable записи из хранилища для указанного primaryKey
+    /// - Parameter primaryKey: primaryKey для модели
+    func fetch<T>(with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableSource
     
     /// Вытащить записи из хранилища для указанного типа записи
     ///
@@ -65,7 +88,15 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
-    func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<[T], Error> where T: ManageableRepresented
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) -> AnyPublisher<[T], Error> where T: ManageableRepresented
+    
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Publisher с массивом объектов записи
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) -> AnyPublisher<[T], Error> where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -100,12 +131,14 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
     /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate?,
+    func watch<T>(with keyPaths: [String]?,
+                  _ predicate: NSPredicate?,
                   _ sorted: [Sorted],
                   prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                             T.RepresentedType: ManageableSource,
@@ -115,10 +148,12 @@ public protocol CombineRepository: RepositoryCreator, RepositoryReformation, Com
     ///
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watchCount<T>(of type: T.Type,
+                       with keyPaths: [String]?,
                        _ predicate: NSPredicate?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
                                                                                     T.RepresentedType: ManageableSource,
                                                                                     T.RepresentedType.ManageableType == T
@@ -140,12 +175,26 @@ public extension CombineRepository {
         save(model, update: true)
     }
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    func save<T>(_ model: T) -> AnyPublisher<Void, Error> where T: ManageableSource {
+        save(model, update: true)
+    }
+    
     /// Создает-сохраняет объект записи в хранилище
     /// - Parameters:
     ///   - models: Массив моделей для сохранения
     func saveAll<T>(_ models: [T]) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
                                                                       T.RepresentedType: ManageableSource,
                                                                       T.RepresentedType.ManageableType == T {
+        saveAll(models, update: true)
+    }
+    
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Parameters:
+    ///   - models: Массив моделей для сохранения
+    func saveAll<T>(_ models: [T]) -> AnyPublisher<Void, Error> where T: ManageableSource {
         saveAll(models, update: true)
     }
     
@@ -156,7 +205,18 @@ public extension CombineRepository {
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Publisher с массивом объектов записи
     func fetch<T>(_ predicate: NSPredicate? = nil,
-                  _ sorted: Sorted? = nil) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
+                  _ sorted: [Sorted] = []) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
+        fetch(predicate, sorted)
+    }
+    
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Publisher с массивом объектов записи
+    func fetch<T>(_ predicate: NSPredicate? = nil,
+                  _ sorted: [Sorted] = []) -> AnyPublisher<[T], Error> where T: ManageableSource {
         fetch(predicate, sorted)
     }
     
@@ -175,32 +235,36 @@ public extension CombineRepository {
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     ///   - prefix: Количество среза первых объектов
     /// - Returns: Publisher с объектом типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate? = nil,
+    func watch<T>(with keyPaths: [String]? = nil,
+                  _ predicate: NSPredicate? = nil,
                   _ sorted: [Sorted] = [],
                   prefix: Int? = nil) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                   T.RepresentedType: ManageableSource,
                                                                                                   T.RepresentedType.ManageableType == T {
-        watch(predicate, sorted, prefix: prefix)
+        watch(with: keyPaths, predicate, sorted, prefix: prefix)
     }
     
     /// Следить за количеством указанного типа объектов в хранилище
     ///
     /// - Parameters:
     ///   - type: Тип объекта за которыми необходимо следить
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Количество объектов указанного типа
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
     func watchCount<T>(of type: T.Type,
+                       with keyPaths: [String]? = nil,
                        _ predicate: NSPredicate? = nil) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
                                                                                           T.RepresentedType: ManageableSource,
                                                                                           T.RepresentedType.ManageableType == T {
-        watchCount(of: type, predicate)
+        watchCount(of: type, with: keyPaths, predicate)
     }
 }
 #endif

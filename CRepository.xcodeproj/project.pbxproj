@@ -11,6 +11,7 @@
 		6BC3ABB128EC51330087B9BE /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC3ABB028EC51330087B9BE /* Page.swift */; };
 		6DDC9E9E26F0637A74CC6E66 /* Pods_CRepository.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 806D6AFA337BAA336ACD593F /* Pods_CRepository.framework */; };
 		91959EC6F519C2869DA97F81 /* Pods_CRepositoryTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC6A0C71B8295603B059A63E /* Pods_CRepositoryTests.framework */; };
+		C92AF7E228F701C600ABA2C3 /* NSPredicate+Sendable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92AF7E128F701C600ABA2C3 /* NSPredicate+Sendable.swift */; };
 		DF307BCD273D3D4C00540031 /* AsyncApparentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF307BCA273D3D4C00540031 /* AsyncApparentRepository.swift */; };
 		DF307BCE273D3D4C00540031 /* AsyncRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF307BCB273D3D4C00540031 /* AsyncRepository.swift */; };
 		DF3BFFC42770881500A1D5B4 /* SyncRealmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3BFFC32770881400A1D5B4 /* SyncRealmRepository.swift */; };
@@ -72,6 +73,7 @@
 		806D6AFA337BAA336ACD593F /* Pods_CRepository.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CRepository.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		97A95C38AB11C21A5FF22012 /* Pods-Playground.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Playground.release.xcconfig"; path = "Target Support Files/Pods-Playground/Pods-Playground.release.xcconfig"; sourceTree = "<group>"; };
 		B1249F6D1BBAA93C7AC2E788 /* Pods-CRepository.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRepository.debug.xcconfig"; path = "Target Support Files/Pods-CRepository/Pods-CRepository.debug.xcconfig"; sourceTree = "<group>"; };
+		C92AF7E128F701C600ABA2C3 /* NSPredicate+Sendable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPredicate+Sendable.swift"; sourceTree = "<group>"; };
 		CC6A0C71B8295603B059A63E /* Pods_CRepositoryTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CRepositoryTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8D59FA633CADA1A934ACD55 /* Pods_Playground.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Playground.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF307BCA273D3D4C00540031 /* AsyncApparentRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncApparentRepository.swift; sourceTree = "<group>"; };
@@ -324,6 +326,7 @@
 			children = (
 				F0C2705E26CAAA5B00211F15 /* Realm+Repository.swift */,
 				F0C2705F26CAAA5B00211F15 /* Realm+CascadeDeleteing.swift */,
+				C92AF7E128F701C600ABA2C3 /* NSPredicate+Sendable.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -331,11 +334,11 @@
 		F0C2706B26CAAA5B00211F15 /* Repository */ = {
 			isa = PBXGroup;
 			children = (
+				6BC3ABB028EC51330087B9BE /* Page.swift */,
 				F0C2707126CAAA5B00211F15 /* Sorted.swift */,
 				F0C2707026CAAA5B00211F15 /* RepositoryConfiguration.swift */,
 				F0C2706C26CAAA5B00211F15 /* Notification */,
 				F0C2707226CAAA5B00211F15 /* Migration */,
-				6BC3ABB028EC51330087B9BE /* Page.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -663,6 +666,7 @@
 				DFBEE82E27423B2A0058E5AB /* CombineApparentRepository.swift in Sources */,
 				DFBEE8382742579A0058E5AB /* SyncRepository.swift in Sources */,
 				F0C2709326CAAA5C00211F15 /* MigrationControllerProducer.swift in Sources */,
+				C92AF7E228F701C600ABA2C3 /* NSPredicate+Sendable.swift in Sources */,
 				DF3BFFC82770885500A1D5B4 /* CombineRealmRepository.swift in Sources */,
 				F0C2708E26CAAA5C00211F15 /* RepositoryNotificationToken.swift in Sources */,
 				F0C2708D26CAAA5C00211F15 /* RepositoryObservable.swift in Sources */,

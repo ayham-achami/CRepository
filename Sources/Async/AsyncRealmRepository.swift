@@ -28,6 +28,17 @@
 import RealmSwift
 import Foundation
 
+/// Глобальный актор для выполнения AsyncRealmRepository
+@globalActor
+private actor AsyncRealmActor {
+    
+    /// `AsyncRealmActor`
+    static var shared = AsyncRealmActor()
+    
+    /// Инициализация
+    private init() {}
+}
+
 /// Реализация репозитория с Realm
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, iOSApplicationExtension 13.0, OSXApplicationExtension 10.15, *)
 public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
@@ -85,9 +96,10 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
             self.attemptToFulfill = attemptToFulfill
         }
         
+        @AsyncRealmActor
         func perform() async throws -> Output {
-            try autoreleasepool {
-                guard let repository = repository else { throw RepositoryError.transaction }
+            guard let repository = await repository else { throw RepositoryError.transaction }
+            return try autoreleasepool {
                 let realm = try Realm(configuration: repository.realmConfiguration)
                 return try self.attemptToFulfill(realm, type(of: repository))
             }
@@ -106,12 +118,28 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
+    public func save<T>(_ model: T, update: Bool) async throws where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm -> Void in
+                realm.add(try safe.safeConvert(model), update: update.policy)
+            }
+        }.perform()
+    }
+    
     public func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableRepresented,
                                                                            T.RepresentedType: ManageableSource,
                                                                            T.RepresentedType.ManageableType == T {
         try await AsyncRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 realm.add(try models.map { try safe.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
+            }
+        }.perform()
+    }
+    
+    public func saveAll<T>(_ models: [T], update: Bool) async throws where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm in
+                realm.add(try models.map { try safe.safeConvert($0) }, update: update.policy)
             }
         }.perform()
     }
@@ -126,7 +154,17 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?, page: Page?) async throws -> [T] where T: ManageableRepresented {
+    public func fetch<T>(with primaryKey: AnyHashable) async throws -> T where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            guard let object = realm.object(ofType: try safe.safeConvert(T.self),
+                                            forPrimaryKey: primaryKey) else {
+                throw RepositoryFetchError.notFound
+            }
+            return try safe.safeConvert(object, to: T.self)
+        }.perform()
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted], page: Page?) async throws -> [T] where T: ManageableRepresented {
         try await AsyncRealm(self) { realm, safe in
             let objects = realm.objects(try safe.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
@@ -140,6 +178,22 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
                 return try objects
                     .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
                     .map { .init(from: $0) }
+            }
+        }.perform()
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted], page: Page?) async throws -> [T] where T: ManageableSource {
+        try await AsyncRealm(self) { realm, safe in
+            let objects = realm.objects(try safe.safeConvert(T.self))
+                .filter(predicate)
+                .sort(sorted)
+            if let page {
+                guard (page.offset + page.limit) < objects.count else { return [] }
+                return try objects[page.offset..<(page.offset + page.limit)]
+                    .compactMap { try safe.safeConvert($0, to: T.self) }
+            } else {
+                return try objects
+                    .compactMap { try safe.safeConvert($0, to: T.self) }
             }
         }.perform()
     }
@@ -180,7 +234,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func perform(_ updateAction: @autoclosure @escaping () throws -> Void) async throws {
+    public func perform(_ updateAction: @escaping () throws -> Void) async throws {
         try await AsyncRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { _ in
                 try updateAction()
@@ -188,7 +242,8 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         }.perform()
     }
     
-    public func watch<T>(_ predicate: NSPredicate?,
+    public func watch<T>(with keyPaths: [String]?,
+                         _ predicate: NSPredicate?,
                          _ sorted: [Sorted]) async throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                                   T.RepresentedType: ManageableSource,
                                                                                                   T.RepresentedType.ManageableType == T {
@@ -198,7 +253,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
             .filter(predicate)
             .sort(sorted)
         let observable = RepositoryObservable<RepositoryNotificationCase<T>>()
-        let token = objects.observe(on: self.notificationQueue) { changes in
+        let token = objects.observe(keyPaths: keyPaths, on: self.notificationQueue) { changes in
             switch changes {
             case .initial(let new):
                 let manageables = new.compactMap { try? Self.safeConvert($0, to: T.RepresentedType.self) }
@@ -226,7 +281,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
     
     public func apparents<T, M>(_ type: T.Type,
                                 _ predicate: NSPredicate?,
-                                _ sorted: Sorted?) async throws -> [M] where M: ManageableSource,
+                                _ sorted: [Sorted]) async throws -> [M] where M: ManageableSource,
                                                                              M == T.RepresentedType,
                                                                              M.ManageableType == T {
         try await AsyncRealm(self) { realm, safe in

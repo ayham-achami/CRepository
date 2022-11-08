@@ -80,11 +80,23 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         }
     }
     
-    public func saveAll<T>(_ modules: [T], update: Bool) throws where T: ManageableRepresented,
+    public func save<T>(_ model: T, update: Bool) throws where T: ManageableSource {
+        try Self.safePerform(in: realm) { realm in
+            realm.add(try Self.safeConvert(model), update: update.policy)
+        }
+    }
+    
+    public func saveAll<T>(_ models: [T], update: Bool) throws where T: ManageableRepresented,
                                                                       T.RepresentedType: ManageableSource,
                                                                       T.RepresentedType.ManageableType == T {
         try Self.safePerform(in: realm) { realm in
-            realm.add(try modules.map { try Self.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
+            realm.add(try models.map { try Self.safeConvert(T.RepresentedType.init(from: $0)) }, update: update.policy)
+        }
+    }
+    
+    public func saveAll<T>(_ models: [T], update: Bool) throws where T: ManageableSource {
+        try Self.safePerform(in: realm) { realm in
+            realm.add(try models.map { try Self.safeConvert($0) }, update: update.policy)
         }
     }
     
@@ -97,12 +109,28 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         return .init(from: manageable)
     }
     
-    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableRepresented {
+    public func fetch<T>(with primaryKey: AnyHashable) throws -> T where T: ManageableSource {
+        guard let object = realm.object(ofType: try Self.safeConvert(T.self),
+                                        forPrimaryKey: primaryKey) else {
+            throw RepositoryFetchError.notFound
+        }
+        let manageable = try Self.safeConvert(object, to: T.self)
+        return manageable
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableRepresented {
         try realm.objects(try Self.safeConvert(T.RepresentedType.self))
             .filter(predicate)
             .sort(sorted)
             .compactMap { try Self.safeConvert($0, to: T.RepresentedType.self) }
             .map { .init(from: $0) }
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableSource {
+        try realm.objects(try Self.safeConvert(T.self))
+            .filter(predicate)
+            .sort(sorted)
+            .compactMap { try Self.safeConvert($0, to: T.self) }
     }
     
     public func delete<T>(_ model: T.Type, with primaryKey: AnyHashable, cascading: Bool) throws where T: ManageableRepresented {
@@ -139,7 +167,8 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
         try Self.safePerform(in: realm) { _ in try closure() }
     }
     
-    public func watch<T>(_ predicate: NSPredicate?,
+    public func watch<T>(with keyPaths: [String]?,
+                         _ predicate: NSPredicate?,
                          _ sorted: [Sorted]) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                             T.RepresentedType: ManageableSource,
                                                                                             T.RepresentedType.ManageableType == T {
@@ -148,7 +177,7 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
             .filter(predicate)
             .sort(sorted)
         let observable = RepositoryObservable<RepositoryNotificationCase<T>>()
-        let token = objects.observe { changes in
+        let token = objects.observe(keyPaths: keyPaths) { changes in
             switch changes {
             case .initial(let new):
                 let manageables = new.compactMap { try? Self.safeConvert($0, to: T.RepresentedType.self) }
@@ -174,7 +203,7 @@ public final class SyncRealmRepository: SyncRepository, SafeRepository {
     
     public func apparents<T, M>(_ type: T.Type,
                                 _ predicate: NSPredicate?,
-                                _ sorted: Sorted?) throws -> [M] where M: ManageableSource,
+                                _ sorted: [Sorted]) throws -> [M] where M: ManageableSource,
                                                                        M == T.RepresentedType,
                                                                        M.ManageableType == T {
         realm.objects(try Self.safeConvert(T.RepresentedType.self))

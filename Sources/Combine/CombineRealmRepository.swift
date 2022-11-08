@@ -114,6 +114,16 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
+    public func save<T>(_ model: T, update: Bool) -> AnyPublisher<Void, Error> where T: ManageableSource {
+        CombineRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm in
+                realm.add(try safe.safeConvert(model),
+                          update: update.policy)
+                return
+            }
+        }.eraseToAnyPublisher()
+    }
+    
     public func saveAll<T>(_ models: [T],
                            update: Bool) -> AnyPublisher<Void, Error> where T: ManageableRepresented,
                                                                             T == T.RepresentedType.ManageableType,
@@ -121,6 +131,16 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
         CombineRealm(self) { realm, safe in
             try safe.safePerform(in: realm) { realm in
                 realm.add(try models.map { try safe.safeConvert(T.RepresentedType.init(from: $0)) },
+                          update: update.policy)
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    public func saveAll<T>(_ models: [T],
+                           update: Bool) -> AnyPublisher<Void, Error> where T: ManageableSource {
+        CombineRealm(self) { realm, safe in
+            try safe.safePerform(in: realm) { realm in
+                realm.add(try models.map { try safe.safeConvert($0) },
                           update: update.policy)
             }
         }.eraseToAnyPublisher()
@@ -136,14 +156,34 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
+    public func fetch<T>(with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableSource {
+        CombineRealm(self) { realm, safe in
+            guard let object = realm.object(ofType: try safe.safeConvert(T.self),
+                                            forPrimaryKey: primaryKey) else {
+                throw RepositoryFetchError.notFound
+            }
+            return try safe.safeConvert(object, to: T.self)
+        }.eraseToAnyPublisher()
+    }
+    
     public func fetch<T>(_ predicate: NSPredicate?,
-                         _ sorted: Sorted?) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
+                         _ sorted: [Sorted]) -> AnyPublisher<[T], Error> where T: ManageableRepresented {
         CombineRealm(self) { realm, safe in
             try realm.objects(try safe.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
                 .compactMap { try safe.safeConvert($0, to: T.RepresentedType.self) }
                 .map { .init(from: $0) }
+        }.eraseToAnyPublisher()
+    }
+    
+    public func fetch<T>(_ predicate: NSPredicate?,
+                         _ sorted: [Sorted]) -> AnyPublisher<[T], Error> where T: ManageableSource {
+        CombineRealm(self) { realm, safe in
+            try realm.objects(try safe.safeConvert(T.self))
+                .filter(predicate)
+                .sort(sorted)
+                .compactMap { try safe.safeConvert($0, to: T.self) }
         }.eraseToAnyPublisher()
     }
     
@@ -208,7 +248,8 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func watch<T>(_ predicate: NSPredicate?,
+    public func watch<T>(with keyPaths: [String]? = nil,
+                         _ predicate: NSPredicate?,
                          _ sorted: [Sorted],
                          prefix: Int?) -> AnyPublisher<RepositoryNotificationCase<T>, Error> where T: ManageableRepresented,
                                                                                                    T.RepresentedType: ManageableSource,
@@ -218,7 +259,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
                 .objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
                 .sort(sorted)
-                .changesetPublisher
+                .changesetPublisher(keyPaths: keyPaths)
                 .subscribe(on: notificationQueue)
                 .threadSafeReference()
                 .freeze()
@@ -241,6 +282,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
     }
     
     public func watchCount<T>(of type: T.Type,
+                              with keyPaths: [String]? = nil,
                               _ predicate: NSPredicate?) -> AnyPublisher<Int, Error> where T: ManageableRepresented,
                                                                                            T.RepresentedType: ManageableSource,
                                                                                            T.RepresentedType.ManageableType == T {
@@ -248,7 +290,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
             return try Realm(configuration: realmConfiguration)
                 .objects(try Self.safeConvert(T.RepresentedType.self))
                 .filter(predicate)
-                .collectionPublisher
+                .collectionPublisher(keyPaths: keyPaths)
                 .subscribe(on: notificationQueue)
                 .threadSafeReference()
                 .freeze()
@@ -262,7 +304,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
     
     public func apparents<T, M>(_ type: T.Type,
                                 _ predicate: NSPredicate?,
-                                _ sorted: Sorted?) -> AnyPublisher<[M], Error> where M: ManageableSource,
+                                _ sorted: [Sorted]) -> AnyPublisher<[M], Error> where M: ManageableSource,
                                                                                      M == T.RepresentedType,
                                                                                      M.ManageableType == T {
         CombineRealm(self) { realm, safe in
@@ -275,13 +317,13 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
     
     public func apparent<T, M>(_ type: T.Type,
                                _ predicate: NSPredicate?,
-                               _ sorted: Sorted?) -> AnyPublisher<M, Error> where M: ManageableSource,
+                               _ sorted: [Sorted]) -> AnyPublisher<M, Error> where M: ManageableSource,
                                                                                   M == T.RepresentedType,
                                                                                   M.ManageableType == T {
         (first(predicate, sorted) as AnyPublisher<T, Error>).map { M.init(from: $0) }.eraseToAnyPublisher()
     }
     
-    public func first<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<T, Error> where T: ManageableRepresented {
+    public func first<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) -> AnyPublisher<T, Error> where T: ManageableRepresented {
         CombineRealm(self) { realm, safe in
             guard let object = realm.objects(try safe.safeConvert(T.RepresentedType.self))
                     .filter(predicate)
@@ -293,7 +335,7 @@ public final class CombineRealmRepository: CombineRepository, SafeRepository {
         }.eraseToAnyPublisher()
     }
     
-    public func last<T>(_ predicate: NSPredicate?, _ sorted: Sorted?) -> AnyPublisher<T, Error> where T: ManageableRepresented {
+    public func last<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) -> AnyPublisher<T, Error> where T: ManageableRepresented {
         CombineRealm(self) { realm, safe in
             guard let object = realm.objects(try safe.safeConvert(T.RepresentedType.self))
                     .filter(predicate)

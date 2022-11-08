@@ -41,6 +41,12 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
                                                         T.RepresentedType: ManageableSource,
                                                         T.RepresentedType.ManageableType == T
     
+    /// Создает-сохраняет Manageable объект в хранилище
+    /// - Parameters:
+    ///   - model: Объект для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func save<T>(_ model: T, update: Bool) throws where T: ManageableSource
+    
     /// Создает-сохраняет все объекты данного типа в хранилище
     ///
     /// - Parameter modules: Объекты для сохранения
@@ -49,19 +55,36 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
                                                                T.RepresentedType: ManageableSource,
                                                                T.RepresentedType.ManageableType == T
     
+    /// Создает-сохраняет все Manageable объекты в хранилище
+    /// - Parameters:
+    ///   - models: Объекты для сохранения
+    ///   - update: Обновить ли объект если объект уже существует в хранилище
+    func saveAll<T>(_ models: [T], update: Bool) throws where T: ManageableSource
+    
     /// Вытащить записи из хранилища для указанного primaryKey
     /// - Parameter primaryKey: primaryKey для модели
     func fetch<T>(with primaryKey: AnyHashable) throws -> T where T: ManageableRepresented
     
+    /// Вытащить Manageable записи из хранилища для указанного primaryKey
+    /// - Parameter primaryKey: primaryKey для модели
+    func fetch<T>(with primaryKey: AnyHashable) throws -> T where T: ManageableSource
+    
     /// Вытащить записи из хранилища для указанного типа записи
     ///
     /// - Parameters:
-    ///   - model: Тип записи
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
-    func fetch<T>( _ predicate: NSPredicate?, _ sorted: Sorted?) throws -> [T] where T: ManageableRepresented
+    func fetch<T>( _ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableRepresented
+    
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Массив объектов записи
+    /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
+    func fetch<T>(_ predicate: NSPredicate?, _ sorted: [Sorted]) throws -> [T] where T: ManageableSource
     
     /// Удалить объект из хранилища
     /// - Parameters:
@@ -96,11 +119,13 @@ public protocol SyncRepository: RepositoryCreator, RepositoryReformation, SyncAp
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate?,
+    func watch<T>(with keyPaths: [String]?,
+                  _ predicate: NSPredicate?,
                   _ sorted: [Sorted]) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                      T.RepresentedType: ManageableSource,
                                                                                      T.RepresentedType.ManageableType == T
@@ -122,7 +147,19 @@ public extension SyncRepository {
     /// - Returns: Массив объектов записи
     /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
     func fetch<T: ManageableRepresented>(_ predicate: NSPredicate? = nil,
-                                         _ sorted: Sorted? = nil) throws -> [T] {
+                                         _ sorted: [Sorted] = []) throws -> [T] {
+        try fetch(predicate, sorted)
+    }
+    
+    /// Вытащить Manageable записи из хранилища для указанного типа записи
+    ///
+    /// - Parameters:
+    ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
+    ///   - sorted: Объект передающий информации о способе сортировки
+    /// - Returns: Массив объектов записи
+    /// - Throws: `RepositoryError` Если не удалось вытащить объекты из хранилища
+    func fetch<T: ManageableSource>(_ predicate: NSPredicate? = nil,
+                                    _ sorted: [Sorted] = []) throws -> [T] {
         try fetch(predicate, sorted)
     }
     
@@ -140,12 +177,26 @@ public extension SyncRepository {
         try save(model, update: true)
     }
     
+    /// Создает-сохраняет Manageable объект записи в хранилище
+    /// - Parameter model: Объект для сохранения
+    /// - Throws: `RepositoryError` Если не удалось сохранить объект
+    func save<T>(_ model: T) throws where T: ManageableSource {
+        try save(model, update: true)
+    }
+    
     /// создает-сохраняет все объекты данного типа в хранилище
     ///
     /// - Parameter modules: объекты для сохранения
     func saveAll<T>(_ modules: [T]) throws where T: ManageableRepresented,
                                                  T.RepresentedType: ManageableSource,
                                                  T.RepresentedType.ManageableType == T {
+        try saveAll(modules, update: true)
+    }
+    
+    /// создает-сохраняет все Manageable объекты данного типа в хранилище
+    ///
+    /// - Parameter modules: объекты для сохранения
+    func saveAll<T>(_ modules: [T]) throws where T: ManageableSource {
         try saveAll(modules, update: true)
     }
     
@@ -163,14 +214,16 @@ public extension SyncRepository {
     /// Следить за событиями записи в хранилище
     ///
     /// - Parameters:
+    ///   - keyPaths: ключи по которому производиться отслеживание
     ///   - predicate: Предикаты обертывают некоторую комбинацию выражений
     ///   - sorted: Объект передающий информации о способе сортировки
     /// - Returns: Объект типа `RepositoryNotificationToken`
     /// - Throws: `RepositoryError` если не удалось подписаться на уведомления
-    func watch<T>(_ predicate: NSPredicate? = nil,
+    func watch<T>(with keyPaths: [String]? = nil,
+                  _ predicate: NSPredicate? = nil,
                   _ sorted: [Sorted] = []) throws -> RepositoryNotificationToken<T> where T: ManageableRepresented,
                                                                                           T.RepresentedType: ManageableSource,
                                                                                           T.RepresentedType.ManageableType == T {
-        try watch(predicate, sorted)
+        try watch(with: keyPaths, predicate, sorted)
     }
 }
