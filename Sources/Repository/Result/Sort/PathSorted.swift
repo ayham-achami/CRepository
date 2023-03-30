@@ -1,5 +1,5 @@
 //
-//  Configurations.swift
+//  PathSorted.swift
 //
 //  The MIT License (MIT)
 //
@@ -23,28 +23,24 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import CRepository
+import Foundation
+import RealmSwift
 
-final class DefaultRepositoryConfiguration: RepositoryConfiguration {
-    
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryDirectory: String? = "Database/Default"
-    let repositoryType: RepositoryType = .basic(userName: "CRepository")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
-}
+/// Объект передающий информации о способе сортировки
+/// массива сущностей после выполнения запроса в хранилище
+@frozen public struct PathSorted<Element> where Element: Manageable {
 
-final class InMemoryRepositoryConfiguration: RepositoryConfiguration {
+    /// Название свойства, по которой осуществляется сортировка
+    public let key: String
+    /// Если способ сортировки по возрастанию иначе по убиванию
+    public let ascending: Bool
     
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositoryDirectory: String? = nil
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryType: RepositoryType = .inMemory(identifier: "CRepositoryInMemory")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
+    /// Инициализация
+    /// - Parameters:
+    ///   - keyPath: KeyPath по которому идет сортировка
+    ///   - ascending: Способ сортировки
+    public init(keyPath: PartialKeyPath<Element>, ascending: Bool = true) {
+        self.key = _name(for: keyPath)
+        self.ascending = ascending
+    }
 }

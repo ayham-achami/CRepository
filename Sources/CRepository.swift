@@ -6,7 +6,7 @@
 //  Copyright (c) 2019 Community Arch
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software anxd associated documentation files (the "Software"), to deal
+//  of this software and associated documentation files (the "Software"), to deal
 //  in the Software without restriction, including without limitation the rights
 //  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 //  copies of the Software, and to permit persons to whom the Software is
@@ -24,9 +24,10 @@
 //  SOFTWARE.
 
 import Foundation
+import RealmSwift
 
 /// Базовый протокол объектов хранилища
-public protocol Manageable: AnyObject {}
+public protocol Manageable: Object {}
 
 /// Протокол контроля управляемого объекта в сессии миграции
 public protocol DynamicManageable {
@@ -50,7 +51,7 @@ public protocol DynamicManageable {
 /// Объект отвечающий за инициализации объекта модели с помощью объекта базы данных
 public protocol ManageableRepresented {
 
-    /// Тиа созданного объекта
+    /// Тип созданного объекта
     associatedtype RepresentedType: Manageable
 
     /// Инициализация объекта модели с помощью объекта базы данных
@@ -58,8 +59,8 @@ public protocol ManageableRepresented {
     /// - Parameter represented: Объект базы данных
     init(from represented: RepresentedType)
 
-    /// Инициализация объекта модели с помощью опционального объекта базы данных
-    /// - Parameter represented: Опциональный объект базы данных
+    /// Инициализация объекта модели с помощью опционального  объекта базы данных
+    /// - Parameter represented: опциональный объект базы данных
     init?(orNil represented: RepresentedType?)
 }
 
@@ -82,7 +83,7 @@ public protocol ManageableSource: Manageable {
     init(from manageable: ManageableType)
 
     /// Инициализация
-    /// - Parameter manageable: Опциональный манаджабел объект
+    /// - Parameter manageable: опциональный манаджабел объект
     init?(orNil manageable: ManageableType?)
 }
 

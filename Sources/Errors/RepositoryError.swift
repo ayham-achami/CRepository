@@ -47,8 +47,10 @@ public enum RepositoryError: LocalizedError {
     }
 }
 
+/// <#Description#>
 public enum RepositoryFetchError: LocalizedError {
 
+    /// <#Description#>
     case notFound
 
     public var errorDescription: String {

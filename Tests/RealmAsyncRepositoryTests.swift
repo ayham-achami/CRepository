@@ -48,16 +48,21 @@ class RealmAsyncRepositoryTests: XCTestCase {
     
     func testAsyncSaveFetch() async {
         // Given
-        let productToSave = ProductInfo(id: 0, name: "tested_0")
+        let productsToSave = [ProductInfo(id: 0, name: "tested_0"),
+                              ProductInfo(id: 1, name: "tested_1"),
+                              ProductInfo(id: 2, name: "tested_2"),
+                              ProductInfo(id: 3, name: "tested_3")]
         // When
         do {
-            try await repository.save(productToSave, update: true)
-            let products: [ProductInfo] = try await repository.fetch()
+            try await repository.saveAll(productsToSave)
+            let products: [ProductInfo] = try await repository.fetch(nil, [Sorted(type: ProductInfo.self,
+                                                                                  keyPath: \.id,
+                                                                                  ascending: false)])
             // Then
             XCTAssertFalse(products.isEmpty)
-            products.forEach {
-                XCTAssertEqual($0.id, productToSave.id)
-                XCTAssertEqual($0.name, productToSave.name)
+            for (index, element) in Array(products.reversed()).enumerated() {
+                XCTAssertEqual(element.id, productsToSave[index].id)
+                XCTAssertEqual(element.name, productsToSave[index].name)
             }
         } catch {
             XCTFail("Fail \(#function) error: \(error)")

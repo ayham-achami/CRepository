@@ -1,5 +1,5 @@
 //
-//  Configurations.swift
+//  Sorted.swift
 //
 //  The MIT License (MIT)
 //
@@ -23,28 +23,24 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import CRepository
+import Foundation
 
-final class DefaultRepositoryConfiguration: RepositoryConfiguration {
-    
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryDirectory: String? = "Database/Default"
-    let repositoryType: RepositoryType = .basic(userName: "CRepository")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
+/// Объект передающий информации о способе сортировки
+/// массива сущностей после выполнения запроса в хранилище
+public struct Sorted {
+
+    /// Название свойства, по которой осуществляется сортировка
+    public let key: String
+    /// Если способ сортировки по возрастанию иначе по убиванию
+    public let ascending: Bool
+
+    /// Инициализация
+    /// - Parameters:
+    ///   - key: Название свойства
+    ///   - ascending: Способ сортировки
+    public init(_ key: String, _ ascending: Bool = true) {
+        self.key = key
+        self.ascending = ascending
+    }
 }
 
-final class InMemoryRepositoryConfiguration: RepositoryConfiguration {
-    
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositoryDirectory: String? = nil
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryType: RepositoryType = .inMemory(identifier: "CRepositoryInMemory")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
-}

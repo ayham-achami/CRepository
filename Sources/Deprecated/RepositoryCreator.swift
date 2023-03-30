@@ -1,5 +1,5 @@
 //
-//  Configurations.swift
+//  RepositoryCreator.swift
 //
 //  The MIT License (MIT)
 //
@@ -23,28 +23,16 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import CRepository
+import Foundation
 
-final class DefaultRepositoryConfiguration: RepositoryConfiguration {
+@available(*, deprecated, message: "Use Repository")
+public protocol RepositoryCreator {
     
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryDirectory: String? = "Database/Default"
-    let repositoryType: RepositoryType = .basic(userName: "CRepository")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
-}
+    /// Инициализация с конфигурацией
+    /// - Parameter configuration: Конфигурация
+    /// - Throws: `RepositoryError` Если не удалось инициализировать хранилище
+    init(_ configuration: RepositoryConfiguration) throws
 
-final class InMemoryRepositoryConfiguration: RepositoryConfiguration {
-    
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositoryDirectory: String? = nil
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryType: RepositoryType = .inMemory(identifier: "CRepositoryInMemory")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
+    /// Конфигурация хранилища
+    var configuration: RepositoryConfiguration { get }
 }

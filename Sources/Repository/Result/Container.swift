@@ -1,5 +1,5 @@
 //
-//  Configurations.swift
+//  Container.swift
 //
 //  The MIT License (MIT)
 //
@@ -23,28 +23,22 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import CRepository
+import Foundation
 
-final class DefaultRepositoryConfiguration: RepositoryConfiguration {
+/// <#Description#>
+struct Container<Result> where Result: RepositoryResultCollection, Result.Element: ManageableSource {
     
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryDirectory: String? = "Database/Default"
-    let repositoryType: RepositoryType = .basic(userName: "CRepository")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
+    /// <#Description#>
+    let result: Result
+    /// <#Description#>
+    let unsafe: UnsafeRepositoryResult<Result.Element>
 }
 
-final class InMemoryRepositoryConfiguration: RepositoryConfiguration {
+/// <#Description#>
+struct RepresentedContainer<Result> where Result: RepositoryRepresentedCollection {
     
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositoryDirectory: String? = nil
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryType: RepositoryType = .inMemory(identifier: "CRepositoryInMemory")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
+    /// <#Description#>
+    let result: Result
+    /// <#Description#>
+    let unsafe: UnsafeRepositoryResult<Result.Element.RepresentedType>
 }

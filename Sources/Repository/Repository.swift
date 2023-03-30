@@ -1,5 +1,5 @@
 //
-//  Configurations.swift
+//  Repository.swift
 //
 //  The MIT License (MIT)
 //
@@ -23,28 +23,23 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import CRepository
+import Foundation
 
-final class DefaultRepositoryConfiguration: RepositoryConfiguration {
-    
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryDirectory: String? = "Database/Default"
-    let repositoryType: RepositoryType = .basic(userName: "CRepository")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
-}
+/// <#Description#>
+public protocol Repository: AnyObject {
 
-final class InMemoryRepositoryConfiguration: RepositoryConfiguration {
+    /// Базовый тип
+    var basic: RepositoryController { get }
+    /// Данные будет хранятся в ОЗУ после перезапуска приложения данные теряются
+    /// - SeeAlso: Как работает база в ОЗУ
+    /// [InMemoryRealm](https://www.mongodb.com/docs/realm/sdk/swift/realm-files/configure-and-open-a-realm/#std-label-ios-open-an-in-memory-realm)
+    var inMemory: RepositoryController { get }
+    /// Базовый тип с шифрованием
+    var encryption: RepositoryController { get }
+    /// Конфигурация хранилища
+    var configuration: RepositoryConfiguration { get }
     
-    let userName: String = "CRepositoryTest"
-    let encryptionKey: Data = Data()
-    let isFileProtection: Bool = false
-    let repositoryDirectory: String? = nil
-    let repositorySchemaVersion: UInt64 = 1
-    let repositoryType: RepositoryType = .inMemory(identifier: "CRepositoryInMemory")
-    
-    func repositoryDidBeginMigration(with migration: MigrationController) {}
+    /// Инициализация с конфигурацией
+    /// - Parameter configuration: Конфигурация
+    init(_ configuration: RepositoryConfiguration)
 }

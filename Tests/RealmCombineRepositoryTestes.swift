@@ -126,6 +126,7 @@ class RealmCombineRepositoryTestes: XCTestCase {
         wait(for: [expectation], timeout: 10)
     }
     
+    // swiftlint:disable:next function_body_length
     func testNotification() {
         let expectation = XCTestExpectation()
         let updatesCount = 4
