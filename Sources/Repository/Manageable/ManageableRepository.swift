@@ -39,22 +39,28 @@ public protocol ManageableRepository: RepositoryController {
     
     @discardableResult
     /// <#Description#>
-    /// - Parameters:
-    ///   - perform: <#perform description#>
-    ///   - completion: <#completion description#>
+    /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
-    func apply(perform: @escaping () throws -> Void, completion: @escaping (Swift.Error?) -> Void) -> ManageableRepository
+    func async<Result>(perform: @escaping () throws -> Result) async throws -> Result
     
     @discardableResult
     /// <#Description#>
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
-    func apply(perform: @escaping () throws -> Void) async throws -> ManageableRepository
+    func write(perform: @escaping () throws -> Void) async throws -> ManageableRepository
+    
+    @discardableResult
+    /// <#Description#>
+    /// - Parameters:
+    ///   - perform: <#perform description#>
+    ///   - completion: <#completion description#>
+    /// - Returns: <#description#>
+    func write(perform: @escaping () throws -> Void, completion: @escaping (Swift.Error?) -> Void) -> ManageableRepository
     
     /// <#Description#>
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
-    func publishApply(_ perform: @escaping () -> Void) -> AnyPublisher<ManageableRepository, Swift.Error>
+    func publishWrite(_ perform: @escaping () -> Void) -> AnyPublisher<ManageableRepository, Swift.Error>
     
     @discardableResult
     /// <#Description#>
@@ -289,8 +295,8 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     /// <#Description#>
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
-    func apply(_ perform: @escaping () -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.publishApply(perform) }.eraseToAnyPublisher()
+    func write(_ perform: @escaping () -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap { $0.publishWrite(perform) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>

@@ -112,7 +112,7 @@ extension RepositoryResultCollection {
     /// <#Description#>
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
-    func perform<T>(_ body: @escaping () -> T) async -> T {
+    func async<T>(_ body: @escaping () -> T) async -> T {
         await withCheckedContinuation { continuation in
             queue.async {
                 continuation.resume(returning: body())
@@ -123,7 +123,7 @@ extension RepositoryResultCollection {
     /// <#Description#>
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
-    func performThrowing<T>(_ body: @escaping () throws -> T) async throws -> T {
+    func asyncThrowing<T>(_ body: @escaping () throws -> T) async throws -> T {
         try await withCheckedThrowingContinuation { continuation in
             queue.async {
                 do {
@@ -217,7 +217,7 @@ public extension RepositoryResultCollection where Element: ManageableSource,
     /// <#Description#>
     /// - Returns: <#description#>
     func mapRepresented() async -> RepositoryRepresentedResult<Element.ManageableType> {
-        await perform { .init(queue, unsafe, controller) }
+        await async { .init(queue, unsafe, controller) }
     }
 }
 

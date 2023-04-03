@@ -36,16 +36,7 @@ extension Realm {
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
     func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable, _ queue: DispatchQueue) async throws -> T where T: ManageableSource {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<T, Swift.Error>) in
-            queue.async {
-                do {
-                    let model = try object(ofType: type, for: primaryKey)
-                    continuation.resume(returning: model)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        try await async(queue) { try object(ofType: type, for: primaryKey) }
     }
     
     /// <#Description#>
@@ -55,11 +46,7 @@ extension Realm {
     ///   - toucher: <#toucher description#>
     /// - Returns: <#description#>
     func fetch<T>(allOf type: T.Type, queue: DispatchQueue, toucher: RepositoryToucher) async -> RepositoryResult<T> where T: ManageableSource {
-        await withCheckedContinuation { (continuation: CheckedContinuation<RepositoryResult<T>, Never>) in
-            queue.async {
-                continuation.resume(returning: objects(of: type, queue, toucher))
-            }
-        }
+        await async(queue) { objects(of: type, queue, toucher) }
     }
     
     /// <#Description#>
@@ -68,17 +55,8 @@ extension Realm {
     ///   - primaryKey: <#primaryKey description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishFetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable, _ queue: DispatchQueue) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
-        Future { promise in
-            queue.async {
-                do {
-                    let model = try object(ofType: type, for: primaryKey)
-                    promise(.success(model))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishFetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable, _ queue: DispatchQueue) -> Future<T, Swift.Error> where T: ManageableSource {
+        publishAsync(queue) { try object(ofType: type, for: primaryKey) }
     }
     
     /// <#Description#>
@@ -101,18 +79,7 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - perform: <#perform description#>
     func put<T>(policy: UpdatePolicy, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) async throws where T: ManageableSource {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
-            queue.async {
-                do {
-                    try write {
-                        add(try perform(), update: policy)
-                    }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        try await write(queue) { add(try perform(), update: policy) }
     }
     
     /// <#Description#>
@@ -130,20 +97,7 @@ extension Realm {
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
     func put<T>(allOf models: T, policy: UpdatePolicy, _ queue: DispatchQueue) async throws where T: Sequence, T.Element: ManageableSource {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
-            queue.async {
-                do {
-                    try write {
-                        models.forEach { model in
-                            add(model, update: policy)
-                        }
-                    }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        try await write(queue) { models.forEach { add($0, update: policy) } }
     }
     
     /// <#Description#>
@@ -152,20 +106,8 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - perform: <#perform description#>
     /// - Returns: <#description#>
-    func publishPut<T>(policy: UpdatePolicy, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) -> AnyPublisher<Void, Swift.Error> where T: ManageableSource {
-        Future { promise in
-            queue.async {
-                do {
-                    try write {
-                        add(try perform(), update: policy)
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }
-        .eraseToAnyPublisher()
+    func publishPut<T>(policy: UpdatePolicy, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) -> Future<Void, Swift.Error> where T: ManageableSource {
+        publishWrite(queue) { add(try perform(), update: policy) }
     }
     
     /// <#Description#>
@@ -174,19 +116,8 @@ extension Realm {
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishPut<T>(_ model: T, policy: Realm.UpdatePolicy, queue: DispatchQueue) -> AnyPublisher<Void, Swift.Error> where T: ManageableSource {
-        Future { promise in
-            queue.async {
-                do {
-                    try write {
-                        add(model, update: policy)
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishPut<T>(_ model: T, policy: Realm.UpdatePolicy, queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+        publishWrite(queue) { add(model, update: policy) }
     }
     
     /// <#Description#>
@@ -195,75 +126,8 @@ extension Realm {
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishPut<T>(allOf models: [T], policy: Realm.UpdatePolicy, queue: DispatchQueue) -> AnyPublisher<Void, Swift.Error> where T: ManageableSource {
-        Future { promise in
-            queue.async {
-                do {
-                    try write {
-                        models.forEach { model in
-                            add(model, update: policy)
-                        }
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - queue: <#queue description#>
-    ///   - perform: <#perform description#>
-    ///   - completion: <#completion description#>
-    func apply(_ queue: DispatchQueue,
-               _ perform: @escaping () throws -> Void,
-               _ completion: @escaping (Swift.Error?) -> Void) {
-        queue.async {
-            do {
-                try write { try perform() }
-                completion(nil)
-            } catch {
-                completion(error)
-            }
-        }
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - queue: <#queue description#>
-    ///   - perform: <#perform description#>
-    func apply(_ queue: DispatchQueue, _ perform: @escaping () throws -> Void) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) -> Void in
-            queue.async {
-                do {
-                    try write { try perform() }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - queue: <#queue description#>
-    ///   - perform: <#perform description#>
-    /// - Returns: <#description#>
-    func publishApply(_ queue: DispatchQueue,
-                      _ perform: @escaping () -> Void) -> AnyPublisher<Void, Swift.Error> {
-        Future { promise in
-            queue.async {
-                do {
-                    try write { perform() }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishPut<T>(allOf models: [T], policy: Realm.UpdatePolicy, queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+        publishWrite(queue) { models.forEach { add($0, update: policy) } }
     }
     
     /// <#Description#>
@@ -272,18 +136,9 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - perform: <#perform description#>
     func remove<T>(_ isCascading: Bool, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) async throws where T: ManageableSource {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
-            queue.async {
-                do {
-                    try write {
-                        let model = try perform()
-                        isCascading ? delete(cascade: model) : delete(model)
-                    }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
+        try await write(queue) {
+            let model = try perform()
+            isCascading ? delete(cascade: model) : delete(model)
         }
     }
     
@@ -302,18 +157,7 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     func remove<T>(allOf models: T, _ isCascading: Bool, _ queue: DispatchQueue) async throws where T: Sequence, T.Element: ManageableSource {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
-            queue.async {
-                do {
-                    try write {
-                        isCascading ? delete(cascade: models) : delete(models)
-                    }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        try await write(queue) { isCascading ? delete(cascade: models) : delete(models) }
     }
     
     /// <#Description#>
@@ -322,36 +166,16 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     func remove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) async throws where T: ManageableSource {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
-            queue.async {
-                let models = objects(type)
-                do {
-                    try write {
-                        isCascading ? delete(cascade: models) : delete(models)
-                    }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
+        try await write(queue) {
+            let models = objects(type)
+            try write { isCascading ? delete(cascade: models) : delete(models) }
         }
     }
     
     /// <#Description#>
     /// - Parameter queue: <#queue description#>
     func reset(_ queue: DispatchQueue) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
-            queue.async {
-                do {
-                    try write {
-                        deleteAll()
-                    }
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        try await write(queue) { deleteAll() }
     }
     
     /// <#Description#>
@@ -360,19 +184,8 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishRemove<T>(_ model: T, _ isCascading: Bool, _ queue: DispatchQueue) -> AnyPublisher<Void, Swift.Error> where T: ManageableSource {
-        Future { promise in
-            queue.async {
-                do {
-                    try write {
-                        isCascading ? delete(cascade: model) : delete(model)
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishRemove<T>(_ model: T, _ isCascading: Bool, _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+        publishWrite(queue) { isCascading ? delete(cascade: model) : delete(model) }
     }
     
     /// <#Description#>
@@ -381,20 +194,11 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishRemove<T>(allOf models: T, _ isCascading: Bool, _ queue: DispatchQueue) -> AnyPublisher<Void, Swift.Error> where T: Sequence,
-                                                                                                                                 T.Element: ManageableSource {
-        Future { promise in
-            queue.async {
-                do {
-                    try write {
-                        isCascading ? delete(cascade: models) : delete(models)
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishRemove<T>(allOf models: T,
+                          _ isCascading: Bool,
+                          _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: Sequence, T.Element: ManageableSource {
+        publishWrite(queue) { isCascading ? delete(cascade: models) : delete(models) }
+        
     }
     
     /// <#Description#>
@@ -403,39 +207,22 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishRemove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) -> AnyPublisher<Void, Swift.Error> where T: ManageableSource {
-        Future { promise in
-            queue.async {
-                let models = objects(type)
-                do {
-                    try write {
-                        isCascading ? delete(cascade: models) : delete(models)
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishRemove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+        publishAsync(queue) {
+            let models = objects(type)
+            try write { isCascading ? delete(cascade: models) : delete(models) }
+        }
     }
     
     /// <#Description#>
     /// - Parameter queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishReset(_ queue: DispatchQueue) -> AnyPublisher<Void, Swift.Error> {
-        Future { promise in
-            queue.async {
-                do {
-                    try write {
-                        deleteAll()
-                    }
-                    promise(.success(()))
-                } catch {
-                    promise(.failure(error))
-                }
-            }
-        }.eraseToAnyPublisher()
+    func publishReset(_ queue: DispatchQueue) -> Future<Void, Swift.Error> {
+        publishWrite(queue) { deleteAll() }
     }
+}
+
+extension Realm {
     
     /// <#Description#>
     /// - Parameters:
@@ -511,6 +298,87 @@ extension Realm {
     private func objects<Element>(of type: Element.Type, _ queue: DispatchQueue, _ toucher: RepositoryToucher) -> RepositoryResult<Element> where Element: ManageableSource {
         .init(queue, objects(type), toucher)
     }
+}
+
+extension Realm {
+    
+    func async(_ queue: DispatchQueue, _ perform: @escaping () -> Void) {
+        queue.async { perform() }
+    }
+    
+    func async<Result>(_ queue: DispatchQueue, _ perform: @escaping () -> Result) async -> Result {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Result, Never>) -> Void in
+            queue.async {
+                continuation.resume(returning: perform())
+            }
+        }
+    }
+    
+    func async<Result>(_ queue: DispatchQueue, _ perform: @escaping () throws -> Result) async throws -> Result {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Result, Swift.Error>) -> Void in
+            queue.async {
+                do {
+                    let result = try perform()
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    func publishAsync<Result>(_ queue: DispatchQueue, _ perform: @escaping () throws -> Result) -> Future<Result, Swift.Error> {
+        Future { promise in
+            queue.async {
+                do {
+                    let result = try perform()
+                    promise(.success(result))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+    }
+    
+    func write(_ queue: DispatchQueue, _ perform: @escaping () throws -> Void, _ completion: @escaping (Swift.Error?) -> Void) {
+        queue.async {
+            do {
+                try write { try perform() }
+                completion(nil)
+            } catch {
+                completion(error)
+            }
+        }
+    }
+    
+    func write<Result>(_ queue: DispatchQueue, _ perform: @escaping () throws -> Result) async throws -> Result {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Result, Swift.Error>) -> Void in
+            queue.async {
+                do {
+                    let result = try write { try perform() }
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    func publishWrite<Result>(_ queue: DispatchQueue, _ perform: @escaping () throws -> Result) -> Future<Result, Swift.Error> {
+        Future { promise in
+            queue.async {
+                do {
+                    let result = try write { try perform() }
+                    promise(.success(result))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+    }
+}
+
+extension Realm {
     
     /// <#Description#>
     /// - Parameter entities: <#entities description#>

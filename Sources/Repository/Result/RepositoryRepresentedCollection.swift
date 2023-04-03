@@ -194,6 +194,6 @@ public extension RepositoryRepresentedCollection where Element.RepresentedType: 
     /// <#Description#>
     /// - Returns: <#description#>
     func mapManageable() async -> RepositoryResult<Element.RepresentedType> {
-        await result.perform { .init(result.queue, result.unsafe, result.controller) }
+        await result.async { .init(result.queue, result.unsafe, result.controller) }
     }
 }

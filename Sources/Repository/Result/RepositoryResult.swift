@@ -35,19 +35,19 @@ import RealmSwift
     
     public var isEmpty: Bool {
         get async {
-            await perform { unsafe.isEmpty }
+            await async { unsafe.isEmpty }
         }
     }
     
     public var count: Int {
         get async {
-            await perform { unsafe.count }
+            await async { unsafe.count }
         }
     }
     
     public var description: String {
         get async {
-            await perform { unsafe.description }
+            await async { unsafe.description }
         }
     }
     
@@ -85,9 +85,7 @@ import RealmSwift
     
     public subscript(_ index: Index) -> Element {
         get async {
-            await perform {
-                unsafe[index]
-            }
+            await async { unsafe[index] }
         }
     }
     
@@ -108,37 +106,37 @@ import RealmSwift
     }
     
     public func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
-        try await performThrowing { try unsafe.filter(isIncluded) }
+        try await asyncThrowing { try unsafe.filter(isIncluded) }
     }
     
     public func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        try await performThrowing { try unsafe.first(where: predicate) }
+        try await asyncThrowing { try unsafe.first(where: predicate) }
     }
     
     public func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        try await performThrowing { try unsafe.last(where: predicate) }
+        try await asyncThrowing { try unsafe.last(where: predicate) }
     }
     
     public func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
-        try await performThrowing { try unsafe.map(transform) }
+        try await asyncThrowing { try unsafe.map(transform) }
     }
     
     public func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
-        try await performThrowing { try unsafe.compactMap(transform) }
+        try await asyncThrowing { try unsafe.compactMap(transform) }
     }
     
     /// <#Description#>
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     private func apply(_ body: @escaping () -> UnsafeRepositoryResult<Element>) async -> Self {
-        await perform { .init(queue, body(), controller) }
+        await async { .init(queue, body(), controller) }
     }
     
     /// <#Description#>
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     private func applyThrowing(_ body: @escaping () throws -> UnsafeRepositoryResult<Element>) async throws -> Self {
-        try await performThrowing { .init(queue, try body(), controller) }
+        try await asyncThrowing { .init(queue, try body(), controller) }
     }
 }
 
@@ -147,7 +145,7 @@ extension RepositoryResult: RepositoryCollectionFrozer {
     
     public var isFrozen: Bool {
         get async {
-            await perform { unsafe.isFrozen }
+            await async { unsafe.isFrozen }
         }
     }
     
@@ -171,22 +169,34 @@ extension RepositoryResult: RepositoryResultModifier {
     
     @discardableResult
     public func forEach(_ body: @escaping (Element) throws -> Void) async throws -> Self {
-        try await controller.manageable.apply { try unsafe.forEach(body) }
+        try await controller.manageable.write { try unsafe.forEach(body) }
         return .init(queue, unsafe, controller)
     }
     
     @discardableResult
     public func remove(where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async throws -> Self {
-        let result = await perform { Array(unsafe.filter(isIncluded).map { $0 }) }
+        let result = await async { Array(unsafe.filter(isIncluded).map { $0 }) }
         try await controller.manageable.remove(allOf: result)
         return .init(queue, unsafe, controller)
     }
     
     @discardableResult
     public func removeAll() async throws -> RepositoryController {
-        let result = await perform { Array(unsafe.map { $0 }) }
+        let result = await async { Array(unsafe.map { $0 }) }
         try await controller.manageable.remove(allOf: result)
         return controller
+    }
+    
+    public func forEach(_ body: @escaping (Element) -> Void) -> AnyPublisher<RepositoryResult<Element>, Error> {
+        preconditionFailure("")
+    }
+    
+    public func remove(where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) -> AnyPublisher<RepositoryResult<Element>, Error> {
+        preconditionFailure("")
+    }
+    
+    public func removeAll() -> AnyPublisher<RepositoryController, Error> {
+        preconditionFailure("")
     }
 }
 

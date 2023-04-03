@@ -47,6 +47,20 @@ public protocol RepositoryResultModifier {
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() async throws -> RepositoryController
+    
+    /// <#Description#>
+    /// - Parameter body: <#body description#>
+    /// - Returns: <#description#>
+    func forEach(_ body: @escaping (Self.Base) -> Void) -> AnyPublisher<Self, Swift.Error>
+    
+    /// <#Description#>
+    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Returns: <#description#>
+    func remove(where isIncluded: @escaping ((Query<Self.Base>) -> Query<Bool>)) -> AnyPublisher<Self, Swift.Error>
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func removeAll() -> AnyPublisher<RepositoryController, Swift.Error>
 }
 
 // MARK: - Publisher + RepositoryResultModifier + RepositoryResultCollection
@@ -60,53 +74,20 @@ public extension Publisher where Self.Output: RepositoryResultModifier,
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     func forEach(_ body: @escaping (Self.Output.Element) -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let modified = try await result.forEach(body) // FIXME: - Many times call
-                        promise(.success(modified))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }.receive(on: result.queue)
-        }.eraseToAnyPublisher()
+        flatMap { $0.forEach(body) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
     func remove(where isIncluded: @escaping ((Query<Self.Output.Element>) -> Query<Bool>)) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let modified = try await result.remove(where: isIncluded)
-                        promise(.success(modified)) 
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }.receive(on: result.queue)
-        }.eraseToAnyPublisher()
+        flatMap { $0.remove(where: isIncluded) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() -> AnyPublisher<RepositoryController, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let controller = try await result.removeAll()
-                        promise(.success(controller))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }.receive(on: result.queue)
-        }.eraseToAnyPublisher()
+        flatMap { $0.removeAll() }.eraseToAnyPublisher()
     }
 }
 
@@ -123,52 +104,19 @@ public extension Publisher where Self.Output: RepositoryResultModifier,
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     func forEach(_ body: @escaping (Self.Output.Element.RepresentedType) -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let modified = try await result.forEach(body) // FIXME: - Many times call
-                        promise(.success(modified))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }.receive(on: result.result.queue)
-        }.eraseToAnyPublisher()
+        flatMap { $0.forEach(body) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
     func remove(where isIncluded: @escaping ((Query<Self.Output.Element.RepresentedType>) -> Query<Bool>)) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let modified = try await result.remove(where: isIncluded) // FIXME: - Twice call
-                        promise(.success(modified))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }.receive(on: result.result.queue)
-        }.eraseToAnyPublisher()
+        flatMap { $0.remove(where: isIncluded) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() -> AnyPublisher<RepositoryController, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let controller = try await result.removeAll()
-                        promise(.success(controller))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }.receive(on: result.result.queue)
-        }.eraseToAnyPublisher()
+        flatMap { $0.removeAll() }.eraseToAnyPublisher()
     }
 }

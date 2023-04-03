@@ -124,7 +124,7 @@ extension RepositoryToucher: LazyRepository {
     }
     
     public func publishFetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableSource {
-        realm.publishFetch(oneOf: type, with: primaryKey, queue)
+        realm.publishFetch(oneOf: type, with: primaryKey, queue).eraseToAnyPublisher()
     }
     
     public func publishFetch<T>(allOf type: T.Type) -> AnyPublisher<RepositoryResult<T>, Error> where T: ManageableSource {
@@ -134,19 +134,23 @@ extension RepositoryToucher: LazyRepository {
 
 // MARK: - RepositoryToucher + ManageableRepository
 extension RepositoryToucher: ManageableRepository {
+
+    func async<Result>(perform: @escaping () throws -> Result) async throws -> Result {
+        try await realm.async(queue, perform)
+    }
     
-    func apply(perform: @escaping () throws -> Void, completion: @escaping (Swift.Error?) -> Void) -> ManageableRepository {
-        realm.apply(queue, perform, completion)
+    func write(perform: @escaping () throws -> Void) async throws -> ManageableRepository {
+        try await realm.write(queue, perform)
         return self
     }
     
-    func apply(perform: @escaping () throws -> Void) async throws -> ManageableRepository {
-        try await realm.apply(queue, perform)
+    func write(perform: @escaping () throws -> Void, completion: @escaping (Error?) -> Void) -> ManageableRepository {
+        realm.write(queue, perform, completion)
         return self
     }
     
-    func publishApply(_ perform: @escaping () -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> {
-        realm.publishApply(queue, perform).flatMap { publishManageable }.eraseToAnyPublisher()
+    func publishWrite(_ perform: @escaping () -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> {
+        realm.publishWrite(queue, perform).flatMap { publishManageable }.eraseToAnyPublisher()
     }
         
     func put<T>(policy: Realm.UpdatePolicy, _ perform: @escaping () throws -> T) async throws -> ManageableRepository where T: ManageableSource {

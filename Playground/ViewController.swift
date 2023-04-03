@@ -84,7 +84,7 @@ class ViewController: UIViewController {
                     .fetch(allOf: ManageableUser.self)
                     .filter { query in query.id.contains("1") }
                     .throwIfEmpty
-                    .forEach { user in user.email = "abc@abc.abc" }
+                    .forEach { user in user.email = "" }
                     .sorted(with: [.init(keyPath: \.position)])
                 print("Users:\n\(await result.description)")
             } catch {
@@ -102,7 +102,7 @@ class ViewController: UIViewController {
             .put(allOf: manageableUsers(count: 10))
             .lazy()
             .fetch(allOf: ManageableUser.self)
-            .remove(where: { query in query.id.contains("1") })
+            .remove(where: { query in !query.id.contains("1") })
             .throwIfEmpty()
             .forEach { user in user.email = "" }
             .sorted(with: [.init(keyPath: \.position)])
@@ -146,7 +146,7 @@ class ViewController: UIViewController {
             .lazy()
             .fetch(allOf: ManageableUser.self)
             .throwIfEmpty()
-            .remove(where: { query in !query.id.contains("1")  })
+            .remove(where: { query in query.id.contains("1")  })
             .sink { completion in
                 guard case let .failure(error) =  completion else { return }
                 print("Error: \(error)")
