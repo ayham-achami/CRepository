@@ -55,9 +55,7 @@ class RealmAsyncRepositoryTests: XCTestCase {
         // When
         do {
             try await repository.saveAll(productsToSave)
-            let products: [ProductInfo] = try await repository.fetch(nil, [Sorted(type: ProductInfo.self,
-                                                                                  keyPath: \.id,
-                                                                                  ascending: false)])
+            let products: [ProductInfo] = try await repository.fetch(nil, [Sorted("id", false)])
             // Then
             XCTAssertFalse(products.isEmpty)
             for (index, element) in Array(products.reversed()).enumerated() {

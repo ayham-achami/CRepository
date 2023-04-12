@@ -25,6 +25,7 @@
 
 import RealmSwift
 import CRepository
+import Foundation
 
 struct Speaker {
     

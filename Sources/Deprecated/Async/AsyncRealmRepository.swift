@@ -31,7 +31,7 @@ import Foundation
 /// Глобальный актор для выполнения AsyncRealmRepository
 @available(*, deprecated, message: "Use Repository")
 @globalActor
-private actor AsyncRealmActor {
+actor AsyncRealmActor {
     
     /// `AsyncRealmActor`
     static var shared = AsyncRealmActor()

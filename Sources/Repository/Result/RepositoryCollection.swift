@@ -105,6 +105,11 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
+    
+    /// <#Description#>
+    /// - Parameter indexes: <#indexes description#>
+    /// - Returns: <#description#>
+    func pick(_ indexes: IndexSet) async throws -> [Element]
 }
 
 extension RepositoryResultCollection {
@@ -197,6 +202,25 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     func sorted(with descriptors: [PathSorted<Self.Output.Element>]) -> AnyPublisher<Self.Output, Self.Failure> {
         map { result in
             apply { .init(result: result, unsafe: result.unsafe.sorted(with: descriptors)) }
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter indexes: <#indexes description#>
+    /// - Returns: <#description#>
+    func pick(_ indexes: IndexSet) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
+        flatMap { result in
+            Future { promise in
+                Task {
+                    do {
+                        let elements = try await result.pick(indexes)
+                        promise(.success(elements))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: result.queue)
         }.eraseToAnyPublisher()
     }
     

@@ -125,6 +125,17 @@ import RealmSwift
         try await asyncThrowing { try unsafe.compactMap(transform) }
     }
     
+    public func pick(_ indexes: IndexSet) async throws -> [Element] {
+        try await asyncThrowing {
+            var elements = [Element]()
+            for (index, element) in unsafe.enumerated() {
+                guard indexes.contains(index) else { continue }
+                elements.append(element)
+            }
+            return elements
+        }
+    }
+    
     /// <#Description#>
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>

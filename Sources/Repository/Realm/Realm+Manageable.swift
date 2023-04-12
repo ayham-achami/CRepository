@@ -168,7 +168,7 @@ extension Realm {
     func remove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) async throws where T: ManageableSource {
         try await write(queue) {
             let models = objects(type)
-            try write { isCascading ? delete(cascade: models) : delete(models) }
+            try writeChecking { isCascading ? delete(cascade: models) : delete(models) }
         }
     }
     
@@ -210,7 +210,7 @@ extension Realm {
     func publishRemove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishAsync(queue) {
             let models = objects(type)
-            try write { isCascading ? delete(cascade: models) : delete(models) }
+            try writeChecking { isCascading ? delete(cascade: models) : delete(models) }
         }
     }
     
@@ -343,7 +343,7 @@ extension Realm {
     func write(_ queue: DispatchQueue, _ perform: @escaping () throws -> Void, _ completion: @escaping (Swift.Error?) -> Void) {
         queue.async {
             do {
-                try write { try perform() }
+                try writeChecking { try perform() }
                 completion(nil)
             } catch {
                 completion(error)
@@ -355,7 +355,7 @@ extension Realm {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Result, Swift.Error>) -> Void in
             queue.async {
                 do {
-                    let result = try write { try perform() }
+                    let result = try writeChecking { try perform() }
                     continuation.resume(returning: result)
                 } catch {
                     continuation.resume(throwing: error)
@@ -368,13 +368,18 @@ extension Realm {
         Future { promise in
             queue.async {
                 do {
-                    let result = try write { try perform() }
+                    let result = try writeChecking { try perform() }
                     promise(.success(result))
                 } catch {
                     promise(.failure(error))
                 }
             }
         }
+    }
+    
+    func writeChecking<Result>(_ perform: @escaping () throws -> Result) throws -> Result {
+        guard !isInWriteTransaction else { return try perform() }
+        return try write { try perform() }
     }
 }
 

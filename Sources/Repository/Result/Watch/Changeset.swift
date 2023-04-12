@@ -23,6 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+import Combine
 import Foundation
 
 /// <#Description#>
@@ -64,4 +65,55 @@ public protocol Changeset {
     public let deletions: [Int]
     public let insertions: [Int]
     public let modifications: [Int]
+}
+
+// MARK: Publisher + Changeset
+public extension Publisher where Self.Output: Changeset,
+                                 Self.Output.Result: RepositoryResultCollection,
+                                 Self.Output.Result.Element: ManageableSource,
+                                 Self.Failure == Swift.Error {
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func deletions() -> AnyPublisher<IndexSet, Self.Failure> {
+        map { changeset in
+            IndexSet(changeset.deletions)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func insertions() -> AnyPublisher<[Self.Output.Result.Element], Self.Failure> {
+        flatMap { changeset in
+            Future { promise in
+                Task {
+                    do {
+                        let elements = try await changeset.result.pick(.init(changeset.insertions))
+                        promise(.success(elements))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: changeset.result.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func modifications() -> AnyPublisher<[Self.Output.Result.Element], Self.Failure> {
+        flatMap { changeset in
+            Future { promise in
+                Task {
+                    do {
+                        let elements = try await changeset.result.pick(.init(changeset.modifications))
+                        promise(.success(elements))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: changeset.result.queue)
+        }.eraseToAnyPublisher()
+    }
 }

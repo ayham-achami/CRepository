@@ -41,12 +41,12 @@ extension Realm.Configuration {
         switch type {
         case .basic:
             self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
-            fileURL = try path(for: self, and: configuration, lastComponent: "\(configuration.userName).realm")
+            fileURL = try path(for: self, and: configuration, category: "Basic", lastComponent: "\(configuration.userName).realm")
         case .inMemory:
             self.init(inMemoryIdentifier: "inMemory\(configuration.userName)", migrationBlock: migration)
         case .encryption:
-            self.init(encryptionKey: configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
-            fileURL = try path(for: self, and: configuration, lastComponent: "\(configuration.userName)Encryption.realm")
+            self.init(encryptionKey: try configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
+            fileURL = try path(for: self, and: configuration, category: "Encryption", lastComponent: "\(configuration.userName)Encryption.realm")
         }
     }
     
@@ -55,14 +55,15 @@ extension Realm.Configuration {
     ///   - type: <#type description#>
     ///   - configuration: <#configuration description#>
     /// - Returns: <#description#>
-    static func publish(_ type: RealmRepository.`Type`, _ configuration: RepositoryConfiguration) -> AnyPublisher<Realm.Configuration, Swift.Error> {
+    static func publish(_ type: RealmRepository.`Type`,
+                        _ configuration: RepositoryConfiguration) -> Future<Realm.Configuration, Swift.Error> {
         Future { promise in
             do {
                 promise(.success(try .init(type, configuration)))
             } catch {
                 promise(.failure(error))
             }
-        }.eraseToAnyPublisher()
+        }
     }
     
     /// <#Description#>
@@ -73,32 +74,49 @@ extension Realm.Configuration {
     /// - Returns: <#description#>
     private func path(for realmConfiguration: Realm.Configuration,
                       and repositoryConfiguration: RepositoryConfiguration,
-                      lastComponent: String) throws -> URL? {
+                      category: String,
+                      lastComponent: String) throws -> URL {
         let fileManager = FileManager.default
-        let realmDirectory: URL?
+        let destinationDirectory: URL
         if let directory = repositoryConfiguration.repositoryDirectory,
            let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            realmDirectory = documentDirectory.appendingPathComponent(directory)
-            try fileManager.createDirectory(at: realmDirectory!, withIntermediateDirectories: true)
-        } else {
-            realmDirectory = realmConfiguration.fileURL?.deletingLastPathComponent()
-        }
-        if !repositoryConfiguration.isFileProtection {
-            let protectedPath: String?
             if #available(iOS 16.0, *) {
-                protectedPath = realmDirectory?.path()
+                destinationDirectory = documentDirectory
+                    .appending(component: category)
+                    .appending(component: directory)
             } else {
-                protectedPath = realmDirectory?.path
+                destinationDirectory = documentDirectory
+                    .appendingPathComponent(category)
+                    .appendingPathComponent(directory)
             }
-            guard
-                let protectedPath = protectedPath
-            else { throw RepositoryError.initialization(fileURL: realmDirectory) }
-            try fileManager.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: protectedPath)
+        } else if let defaultDirectory = realmConfiguration.fileURL {
+            if #available(iOS 16.0, *) {
+                destinationDirectory = defaultDirectory
+                    .deletingLastPathComponent()
+                    .appending(component: category)
+            } else {
+                destinationDirectory = defaultDirectory
+                    .deletingLastPathComponent()
+                    .appendingPathComponent(category)
+            }
+        } else {
+            throw RepositoryError.initialization(fileURL: nil)
+        }
+        try fileManager.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
+        if !repositoryConfiguration.isFileProtection {
+            let protectedPath: String
+            if #available(iOS 16.0, *) {
+                protectedPath = destinationDirectory.path()
+            } else {
+                protectedPath = destinationDirectory.path
+            }
+            try fileManager.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                                          ofItemAtPath: protectedPath)
         }
         if #available(iOS 16.0, *) {
-            return realmDirectory?.appending(component: lastComponent)
+            return destinationDirectory.appending(component: lastComponent)
         } else {
-            return realmDirectory?.appendingPathComponent(lastComponent)
+            return destinationDirectory.appendingPathComponent(lastComponent)
         }
     }
 }
@@ -143,7 +161,9 @@ extension Realm {
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    static func publish(_ type: RealmRepository.`Type`, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) -> AnyPublisher<Realm, Swift.Error> {
+    static func publish(_ type: RealmRepository.`Type`,
+                        _ configuration: RepositoryConfiguration,
+                        _ queue: DispatchQueue) -> AnyPublisher<Realm, Swift.Error> {
         Realm.Configuration.publish(type, configuration).create(queue)
     }
 }

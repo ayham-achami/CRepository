@@ -16,7 +16,6 @@ Pod::Spec.new do |spec|
   spec.frameworks   = "Foundation"
   spec.source_files = "Sources/**/*.swift"
   spec.requires_arc = true
-  spec.swift_versions = ['5.0', '5.1']
   spec.pod_target_xcconfig = { "SWIFT_VERSION" => "5" }
   spec.pod_target_xcconfig = { 'APPLICATION_EXTENSION_API_ONLY' => 'YES' }
   spec.dependency 'RealmSwift'

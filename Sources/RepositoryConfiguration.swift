@@ -26,7 +26,7 @@
 import Foundation
 
 /// Типы хранилища
-@available(*, deprecated, message: "Will remove ")
+@available(*, deprecated, message: "Will be removed in next releases")
 public enum RepositoryType: Equatable {
 
     /// Базовый тип
@@ -46,7 +46,7 @@ public protocol RepositoryConfiguration: AnyObject {
     var userName: String { get }
     
     /// Ключи шифрования 
-    var encryptionKey: Data { get }
+    var encryptionKey: Data { get throws }
     
     @available(*, deprecated, message: "Use userName property")
     /// тип хранилища
@@ -73,5 +73,7 @@ public protocol RepositoryConfiguration: AnyObject {
 
 public extension RepositoryConfiguration {
     
-    var repositoryType: RepositoryType { .inMemory(identifier: "Deprecated") }
+    var repositoryType: RepositoryType {
+        preconditionFailure("Use userName property")
+    }
 }

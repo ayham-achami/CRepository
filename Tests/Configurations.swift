@@ -24,6 +24,7 @@
 //  SOFTWARE.
 
 import CRepository
+import Foundation
 
 final class DefaultRepositoryConfiguration: RepositoryConfiguration {
     
