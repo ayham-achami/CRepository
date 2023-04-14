@@ -35,48 +35,13 @@ import Foundation
     public typealias Index = Int
     public typealias Element = Element
     
-    public var isEmpty: Bool {
-        get async {
-            await result.isEmpty
-        }
-    }
-    
-    public var count: Int {
-        get async {
-            await result.count
-        }
-    }
-    
-    public var description: String {
-        get async {
-            """
-            RepositoryRepresentedResult<\(String(describing: Element.self))>{
-            \t\(await result.description)
-            }
-            """
-        }
-    }
-    
-    public var throwIfEmpty: Self {
-        get async throws {
-            .init(try await result.throwIfEmpty)
-        }
-    }
-    
     public let result: RepositoryResult<Element.RepresentedType>
     
-    /// <#Description#>
-    /// - Parameter result: <#result description#>
-    init(_ result: RepositoryResult<Element.RepresentedType>) {
+    public init(_ result: RepositoryResult<Element.RepresentedType>) {
         self.result = result
     }
     
-    /// <#Description#>
-    /// - Parameters:
-    ///   - queue: <#queue description#>
-    ///   - unsafe: <#unsafe description#>
-    ///   - controller: <#controller description#>
-    init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element.RepresentedType>, _ controller: RepositoryController) {
+    public init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element.RepresentedType>, _ controller: RepositoryController) {
         self.result = .init(queue, unsafe, controller)
     }
     
@@ -84,42 +49,6 @@ import Foundation
         get async {
             .init(from: await result[index])
         }
-    }
-    
-    public func sorted(with descriptors: [Sorted]) async -> Self {
-        .init(await result.sorted(with: descriptors))
-    }
-    
-    public func sorted(with descriptors: [PathSorted<Element.RepresentedType>]) async -> Self {
-        .init(await result.sorted(with: descriptors))
-    }
-    
-    public func filter(by predicate: NSPredicate) async -> Self {
-        .init(await result.filter(by: predicate))
-    }
-    
-    public func filter(_ isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) async -> Self {
-        .init(await result.filter(isIncluded))
-    }
-    
-    public func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
-        try await result.map(Element.init(from:)).filter(isIncluded)
-    }
-    
-    public func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        .init(orNil: try await result.first(where: { try predicate(.init(from: $0)) }))
-    }
-    
-    public func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        .init(orNil: try await result.last(where: { try predicate(.init(from: $0)) }))
-    }
-    
-    public func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
-        try await result.map { try transform(.init(from: $0)) }
-    }
-    
-    public func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
-        try await result.compactMap { try transform(.init(from: $0)) }
     }
 }
 

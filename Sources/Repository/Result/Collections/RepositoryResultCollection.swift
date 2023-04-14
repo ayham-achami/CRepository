@@ -1,5 +1,5 @@
 //
-//  RepositoryCollection.swift
+//  RepositoryResultCollection.swift
 //
 //  The MIT License (MIT)
 //
@@ -28,7 +28,7 @@ import RealmSwift
 import Foundation
 
 /// <#Description#>
-public protocol RepositoryResultCollectionProtocol {
+public protocol RepositoryResultCollectionProtocol: QueuingCollection {
     
     associatedtype Index
     associatedtype Element: Manageable
@@ -50,13 +50,24 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     var throwIfEmpty: Self { get async throws }
     
     /// <#Description#>
-    var queue: DispatchQueue { get }
-    
-    /// <#Description#>
     var controller: RepositoryController { get }
     
     /// <#Description#>
     var unsafe: UnsafeRepositoryResult<Element> { get }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - queue: <#queue description#>
+    ///   - results: <#results description#>
+    ///   - controller: <#controller description#>
+    init(_ queue: DispatchQueue, _ results: Results<Element>, _ controller: RepositoryController)
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - queue: <#queue description#>
+    ///   - unsafe: <#unsafe description#>
+    ///   - controller: <#controller description#>
+    init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element>, _ controller: RepositoryController)
     
     /// <#Description#>
     subscript(_ index: Index) -> Element { get async }
@@ -112,32 +123,97 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     func pick(_ indexes: IndexSet) async throws -> [Element]
 }
 
-extension RepositoryResultCollection {
-    
-    /// <#Description#>
-    /// - Parameter body: <#body description#>
-    /// - Returns: <#description#>
-    func async<T>(_ body: @escaping () -> T) async -> T {
-        await withCheckedContinuation { continuation in
-            queue.async {
-                continuation.resume(returning: body())
-            }
+// MARK: - RepositoryResultCollection + Default
+public extension RepositoryResultCollection {
+ 
+    var isEmpty: Bool {
+        get async {
+            await async { unsafe.isEmpty }
         }
     }
     
-    /// <#Description#>
-    /// - Parameter body: <#body description#>
-    /// - Returns: <#description#>
-    func asyncThrowing<T>(_ body: @escaping () throws -> T) async throws -> T {
-        try await withCheckedThrowingContinuation { continuation in
-            queue.async {
-                do {
-                    continuation.resume(returning: try body())
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
+    var count: Int {
+        get async {
+            await async { unsafe.count }
         }
+    }
+    
+    var description: String {
+        get async {
+            await async { unsafe.description }
+        }
+    }
+    
+    var throwIfEmpty: Self {
+        get async throws {
+            try await applyThrowing { try unsafe.throwIfEmpty }
+        }
+    }
+    
+    func sorted(with descriptors: [Sorted]) async -> Self {
+        await apply { unsafe.sorted(with: descriptors) }
+    }
+    
+    func sorted(with descriptors: [PathSorted<Element>]) async -> Self {
+        await apply { unsafe.sorted(with: descriptors) }
+    }
+    
+    func filter(by predicate: NSPredicate) async -> Self {
+        await apply { unsafe.filter(by: predicate) }
+    }
+    
+    func filter(_ isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async -> Self {
+        await apply { unsafe.filter(isIncluded) }
+    }
+    
+    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
+        try await asyncThrowing { try unsafe.filter(isIncluded) }
+    }
+    
+    func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
+        try await asyncThrowing { try unsafe.first(where: predicate) }
+    }
+    
+    func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
+        try await asyncThrowing { try unsafe.last(where: predicate) }
+    }
+    
+    func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
+        try await asyncThrowing { try unsafe.map(transform) }
+    }
+    
+    func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
+        try await asyncThrowing { try unsafe.compactMap(transform) }
+    }
+    
+    func pick(_ indexes: IndexSet) async throws -> [Element] {
+        try await asyncThrowing {
+            var elements = [Element]()
+            for (index, element) in unsafe.enumerated() {
+                guard indexes.contains(index) else { continue }
+                elements.append(element)
+            }
+            return elements
+        }
+    }
+    
+    func apply(_ body: @escaping () -> UnsafeRepositoryResult<Element>) async -> Self {
+        await async { .init(queue, body(), controller) }
+    }
+    
+    func applyThrowing(_ body: @escaping () throws -> UnsafeRepositoryResult<Element>) async throws -> Self {
+        try await asyncThrowing { .init(queue, try body(), controller) }
+    }
+}
+
+// MARK: - RepositoryResult + ManageableType
+public extension RepositoryResultCollection where Element: ManageableSource,
+                                                  Element.ManageableType.RepresentedType == Element {
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func mapRepresented() async -> RepositoryRepresentedResult<Element.ManageableType> {
+        await async { .init(queue, unsafe, controller) }
     }
 }
 
@@ -234,17 +310,6 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     }
 }
 
-// MARK: - RepositoryResult + ManageableType
-public extension RepositoryResultCollection where Element: ManageableSource,
-                                                  Element.ManageableType.RepresentedType == Element {
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func mapRepresented() async -> RepositoryRepresentedResult<Element.ManageableType> {
-        await async { .init(queue, unsafe, controller) }
-    }
-}
-
 // MARK: - Publisher + ManageableRepresented
 public extension Publisher where Self.Output: RepositoryResultCollection,
                                  Self.Output.Element: ManageableSource,
@@ -253,6 +318,6 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// <#Description#>
     /// - Returns: <#description#>
     func mapRepresented() -> AnyPublisher<RepositoryRepresentedResult<Self.Output.Element.ManageableType>, Self.Failure> {
-        map { RepositoryRepresentedResult<Self.Output.Element.ManageableType>($0.queue, $0.unsafe, $0.controller) } .eraseToAnyPublisher()
+        map { RepositoryRepresentedResult<Self.Output.Element.ManageableType>($0.queue, $0.unsafe, $0.controller) }.eraseToAnyPublisher()
     }
 }

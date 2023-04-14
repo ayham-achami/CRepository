@@ -33,51 +33,17 @@ import RealmSwift
     public typealias Index = Int
     public typealias Element = Element
     
-    public var isEmpty: Bool {
-        get async {
-            await async { unsafe.isEmpty }
-        }
-    }
-    
-    public var count: Int {
-        get async {
-            await async { unsafe.count }
-        }
-    }
-    
-    public var description: String {
-        get async {
-            await async { unsafe.description }
-        }
-    }
-    
-    public var throwIfEmpty: Self {
-        get async throws {
-            try await applyThrowing { try unsafe.throwIfEmpty }
-        }
-    }
-    
     public let queue: DispatchQueue
     public let controller: RepositoryController
     public let unsafe: UnsafeRepositoryResult<Element>
     
-    /// <#Description#>
-    /// - Parameters:
-    ///   - queue: <#queue description#>
-    ///   - results: <#results description#>
-    ///   - controller: <#controller description#>
-    init(_ queue: DispatchQueue, _ results: Results<Element>, _ controller: RepositoryController) {
+    public init(_ queue: DispatchQueue, _ results: Results<Element>, _ controller: RepositoryController) {
         self.queue = queue
         self.unsafe = .init(results)
         self.controller = controller
     }
     
-    /// <#Description#>
-    /// - Parameters:
-    ///   - queue: <#queue description#>
-    ///   - unsafe: <#unsafe description#>
-    ///   - controller: <#controller description#>
-    init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element>, _ controller: RepositoryController) {
+    public init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element>, _ controller: RepositoryController) {
         self.queue = queue
         self.unsafe = unsafe
         self.controller = controller
@@ -85,69 +51,10 @@ import RealmSwift
     
     public subscript(_ index: Index) -> Element {
         get async {
-            await async { unsafe[index] }
-        }
-    }
-    
-    public func sorted(with descriptors: [Sorted]) async -> Self {
-        await apply { unsafe.sorted(with: descriptors) }
-    }
-    
-    public func sorted(with descriptors: [PathSorted<Element>]) async -> Self {
-        await apply { unsafe.sorted(with: descriptors) }
-    }
-    
-    public func filter(by predicate: NSPredicate) async -> Self {
-        await apply { unsafe.filter(by: predicate) }
-    }
-    
-    public func filter(_ isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async -> Self {
-        await apply { unsafe.filter(isIncluded) }
-    }
-    
-    public func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
-        try await asyncThrowing { try unsafe.filter(isIncluded) }
-    }
-    
-    public func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        try await asyncThrowing { try unsafe.first(where: predicate) }
-    }
-    
-    public func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        try await asyncThrowing { try unsafe.last(where: predicate) }
-    }
-    
-    public func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
-        try await asyncThrowing { try unsafe.map(transform) }
-    }
-    
-    public func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
-        try await asyncThrowing { try unsafe.compactMap(transform) }
-    }
-    
-    public func pick(_ indexes: IndexSet) async throws -> [Element] {
-        try await asyncThrowing {
-            var elements = [Element]()
-            for (index, element) in unsafe.enumerated() {
-                guard indexes.contains(index) else { continue }
-                elements.append(element)
+            await async {
+                unsafe[index]
             }
-            return elements
         }
-    }
-    
-    /// <#Description#>
-    /// - Parameter body: <#body description#>
-    /// - Returns: <#description#>
-    private func apply(_ body: @escaping () -> UnsafeRepositoryResult<Element>) async -> Self {
-        await async { .init(queue, body(), controller) }
-    }
-    
-    /// <#Description#>
-    /// - Parameter body: <#body description#>
-    /// - Returns: <#description#>
-    private func applyThrowing(_ body: @escaping () throws -> UnsafeRepositoryResult<Element>) async throws -> Self {
-        try await asyncThrowing { .init(queue, try body(), controller) }
     }
 }
 
@@ -156,13 +63,17 @@ extension RepositoryResult: RepositoryCollectionFrozer {
     
     public var isFrozen: Bool {
         get async {
-            await async { unsafe.isFrozen }
+            await async {
+                unsafe.isFrozen
+            }
         }
     }
     
     public var freeze: Self {
         get async {
-            await apply { unsafe.freeze }
+            await apply {
+                unsafe.freeze
+            }
         }
     }
     

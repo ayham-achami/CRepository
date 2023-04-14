@@ -30,15 +30,15 @@ extension Realm.Configuration {
     
     /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
-    init(_ type: RealmRepository.`Type`, _ configuration: RepositoryConfiguration) throws {
+    init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration) throws {
         let migration = { [weak configuration] (_ migration: Migration, _ oldSchemaVersion: UInt64) -> Void in
             guard let configuration = configuration else { return }
             let migrationController = MigrationContextProducer(configuration.repositorySchemaVersion, oldSchemaVersion, migration)
             configuration.repositoryDidBeginMigration(with: migrationController)
         }
-        switch type {
+        switch kind {
         case .basic:
             self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
             fileURL = try path(for: self, and: configuration, category: "Basic", lastComponent: "\(configuration.userName).realm")
@@ -52,14 +52,14 @@ extension Realm.Configuration {
     
     /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     /// - Returns: <#description#>
-    static func publish(_ type: RealmRepository.`Type`,
+    static func publish(_ kind: RealmRepository.Kind,
                         _ configuration: RepositoryConfiguration) -> Future<Realm.Configuration, Swift.Error> {
         Future { promise in
             do {
-                promise(.success(try .init(type, configuration)))
+                promise(.success(try .init(kind, configuration)))
             } catch {
                 promise(.failure(error))
             }
@@ -125,46 +125,61 @@ extension Realm.Configuration {
 extension Realm {
     
     /// <#Description#>
+    private static var inMemoryCache = [String: Realm]()
+    
+    /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
-    init(_ type: RealmRepository.`Type`, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) throws {
-        try self.init(configuration: try .init(type, configuration), queue: queue)
+    init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) throws {
+        if let cachedRealm = Self.inMemoryCache[configuration.userName] {
+            self = cachedRealm
+        } else {
+            try self.init(configuration: try .init(kind, configuration), queue: queue)
+        }
+        guard case kind = RealmRepository.Kind.inMemory else { return }
+        Self.inMemoryCache[configuration.userName] = self
     }
     
     /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
-    init(_ type: RealmRepository.`Type`, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
-        self = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Self, Swift.Error>) in
-            do {
-                Self.asyncOpen(configuration: try .init(type, configuration), callbackQueue: queue) { result in
-                    switch result {
-                    case let .success(realm):
-                        continuation.resume(returning: realm)
-                    case let .failure(error):
-                        continuation.resume(throwing: error)
+    init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
+        if let cachedRealm = Self.inMemoryCache[configuration.userName] {
+            self = cachedRealm
+        } else {
+            self = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Self, Swift.Error>) in
+                do {
+                    Self.asyncOpen(configuration: try .init(kind, configuration), callbackQueue: queue) { result in
+                        switch result {
+                        case let .success(realm):
+                            continuation.resume(returning: realm)
+                        case let .failure(error):
+                            continuation.resume(throwing: error)
+                        }
                     }
+                } catch {
+                    continuation.resume(throwing: error)
                 }
-            } catch {
-                continuation.resume(throwing: error)
             }
         }
+        guard case kind = RealmRepository.Kind.inMemory else { return }
+        Self.inMemoryCache[configuration.userName] = self
     }
     
     /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    static func publish(_ type: RealmRepository.`Type`,
+    static func publish(_ kind: RealmRepository.Kind,
                         _ configuration: RepositoryConfiguration,
                         _ queue: DispatchQueue) -> AnyPublisher<Realm, Swift.Error> {
-        Realm.Configuration.publish(type, configuration).create(queue)
+        Realm.Configuration.publish(kind, configuration).create(queue)
     }
 }
 

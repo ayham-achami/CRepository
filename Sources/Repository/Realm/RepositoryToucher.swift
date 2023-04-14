@@ -35,12 +35,12 @@ struct RepositoryToucher {
     
     /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
-    init(type: RealmRepository.`Type`, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
+    init(kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
         self.queue = queue
-        self.realm = try await Realm(type, configuration, queue)
+        self.realm = try await Realm(kind, configuration, queue)
     }
     
     /// <#Description#>
@@ -54,16 +54,16 @@ struct RepositoryToucher {
     
     /// <#Description#>
     /// - Parameters:
-    ///   - type: <#type description#>
+    ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     ///   - touchType: <#touchType description#>
     /// - Returns: <#description#>
-    static func publish<T>(_ type: RealmRepository.`Type`,
+    static func publish<T>(_ kind: RealmRepository.Kind,
                            _ configuration: RepositoryConfiguration,
                            _ queue: DispatchQueue,
                            touchType: T.Type) -> AnyPublisher<T, Swift.Error> {
-        Realm.publish(type, configuration, queue).tryMap { realm in
+        Realm.publish(kind, configuration, queue).tryMap { realm in
             guard
                 let toucher = RepositoryToucher(realm, queue) as? T
             else { throw RepositoryError.conversion }

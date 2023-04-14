@@ -69,6 +69,22 @@ class ViewController: UIViewController {
         Task {
             try await repository.basic.manageable.reset
         }
+        Task {
+            try await repository
+                .inMemory
+                .manageable
+                .put(allOf: manageableUsers(count: 20))
+            do {
+                let result = try await repository
+                    .inMemory
+                    .lazy
+                    .fetch(allOf: ManageableUser.self)
+                    .throwIfEmpty
+                print("Users:\n\(await result.description)")
+            } catch {
+                print("Error: \(error)")
+            }
+        }
     }
     
     @IBAction private func didTestAsync(_ sender: Any) {
@@ -205,7 +221,7 @@ class ViewController: UIViewController {
         repository
             .basic
             .publishWatch
-            .watch(changedOf: ManageableUser.self, keyPaths: [\.initials])
+            .watch(changedOf: ManageableUser.self)
             .sink { completion in
                 guard case let .failure(error) =  completion else { return }
                 print("Error: \(error)")
@@ -213,18 +229,18 @@ class ViewController: UIViewController {
                 print("Changeset:\n\(changeset)")
             }.store(in: &subscriptions)
         
-        repository
-            .basic
-            .publishLazy
-            .fetch(allOf: ManageableUser.self)
-            .filter { query in query.id.contains("1")}
-            .watch(keyPaths: [\.email])
-            .sink { completion in
-                guard case let .failure(error) =  completion else { return }
-                print("Error: \(error)")
-            } receiveValue: { count in
-                print("Count:\n\(count)")
-            }.store(in: &subscriptions)
+//        repository
+//            .basic
+//            .publishLazy
+//            .fetch(allOf: ManageableUser.self)
+//            .filter { query in query.id.contains("1")}
+//            .watch(keyPaths: [\.email])
+//            .sink { completion in
+//                guard case let .failure(error) =  completion else { return }
+//                print("Error: \(error)")
+//            } receiveValue: { count in
+//                print("Count:\n\(count)")
+//            }.store(in: &subscriptions)
         
         Task {
             do {
@@ -233,24 +249,47 @@ class ViewController: UIViewController {
                     .manageable
                     .reset()
                     .put(allOf: manageableUsers(count: 10))
+                
+                try await repository
+                    .basic
+                    .manageable
+                    .remove(allOfType: ManageableUser.self)
 
                 try await repository
                     .basic
-                    .lazy
-                    .fetch(allOf: ManageableUser.self)
-                    .filter { query in query.id.contains("1") }
-                    .throwIfEmpty
-                    .sorted(with: [.init(keyPath: \.position)])
-                    .forEach { user in user.email = "" }
+                    .manageable
+                    .put(allOf: manageableUsers(count: 2))
+                
+                let user: ManageableUser = .init(from: .init(id: "testIdTest",
+                                                             name: "TestNameTest",
+                                                             roles: [.admin],
+                                                             email: "test@email.abc",
+                                                             initials: "TN",
+                                                             avatarHttpPath: "path:to:photo:434",
+                                                             position: "TestPosition",
+                                                             isProfileFilled: true))
+                
+                try await repository
+                    .basic
+                    .manageable
+                    .put(user)
                 
                 try await repository
                     .basic
                     .lazy
                     .fetch(allOf: ManageableUser.self)
-                    .filter { query in !query.id.contains("1") }
+                    .filter { query in query.id == "testIdTest" }
                     .throwIfEmpty
-                    .sorted(with: [.init(keyPath: \.position)])
-                    .forEach { user in user.name = "" }
+                    .forEach { user in user.email = "Ayham" }
+//
+//                try await repository
+//                    .basic
+//                    .lazy
+//                    .fetch(allOf: ManageableUser.self)
+//                    .filter { query in !query.id.contains("1") }
+//                    .throwIfEmpty
+//                    .sorted(with: [.init(keyPath: \.position)])
+//                    .forEach { user in user.name = "" }
             } catch {
                 print("Error: \(error)")
             }
@@ -258,7 +297,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction private func didTestWatchCount(_ sender: Any) {
-        print(#function)
+        print(#function)        
         repository
             .basic
             .publishWatch

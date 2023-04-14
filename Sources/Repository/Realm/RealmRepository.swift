@@ -27,7 +27,7 @@ import RealmSwift
 
 public final class RealmRepository: Repository {
     
-    enum `Type` {
+    enum Kind {
 
         /// Базовый тип
         case basic
@@ -39,9 +39,9 @@ public final class RealmRepository: Repository {
         case encryption
     }
     
-    public lazy var basic: RepositoryController = Controller(type: .basic, configuration, basicQueue)
-    public lazy var inMemory: RepositoryController = Controller(type: .inMemory, configuration, inMemoryQueue)
-    public lazy var encryption: RepositoryController = Controller(type: .encryption, configuration, encryptionQueue)
+    public lazy var basic: RepositoryController = Controller(kind: .basic, configuration, basicQueue)
+    public lazy var inMemory: RepositoryController = Controller(kind: .inMemory, configuration, inMemoryQueue)
+    public lazy var encryption: RepositoryController = Controller(kind: .encryption, configuration, encryptionQueue)
     
     private lazy var basicQueue = DispatchQueue(label: "RealmRepository.Controller.BasicQueue", qos: .default)
     private lazy var inMemoryQueue = DispatchQueue(label: "RealmRepository.Controller.InMemoryQueue", qos: .default)
@@ -62,40 +62,40 @@ extension RealmRepository {
         
         var lazy: LazyRepository {
             get async throws {
-                try await RepositoryToucher(type: type, configuration, queue)
+                try await RepositoryToucher(kind: kind, configuration, queue)
             }
         }
         
         var manageable: ManageableRepository {
             get async throws {
-                try await RepositoryToucher(type: type, configuration, queue)
+                try await RepositoryToucher(kind: kind, configuration, queue)
             }
         }
         
         var represented: RepresentedRepository {
             get async throws {
-                try await RepositoryToucher(type: type, configuration, queue)
+                try await RepositoryToucher(kind: kind, configuration, queue)
             }
         }
         
         var publishWatch: AnyPublisher<WatchRepository, Swift.Error> {
-            RepositoryToucher.publish(type, configuration, queue, touchType: WatchRepository.self)
+            RepositoryToucher.publish(kind, configuration, queue, touchType: WatchRepository.self)
         }
         
         var publishLazy: AnyPublisher<LazyRepository, Swift.Error> {
-            RepositoryToucher.publish(type, configuration, queue, touchType: LazyRepository.self)
+            RepositoryToucher.publish(kind, configuration, queue, touchType: LazyRepository.self)
         }
         
         var publishManageable: AnyPublisher<ManageableRepository, Swift.Error> {
-             RepositoryToucher.publish(type, configuration, queue, touchType: ManageableRepository.self)
+             RepositoryToucher.publish(kind, configuration, queue, touchType: ManageableRepository.self)
         }
         
         var publishRepresented: AnyPublisher<RepresentedRepository, Swift.Error> {
-            RepositoryToucher.publish(type, configuration, queue, touchType: RepresentedRepository.self)
+            RepositoryToucher.publish(kind, configuration, queue, touchType: RepresentedRepository.self)
         }
         
         /// <#Description#>
-        private let type: `Type`
+        private let kind: Kind
         /// <#Description#>
         private let queue: DispatchQueue
         /// <#Description#>
@@ -103,11 +103,11 @@ extension RealmRepository {
         
         /// <#Description#>
         /// - Parameters:
-        ///   - type: <#type description#>
+        ///   - kind: <#type description#>
         ///   - configuration: <#configuration description#>
         ///   - queue: <#queue description#>
-        init(type: `Type`, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) {
-            self.type = type
+        init(kind: Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) {
+            self.kind = kind
             self.queue = queue
             self.configuration = configuration
         }

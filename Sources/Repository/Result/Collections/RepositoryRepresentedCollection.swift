@@ -54,6 +54,17 @@ public protocol RepositoryRepresentedCollection: RepositoryRepresentedCollection
     var result: RepositoryResult<Element.RepresentedType> { get }
     
     /// <#Description#>
+    /// - Parameter result: <#result description#>
+    init(_ result: RepositoryResult<Element.RepresentedType>)
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - queue: <#queue description#>
+    ///   - unsafe: <#unsafe description#>
+    ///   - controller: <#controller description#>
+    init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element.RepresentedType>, _ controller: RepositoryController)
+    
+    /// <#Description#>
     subscript(_ index: Index) -> Element { get async }
     
     /// <#Description#>
@@ -100,6 +111,85 @@ public protocol RepositoryRepresentedCollection: RepositoryRepresentedCollection
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
+}
+
+// MARK: - RepositoryRepresentedCollection + Default
+public extension RepositoryRepresentedCollection {
+    
+    var isEmpty: Bool {
+        get async {
+            await result.isEmpty
+        }
+    }
+    
+    var count: Int {
+        get async {
+            await result.count
+        }
+    }
+    
+    var description: String {
+        get async {
+            """
+            RepositoryRepresentedResult<\(String(describing: Element.self))>{
+            \t\(await result.description)
+            }
+            """
+        }
+    }
+    
+    var throwIfEmpty: Self {
+        get async throws {
+            .init(try await result.throwIfEmpty)
+        }
+    }
+    
+    func sorted(with descriptors: [Sorted]) async -> Self {
+        .init(await result.sorted(with: descriptors))
+    }
+    
+    func sorted(with descriptors: [PathSorted<Element.RepresentedType>]) async -> Self {
+        .init(await result.sorted(with: descriptors))
+    }
+    
+    func filter(by predicate: NSPredicate) async -> Self {
+        .init(await result.filter(by: predicate))
+    }
+    
+    func filter(_ isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) async -> Self {
+        .init(await result.filter(isIncluded))
+    }
+    
+    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
+        try await result.map(Element.init(from:)).filter(isIncluded)
+    }
+    
+    func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
+        .init(orNil: try await result.first(where: { try predicate(.init(from: $0)) }))
+    }
+    
+    func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
+        .init(orNil: try await result.last(where: { try predicate(.init(from: $0)) }))
+    }
+    
+    func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
+        try await result.map { try transform(.init(from: $0)) }
+    }
+    
+    func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
+        try await result.compactMap { try transform(.init(from: $0)) }
+    }
+}
+
+// MARK: - RepositoryResult + ManageableType
+public extension RepositoryRepresentedCollection where Element.RepresentedType: ManageableSource,
+                                                       Element.RepresentedType.ManageableType == Element.RepresentedType {
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func mapManageable() async -> RepositoryResult<Element.RepresentedType> {
+        await result.async { .init(result.queue, result.unsafe, result.controller) }
+    }
 }
 
 // MARK: - Publisher + RepositoryController
@@ -184,16 +274,5 @@ public extension Publisher where Self.Output: RepositoryRepresentedCollection,
                                                                            container.result.result.controller)
         // swiftlint:disable:next force_cast
         return RepositoryRepresentedResult<Self.Output.Element>(result) as! Self.Output
-    }
-}
-
-// MARK: - RepositoryResult + ManageableType
-public extension RepositoryRepresentedCollection where Element.RepresentedType: ManageableSource,
-                                                       Element.RepresentedType.ManageableType == Element.RepresentedType {
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func mapManageable() async -> RepositoryResult<Element.RepresentedType> {
-        await result.async { .init(result.queue, result.unsafe, result.controller) }
     }
 }

@@ -48,16 +48,19 @@ public protocol RepositoryResultModifier {
     /// - Returns: <#description#>
     func removeAll() async throws -> RepositoryController
     
+    @discardableResult
     /// <#Description#>
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     func forEach(_ body: @escaping (Self.Base) -> Void) -> AnyPublisher<Self, Swift.Error>
     
+    @discardableResult
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
     func remove(where isIncluded: @escaping ((Query<Self.Base>) -> Query<Bool>)) -> AnyPublisher<Self, Swift.Error>
     
+    @discardableResult
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() -> AnyPublisher<RepositoryController, Swift.Error>
