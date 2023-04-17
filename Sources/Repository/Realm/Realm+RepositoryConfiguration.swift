@@ -138,7 +138,7 @@ extension Realm {
         } else {
             try self.init(configuration: try .init(kind, configuration), queue: queue)
         }
-        guard case kind = RealmRepository.Kind.inMemory else { return }
+        guard case .inMemory = kind else { return }
         Self.inMemoryCache[configuration.userName] = self
     }
     
@@ -166,7 +166,7 @@ extension Realm {
                 }
             }
         }
-        guard case kind = RealmRepository.Kind.inMemory else { return }
+        guard case .inMemory = kind else { return }
         Self.inMemoryCache[configuration.userName] = self
     }
     

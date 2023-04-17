@@ -89,6 +89,9 @@ public protocol ChangesetCollection: QueuingCollection {
     var count: Int { get async }
     
     /// <#Description#>
+    var description: String { get async }
+    
+    /// <#Description#>
     subscript(_ index: Index) -> Element { get async }
     
     /// <#Description#>
@@ -132,6 +135,17 @@ public extension ChangesetCollection {
         get async {
             await async {
                 elements.count
+            }
+        }
+    }
+
+    var description: String {
+        get async {
+            await async {
+            """
+            Indexes: [\(indexes.map { "\($0)" }.joined(separator: ", "))]
+            Element: \(elements.description)
+            """
             }
         }
     }

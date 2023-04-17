@@ -128,30 +128,38 @@ extension RepositoryResult: RepositoryChangesetWatcher {
     public typealias WatchType = Self
     
     public func watch(keyPaths: [PartialKeyPath<WatchType.Element>]? = nil) -> AnyPublisher<RepositoryChangeset<WatchType>, Swift.Error> {
-        unsafe
-            .watch(keyPaths: keyPaths)
-            .receive(on: queue)
-            .tryMap { (changset) -> RepositoryChangeset<Self> in
-                switch changset {
-                case let .update(result, deletions, insertions, modifications):
-                    return .init(result: .init(queue, result, controller),
-                                 deletions: deletions,
-                                 insertions: insertions,
-                                 modifications: modifications)
-                case let .initial(result):
-                    return .init(result: .init(queue, .init(result), controller),
-                                 deletions: [],
-                                 insertions: [],
-                                 modifications: [])
-                case let .error(error):
-                    throw error
-                }
+        Deferred {
+            unsafe.watch(keyPaths: keyPaths)
+        }
+        .subscribe(on: queue)
+        .tryMap { (changset) -> RepositoryChangeset<Self> in
+            switch changset {
+            case let .update(result, deletions, insertions, modifications):
+                return .init(result: .init(queue, result, controller),
+                             deletions: deletions,
+                             insertions: insertions,
+                             modifications: modifications)
+            case let .initial(result):
+                return .init(result: .init(queue, .init(result), controller),
+                             deletions: [],
+                             insertions: [],
+                             modifications: [])
+            case let .error(error):
+                throw error
             }
-            .share()
-            .eraseToAnyPublisher()
+        }
+        .share()
+        .receive(on: queue)
+        .eraseToAnyPublisher()
     }
     
     public func watchCount(keyPaths: [PartialKeyPath<WatchType.Element>]?) -> AnyPublisher<Int, Swift.Error> {
-        unsafe.watch(countOf: keyPaths).receive(on: queue).share().eraseToAnyPublisher()
+        Deferred {
+            unsafe.watch(countOf: keyPaths)
+        }
+        .subscribe(on: queue)
+        .share()
+        .receive(on: queue)
+        .eraseToAnyPublisher()
     }
 }
