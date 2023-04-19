@@ -25,8 +25,17 @@ import Combine
 import Foundation
 import RealmSwift
 
+// MARK: -
+private extension DispatchQueue {
+    
+    /// <#Description#>
+    static let realmQueue = DispatchQueue(label: "Repository.Controller.RealmQueue", qos: .default)
+}
+
+/// <#Description#>
 public final class RealmRepository: Repository {
     
+    /// <#Description#>
     enum Kind {
 
         /// Базовый тип
@@ -39,13 +48,9 @@ public final class RealmRepository: Repository {
         case encryption
     }
     
-    public lazy var basic: RepositoryController = Controller(kind: .basic, configuration, basicQueue)
-    public lazy var inMemory: RepositoryController = Controller(kind: .inMemory, configuration, inMemoryQueue)
-    public lazy var encryption: RepositoryController = Controller(kind: .encryption, configuration, encryptionQueue)
-    
-    private lazy var basicQueue = DispatchQueue(label: "RealmRepository.Controller.BasicQueue", qos: .default)
-    private lazy var inMemoryQueue = DispatchQueue(label: "RealmRepository.Controller.InMemoryQueue", qos: .default)
-    private lazy var encryptionQueue = DispatchQueue(label: "RealmRepository.Controller.EncryptionQueue", qos: .default)
+    public lazy var basic: RepositoryController = Controller(kind: .basic, configuration, .realmQueue)
+    public lazy var inMemory: RepositoryController = Controller(kind: .inMemory, configuration, .realmQueue)
+    public lazy var encryption: RepositoryController = Controller(kind: .encryption, configuration, .realmQueue)
     
     public let configuration: RepositoryConfiguration
     
