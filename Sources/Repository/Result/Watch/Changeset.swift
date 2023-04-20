@@ -27,10 +27,23 @@ import Combine
 import Foundation
 
 /// <#Description#>
+public enum ChangesetKind {
+
+    /// <#Description#>
+    case update
+    
+    /// <#Description#>
+    case initial
+}
+
+/// <#Description#>
 public protocol Changeset {
     
     /// <#Description#>
     associatedtype Result
+    
+    /// <#Description#>
+    var kind: ChangesetKind { get }
     
     /// <#Description#>
     var result: Result { get }
@@ -50,6 +63,8 @@ public protocol Changeset {
                                                                    Result.Element: ManageableSource {
     
     public let result: Result
+    public let kind: ChangesetKind
+    
     public let deletions: [Int]
     public let insertions: [Int]
     public let modifications: [Int]
@@ -62,6 +77,8 @@ public protocol Changeset {
                                                                               Result.Element.RepresentedType.ManageableType == Result.Element {
     
     public let result: Result
+    public let kind: ChangesetKind
+    
     public let deletions: [Int]
     public let insertions: [Int]
     public let modifications: [Int]
@@ -216,6 +233,24 @@ public extension Publisher where Self.Output: Changeset,
                                  Self.Output.Result.Element: ManageableSource,
                                  Self.Failure == Swift.Error {
     
+    func initialization() -> AnyPublisher<ChangesetSequence<Self.Output.Result.Element>, Self.Failure> {
+        flatMap { changeset in
+            Future { promise in
+                Task {
+                    do {
+                        guard changeset.kind == .initial else { return }
+                        let elements = try await changeset.result.map { $0 }
+                        let indexes = IndexSet()
+                        promise(.success(.init(indexes, elements, changeset.result.queue)))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: changeset.result.queue)
+        }.eraseToAnyPublisher()
+    }
+    
     /// <#Description#>
     /// - Returns: <#description#>
     func deletions() -> AnyPublisher<IndexSet, Self.Failure> {
@@ -231,6 +266,7 @@ public extension Publisher where Self.Output: Changeset,
             Future { promise in
                 Task {
                     do {
+                        guard changeset.kind == .update, !changeset.insertions.isEmpty else { return }
                         let elements = try await changeset.result.pick(.init(changeset.insertions))
                         promise(.success(.init(changeset.insertions, elements, changeset.result.queue)))
                     } catch {
@@ -249,6 +285,7 @@ public extension Publisher where Self.Output: Changeset,
             Future { promise in
                 Task {
                     do {
+                        guard changeset.kind == .update, !changeset.modifications.isEmpty else { return }
                         let elements = try await changeset.result.pick(.init(changeset.modifications))
                         promise(.success(.init(changeset.modifications, elements, changeset.result.queue)))
                     } catch {

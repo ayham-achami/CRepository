@@ -116,6 +116,7 @@ extension RepositoryRepresentedResult: RepositoryRepresentedChangesetWatcher {
         result.watch(keyPaths: keyPaths)
             .map { (changset) -> RepositoryRepresentedChangeset<Self> in
                     .init(result: .init(changset.result),
+                          kind: changset.kind,
                           deletions: changset.deletions,
                           insertions: changset.insertions,
                           modifications: changset.modifications)

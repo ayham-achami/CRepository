@@ -67,23 +67,15 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         Task {
-            try await repository.basic.manageable.reset
-        }
-        Task {
+            try await repository
+                .basic
+                .manageable
+                .reset()
+                .put(allOf: manageableUsers(count: 10))
             try await repository
                 .inMemory
                 .manageable
-                .put(allOf: manageableUsers(count: 20))
-            do {
-                let result = try await repository
-                    .inMemory
-                    .lazy
-                    .fetch(allOf: ManageableUser.self)
-                    .throwIfEmpty
-                print("Users:\n\(await result.description)")
-            } catch {
-                print("Error: \(error)")
-            }
+                .put(allOf: manageableUsers(count: 10))
         }
     }
     
@@ -93,16 +85,23 @@ class ViewController: UIViewController {
             do {
                 let result = try await repository
                     .basic
-                    .manageable
-                    .reset()
-                    .put(allOf: manageableUsers(count: 10))
                     .lazy
                     .fetch(allOf: ManageableUser.self)
                     .filter { query in query.id.contains("1") }
                     .throwIfEmpty
                     .forEach { user in user.email = "" }
                     .sorted(with: [.init(keyPath: \.position)])
-                print("Users:\n\(await result.description)")
+                print("Basic Users:\n\(await result.description)")
+                
+                let inMemory = try await repository
+                    .inMemory
+                    .lazy
+                    .fetch(allOf: ManageableUser.self)
+                    .filter { query in query.id.contains("1") }
+                    .throwIfEmpty
+                    .forEach { user in user.email = "" }
+                    .sorted(with: [.init(keyPath: \.position)])
+                print("InMemory Users:\n\(await inMemory.description)")
             } catch {
                 print("Error: \(error)")
             }
@@ -223,24 +222,24 @@ class ViewController: UIViewController {
             .publishWatch
             .watch(changedOf: ManageableUser.self)
             .sink { completion in
-                guard case let .failure(error) =  completion else { return }
+                guard case let .failure(error) = completion else { return }
                 print("Error: \(error)")
             } receiveValue: { changeset in
                 print("Changeset:\n\(changeset)")
             }.store(in: &subscriptions)
         
-//        repository
-//            .basic
-//            .publishLazy
-//            .fetch(allOf: ManageableUser.self)
-//            .filter { query in query.id.contains("1")}
-//            .watch(keyPaths: [\.email])
-//            .sink { completion in
-//                guard case let .failure(error) =  completion else { return }
-//                print("Error: \(error)")
-//            } receiveValue: { count in
-//                print("Count:\n\(count)")
-//            }.store(in: &subscriptions)
+        repository
+            .basic
+            .publishLazy
+            .fetch(allOf: ManageableUser.self)
+            .filter { query in query.id.contains("1")}
+            .watch(keyPaths: [\.email])
+            .sink { completion in
+                guard case let .failure(error) =  completion else { return }
+                print("Error: \(error)")
+            } receiveValue: { count in
+                print("Count:\n\(count)")
+            }.store(in: &subscriptions)
         
         Task {
             do {
@@ -249,7 +248,7 @@ class ViewController: UIViewController {
                     .manageable
                     .reset()
                     .put(allOf: manageableUsers(count: 10))
-                
+
                 try await repository
                     .basic
                     .manageable
@@ -260,20 +259,6 @@ class ViewController: UIViewController {
                     .manageable
                     .put(allOf: manageableUsers(count: 2))
                 
-                let user: ManageableUser = .init(from: .init(id: "testIdTest",
-                                                             name: "TestNameTest",
-                                                             roles: [.admin],
-                                                             email: "test@email.abc",
-                                                             initials: "TN",
-                                                             avatarHttpPath: "path:to:photo:434",
-                                                             position: "TestPosition",
-                                                             isProfileFilled: true))
-                
-                try await repository
-                    .basic
-                    .manageable
-                    .put(user)
-                
                 try await repository
                     .basic
                     .lazy
@@ -281,7 +266,7 @@ class ViewController: UIViewController {
                     .filter { query in query.id == "testIdTest" }
                     .throwIfEmpty
                     .forEach { user in user.email = "Ayham" }
-//
+
 //                try await repository
 //                    .basic
 //                    .lazy

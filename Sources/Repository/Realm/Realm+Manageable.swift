@@ -242,11 +242,13 @@ extension Realm {
                 switch changset {
                 case let .update(result, deletions, insertions, modifications):
                     return .init(result: .init(queue, .init(result), toucher),
+                                 kind: .update,
                                  deletions: deletions,
                                  insertions: insertions,
                                  modifications: modifications)
                 case let .initial(result):
                     return .init(result: .init(queue, .init(result), toucher),
+                                 kind: .initial,
                                  deletions: [],
                                  insertions: [],
                                  modifications: [])

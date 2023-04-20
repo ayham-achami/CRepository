@@ -136,11 +136,13 @@ extension RepositoryResult: RepositoryChangesetWatcher {
             switch changset {
             case let .update(result, deletions, insertions, modifications):
                 return .init(result: .init(queue, result, controller),
+                             kind: .update,
                              deletions: deletions,
                              insertions: insertions,
                              modifications: modifications)
             case let .initial(result):
                 return .init(result: .init(queue, .init(result), controller),
+                             kind: .initial,
                              deletions: [],
                              insertions: [],
                              modifications: [])

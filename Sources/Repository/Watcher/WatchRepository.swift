@@ -67,6 +67,7 @@ public extension WatchRepository {
         watch(changedOf: type.RepresentedType, keyPaths: keyPaths)
             .map { (changset) -> RepositoryRepresentedChangeset<RepositoryRepresentedResult<T>> in
                     .init(result: .init(changset.result),
+                          kind: changset.kind,
                           deletions: changset.deletions,
                           insertions: changset.insertions,
                           modifications: changset.modifications)
