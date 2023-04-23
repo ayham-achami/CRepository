@@ -254,8 +254,30 @@ public extension Publisher where Self.Output: Changeset,
     /// <#Description#>
     /// - Returns: <#description#>
     func deletions() -> AnyPublisher<IndexSet, Self.Failure> {
-        map { changeset in
-            IndexSet(changeset.deletions)
+        flatMap { changeset in
+            Future { promise in
+                Task {
+                    let isReseted = await changeset.result.isEmpty
+                    guard changeset.kind == .update, !isReseted else { return }
+                    promise(.success(.init(changeset.deletions)))
+                }
+            }
+            .receive(on: changeset.result.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func resetting() -> AnyPublisher<Void, Self.Failure> {
+        flatMap { changeset in
+            Future { promise in
+                Task {
+                    let isReseted = await changeset.result.isEmpty
+                    guard changeset.kind == .update, isReseted else { return }
+                    promise(.success(()))
+                }
+            }
+            .receive(on: changeset.result.queue)
         }.eraseToAnyPublisher()
     }
     
