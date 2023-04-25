@@ -27,7 +27,7 @@ import RealmSwift
 import Foundation
 import CRepository
 
-struct ProductInfo {
+struct ProductInfo: Equatable {
     
     let id: Int
     let name: String
@@ -44,11 +44,9 @@ extension ProductInfo: ManageableRepresented {
 }
 
 final class ManageableProductInfo: Object, ManageableSource {
-    
-    override class func primaryKey() -> String? { "id" }
-    
-    @objc dynamic var id: Int = .zero
-    @objc dynamic var name: String = ""
+        
+    @Persisted(primaryKey: true) var id: Int = .zero
+    @Persisted var name: String = ""
     
     required convenience init(from company: ProductInfo) {
         self.init()
@@ -60,5 +58,10 @@ final class ManageableProductInfo: Object, ManageableSource {
         self.init()
         self.id = id
         self.name = name
+    }
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? ManageableProductInfo else { return false }
+        return id == other.id && name == other.name
     }
 }

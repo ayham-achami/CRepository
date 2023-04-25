@@ -134,7 +134,7 @@ extension RepositoryToucher: LazyRepository {
 
 // MARK: - RepositoryToucher + ManageableRepository
 extension RepositoryToucher: ManageableRepository {
-
+    
     func async<Result>(perform: @escaping () throws -> Result) async throws -> Result {
         try await realm.async(queue, perform)
     }
@@ -149,7 +149,7 @@ extension RepositoryToucher: ManageableRepository {
         return self
     }
     
-    func publishWrite(_ perform: @escaping () -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> {
+    func publishWrite(_ perform: @escaping () throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> {
         realm.publishWrite(queue, perform).flatMap { publishManageable }.eraseToAnyPublisher()
     }
         
@@ -181,6 +181,12 @@ extension RepositoryToucher: ManageableRepository {
         realm.publishPut(allOf: models, policy: policy, queue: queue).flatMap { publishManageable }.eraseToAnyPublisher()
     }
     
+    func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool) async throws -> ManageableRepository where T: ManageableSource {
+        let model = try await realm.fetch(oneOf: type, with: primaryKey, queue)
+        try await realm.remove(model, isCascading, queue)
+        return self
+    }
+    
     func remove<T>(_ isCascading: Bool, _ perform: @escaping () throws -> T) async throws -> ManageableRepository where T: ManageableSource {
         try await realm.remove(isCascading, queue, perform)
         return self
@@ -204,6 +210,15 @@ extension RepositoryToucher: ManageableRepository {
     func reset() async throws -> ManageableRepository {
         try await realm.reset(queue)
         return self
+    }
+    
+    func publishRemove<T>(onOf type: T.Type,
+                          with primaryKey: AnyHashable,
+                          isCascading: Bool) -> AnyPublisher<ManageableRepository, Error> where T: ManageableSource {
+        realm
+            .publishFetch(oneOf: type, with: primaryKey, queue)
+            .flatMap { publishManageable.remove($0, isCascading: isCascading) }
+            .eraseToAnyPublisher()
     }
     
     func publishRemove<T>(_ model: T, isCascading: Bool) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {

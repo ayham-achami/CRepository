@@ -27,7 +27,7 @@ import RealmSwift
 import CRepository
 import Foundation
 
-struct Speaker {
+struct Speaker: Equatable {
     
     let id: Int
     let name: String
@@ -49,9 +49,7 @@ extension Speaker: ManageableRepresented {
 
 final class ManageableSpeaker: Object, ManageableSource {
     
-    override class func primaryKey() -> String? { "id" }
-    
-    @Persisted var id: Int = .zero
+    @Persisted(primaryKey: true) var id: Int = .zero
     @Persisted var name: String = ""
     @Persisted var isPinned: Bool = false
     @Persisted var entryTime: Date = Date()
@@ -70,5 +68,10 @@ final class ManageableSpeaker: Object, ManageableSource {
         self.name = name
         self.isPinned = isPinned
         self.entryTime = entryTime
+    }
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? ManageableSpeaker else { return false }
+        return id == other.id && name == other.name && isPinned == other.isPinned && entryTime == other.entryTime
     }
 }

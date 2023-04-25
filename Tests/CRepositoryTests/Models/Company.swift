@@ -28,7 +28,7 @@ import Foundation
 import CRepository
 
 // MARK: - Company
-struct Company {
+struct Company: Equatable {
     
     let id: Int
     let name: String
@@ -43,23 +43,33 @@ extension Company: ManageableRepresented {
     init(from represented: Self.RepresentedType) {
         self.id = represented.id
         self.name = represented.name
-        self.logoId = represented.logoId.value
+        self.logoId = represented.logoId
     }
 }
 
 // MARK: - Company + ManageableSource
 final class ManageableCompany: Object, ManageableSource {
     
-    override class func primaryKey() -> String? { "id" }
-    
-    @objc dynamic var id: Int = .zero
-    @objc dynamic var name: String = ""
-    var logoId = RealmProperty<Int?>()
+    @Persisted(primaryKey: true) var id: Int = .zero
+    @Persisted var name: String = ""
+    @Persisted var logoId: Int?
     
     required convenience init(from company: Company) {
         self.init()
         self.id = company.id
         self.name = company.name
-        self.logoId.value = company.logoId
+        self.logoId = company.logoId
+    }
+    
+    convenience init(id: Int, name: String, logoId: Int?) {
+        self.init()
+        self.id = id
+        self.name = name
+        self.logoId = logoId
+    }
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? ManageableCompany else { return false }
+        return id == other.id && name == other.name && logoId == other.logoId
     }
 }

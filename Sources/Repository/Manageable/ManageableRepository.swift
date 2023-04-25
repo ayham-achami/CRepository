@@ -60,8 +60,8 @@ public protocol ManageableRepository: RepositoryController {
     /// <#Description#>
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
-    func publishWrite(_ perform: @escaping () -> Void) -> AnyPublisher<ManageableRepository, Swift.Error>
-    
+    func publishWrite(_ perform: @escaping () throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error>
+        
     @discardableResult
     /// <#Description#>
     /// - Parameters:
@@ -116,6 +116,15 @@ public protocol ManageableRepository: RepositoryController {
     @discardableResult
     /// <#Description#>
     /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - isCascading: <#isCascading description#>
+    /// - Returns: <#description#>
+    func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool) async throws -> ManageableRepository where T: ManageableSource
+    
+    @discardableResult
+    /// <#Description#>
+    /// - Parameters:
     ///   - model: <#model description#>
     ///   - isCascading: <#isCascading description#>
     /// - Returns: <#description#>
@@ -144,6 +153,14 @@ public protocol ManageableRepository: RepositoryController {
     
     /// <#Description#>
     /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - isCascading: <#isCascading description#>
+    /// - Returns: <#description#>
+    func publishRemove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource
+    
+    /// <#Description#>
+    /// - Parameters:
     ///   - model: <#model description#>
     ///   - isCascading: <#isCascading description#>
     /// - Returns: <#description#>
@@ -168,8 +185,18 @@ public protocol ManageableRepository: RepositoryController {
     func publishReset() -> AnyPublisher<ManageableRepository, Swift.Error>
 }
 
-// MARK: - ConcurrencyManageableRepository
+// MARK: - ManageableRepository + Default
 public extension ManageableRepository {
+    
+    ///
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - modification: <#modification description#>
+    func modificat<T>(_ type: T.Type, with primaryKey: AnyHashable, _ modification: @escaping (T) throws -> Void) async throws where T: ManageableSource {
+        let model = try await lazy.fetch(oneOf: type, with: primaryKey)
+        try await write { try modification(model) }
+    }
     
     @discardableResult
     /// <#Description#>
@@ -195,6 +222,22 @@ public extension ManageableRepository {
     }
     
     /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - modification: <#modification description#>
+    /// - Returns: <#description#>
+    func publishModificat<T>(_ type: T.Type,
+                             with primaryKey: AnyHashable,
+                             _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
+        publishLazy
+            .fetch(oneOf: type, with: primaryKey)
+            .flatMap { model in
+                publishWrite { try modification(model) }
+            }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
     func publishPut<T>(_ perform: @escaping () throws -> T) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
@@ -213,6 +256,15 @@ public extension ManageableRepository {
     /// - Returns: <#description#>
     func publishPut<T>(allOf models: [T]) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
         publishPut(allOf: models, policy: .default)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    /// - Returns: <#description#>
+    func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable) async throws -> ManageableRepository where T: ManageableSource {
+        try await remove(onOf: type, with: primaryKey, isCascading: true)
     }
     
     @discardableResult
@@ -250,6 +302,15 @@ public extension ManageableRepository {
     }
     
     /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    /// - Returns: <#description#>
+    func publishRemove<T>(onOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
+        publishRemove(onOf: type, with: primaryKey, isCascading: true)
+    }
+    
+    /// <#Description#>
     /// - Parameter model: <#model description#>
     /// - Returns: <#description#>
     func publishRemove<T>(_ model: T) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
@@ -271,7 +332,7 @@ public extension ManageableRepository {
     }
 }
 
-// MARK: - Publisher + PublisherManageableRepository
+// MARK: - Publisher + ManageableRepository
 public extension Publisher where Self.Output == ManageableRepository, Self.Failure == Swift.Error {
     
     /// <#Description#>
@@ -301,6 +362,18 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     
     /// <#Description#>
     /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - modification: <#modification description#>
+    /// - Returns: <#description#>
+    func modificat<T>(_ type: T.Type,
+                      with primaryKey: AnyHashable,
+                      _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
+        flatMap { $0.publishModificat(type, with: primaryKey, modification) }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
     ///   - policy: <#policy description#>
     ///   - perform: <#perform description#>
     /// - Returns: <#description#>
@@ -325,6 +398,16 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     /// - Returns: <#description#>
     func put<T>(allOf models: [T], policy: Realm.UpdatePolicy = .default) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableSource {
         flatMap { $0.publishPut(allOf: models, policy: policy) }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - isCascading: <#isCascading description#>
+    /// - Returns: <#description#>
+    func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool = true) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
+        flatMap { $0.publishRemove(onOf: type, with: primaryKey, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
