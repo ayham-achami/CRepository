@@ -120,7 +120,7 @@ extension RepositoryToucher: LazyRepository {
     }
     
     public func fetch<T>(allOf type: T.Type) async -> RepositoryResult<T> where T: ManageableSource {
-        await realm.fetch(allOf: type, queue: queue, toucher: self)
+        await realm.fetch(allOf: type, toucher: self, queue)
     }
     
     public func publishFetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableSource {
@@ -128,7 +128,7 @@ extension RepositoryToucher: LazyRepository {
     }
     
     public func publishFetch<T>(allOf type: T.Type) -> AnyPublisher<RepositoryResult<T>, Error> where T: ManageableSource {
-        realm.publishFetch(allOf: type, queue, toucher: self)
+        realm.publishFetch(allOf: type, toucher: self, queue)
     }
 }
 
@@ -174,16 +174,15 @@ extension RepositoryToucher: ManageableRepository {
     }
     
     public func publishPut<T>(_ model: T, policy: Realm.UpdatePolicy) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
-        realm.publishPut(model, policy: policy, queue: queue).flatMap { publishManageable }.eraseToAnyPublisher()
+        realm.publishPut(model, policy: policy, queue).flatMap { publishManageable }.eraseToAnyPublisher()
     }
     
     public func publishPut<T>(allOf models: [T], policy: Realm.UpdatePolicy) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
-        realm.publishPut(allOf: models, policy: policy, queue: queue).flatMap { publishManageable }.eraseToAnyPublisher()
+        realm.publishPut(allOf: models, policy: policy, queue).flatMap { publishManageable }.eraseToAnyPublisher()
     }
     
     func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool) async throws -> ManageableRepository where T: ManageableSource {
-        let model = try await realm.fetch(oneOf: type, with: primaryKey, queue)
-        try await realm.remove(model, isCascading, queue)
+        try await realm.remove(onOf: type, with: primaryKey, isCascading, queue)
         return self
     }
     
@@ -244,13 +243,14 @@ extension RepositoryToucher: RepresentedRepository {
     func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) async throws -> T where T: ManageableRepresented,
                                                                                             T.RepresentedType: ManageableSource,
                                                                                             T.RepresentedType.ManageableType == T {
-        .init(from: try await realm.fetch(oneOf: type.RepresentedType.self, with: primaryKey, queue))
+        let model = try await realm.fetch(oneOf: type.RepresentedType.self, with: primaryKey, queue)
+        return await realm.async(queue) { .init(from: model) }
     }
     
     func fetch<T>(allOf type: T.Type) async -> RepositoryRepresentedResult<T> where T: ManageableRepresented,
                                                                                     T.RepresentedType: ManageableSource,
                                                                                     T.RepresentedType.ManageableType == T {
-        .init(await realm.fetch(allOf: type.RepresentedType.self, queue: queue, toucher: self))
+        .init(await realm.fetch(allOf: type.RepresentedType.self, toucher: self, queue))
     }
 
     func publishFetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Error> where T: ManageableRepresented,
@@ -262,7 +262,7 @@ extension RepositoryToucher: RepresentedRepository {
     func publishFetch<T>(allOf type: T.Type) -> AnyPublisher<RepositoryRepresentedResult<T>, Error> where T: ManageableRepresented,
                                                                                                           T.RepresentedType: ManageableSource,
                                                                                                           T.RepresentedType.ManageableType == T {
-        realm.publishFetch(allOf: type.RepresentedType, queue, toucher: self).map(RepositoryRepresentedResult<T>.init).eraseToAnyPublisher()
+        realm.publishFetch(allOf: type.RepresentedType, toucher: self, queue).map(RepositoryRepresentedResult<T>.init).eraseToAnyPublisher()
     }
     
     @discardableResult
@@ -284,14 +284,14 @@ extension RepositoryToucher: RepresentedRepository {
     func publishPut<T>(_ model: T, policy: Realm.UpdatePolicy) -> AnyPublisher<RepresentedRepository, Swift.Error> where T: ManageableRepresented,
                                                                                                                          T.RepresentedType: ManageableSource,
                                                                                                                          T.RepresentedType.ManageableType == T {
-        realm.publishPut(T.RepresentedType.init(from: model), policy: policy, queue: queue).flatMap { publishRepresented } .eraseToAnyPublisher()
+        realm.publishPut(T.RepresentedType.init(from: model), policy: policy, queue).flatMap { publishRepresented } .eraseToAnyPublisher()
     }
     
     func publishPut<T>(allOf models: T, policy: Realm.UpdatePolicy) -> AnyPublisher<RepresentedRepository, Swift.Error> where T: Sequence,
                                                                                                                               T.Element: ManageableRepresented,
                                                                                                                               T.Element.RepresentedType: ManageableSource,
                                                                                                                               T.Element.RepresentedType.ManageableType == T.Element {
-        realm.publishPut(allOf: models.map(T.Element.RepresentedType.init(from:)), policy: policy, queue: queue).flatMap { publishRepresented } .eraseToAnyPublisher()
+        realm.publishPut(allOf: models.map(T.Element.RepresentedType.init(from:)), policy: policy, queue).flatMap { publishRepresented } .eraseToAnyPublisher()
     }
     
     func remove<T>(_ model: T, isCascading: Bool) async throws -> RepresentedRepository where T: ManageableRepresented,

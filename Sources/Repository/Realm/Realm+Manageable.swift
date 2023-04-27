@@ -35,17 +35,21 @@ extension Realm {
     ///   - primaryKey: <#primaryKey description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable, _ queue: DispatchQueue) async throws -> T where T: ManageableSource {
+    func fetch<T>(oneOf type: T.Type,
+                  with primaryKey: AnyHashable,
+                  _ queue: DispatchQueue) async throws -> T where T: ManageableSource {
         try await async(queue) { try object(ofType: type, for: primaryKey) }
     }
     
     /// <#Description#>
     /// - Parameters:
     ///   - type: <#type description#>
-    ///   - queue: <#queue description#>
     ///   - toucher: <#toucher description#>
+    ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func fetch<T>(allOf type: T.Type, queue: DispatchQueue, toucher: RepositoryToucher) async -> RepositoryResult<T> where T: ManageableSource {
+    func fetch<T>(allOf type: T.Type,
+                  toucher: RepositoryToucher,
+                  _ queue: DispatchQueue) async -> RepositoryResult<T> where T: ManageableSource {
         await async(queue) { objects(of: type, queue, toucher) }
     }
     
@@ -55,17 +59,21 @@ extension Realm {
     ///   - primaryKey: <#primaryKey description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishFetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable, _ queue: DispatchQueue) -> Future<T, Swift.Error> where T: ManageableSource {
+    func publishFetch<T>(oneOf type: T.Type,
+                         with primaryKey: AnyHashable,
+                         _ queue: DispatchQueue) -> Future<T, Swift.Error> where T: ManageableSource {
         publishAsync(queue) { try object(ofType: type, for: primaryKey) }
     }
     
     /// <#Description#>
     /// - Parameters:
     ///   - type: <#type description#>
-    ///   - queue: <#queue description#>
     ///   - toucher: <#toucher description#>
+    ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishFetch<T>(allOf type: T.Type, _ queue: DispatchQueue, toucher: RepositoryToucher) -> AnyPublisher<RepositoryResult<T>, Swift.Error> where T: ManageableSource {
+    func publishFetch<T>(allOf type: T.Type,
+                         toucher: RepositoryToucher,
+                         _ queue: DispatchQueue) -> AnyPublisher<RepositoryResult<T>, Swift.Error> where T: ManageableSource {
         objects(type)
             .collectionPublisher
             .receive(on: queue)
@@ -78,7 +86,9 @@ extension Realm {
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
     ///   - perform: <#perform description#>
-    func put<T>(policy: UpdatePolicy, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) async throws where T: ManageableSource {
+    func put<T>(policy: UpdatePolicy,
+                _ queue: DispatchQueue,
+                _ perform: @escaping () throws -> T) async throws where T: ManageableSource {
         try await write(queue) { add(try perform(), update: policy) }
     }
     
@@ -87,7 +97,9 @@ extension Realm {
     ///   - model: <#model description#>
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
-    func put<T>(_ model: T, policy: UpdatePolicy, _ queue: DispatchQueue) async throws where T: ManageableSource {
+    func put<T>(_ model: T,
+                policy: UpdatePolicy,
+                _ queue: DispatchQueue) async throws where T: ManageableSource {
         try await put(policy: policy, queue) { model }
     }
     
@@ -96,7 +108,9 @@ extension Realm {
     ///   - models: <#models description#>
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
-    func put<T>(allOf models: T, policy: UpdatePolicy, _ queue: DispatchQueue) async throws where T: Sequence, T.Element: ManageableSource {
+    func put<T>(allOf models: T,
+                policy: UpdatePolicy,
+                _ queue: DispatchQueue) async throws where T: Sequence, T.Element: ManageableSource {
         try await write(queue) { models.forEach { add($0, update: policy) } }
     }
     
@@ -106,7 +120,9 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - perform: <#perform description#>
     /// - Returns: <#description#>
-    func publishPut<T>(policy: UpdatePolicy, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) -> Future<Void, Swift.Error> where T: ManageableSource {
+    func publishPut<T>(policy: UpdatePolicy,
+                       _ queue: DispatchQueue,
+                       _ perform: @escaping () throws -> T) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishWrite(queue) { add(try perform(), update: policy) }
     }
     
@@ -116,7 +132,9 @@ extension Realm {
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishPut<T>(_ model: T, policy: Realm.UpdatePolicy, queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+    func publishPut<T>(_ model: T,
+                       policy: Realm.UpdatePolicy,
+                       _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishWrite(queue) { add(model, update: policy) }
     }
     
@@ -126,8 +144,26 @@ extension Realm {
     ///   - policy: <#policy description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishPut<T>(allOf models: [T], policy: Realm.UpdatePolicy, queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+    func publishPut<T>(allOf models: [T],
+                       policy: Realm.UpdatePolicy,
+                       _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishWrite(queue) { models.forEach { add($0, update: policy) } }
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - isCascading: <#isCascading description#>
+    ///   - queue: <#queue description#>
+    func remove<T>(onOf type: T.Type,
+                   with primaryKey: AnyHashable,
+                   _ isCascading: Bool,
+                   _ queue: DispatchQueue) async throws where T: ManageableSource {
+        try await write(queue) {
+            let model = try object(ofType: type, for: primaryKey)
+            isCascading ? delete(cascade: model) : delete(model)
+        }
     }
     
     /// <#Description#>
@@ -135,7 +171,9 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     ///   - perform: <#perform description#>
-    func remove<T>(_ isCascading: Bool, _ queue: DispatchQueue, _ perform: @escaping () throws -> T) async throws where T: ManageableSource {
+    func remove<T>(_ isCascading: Bool,
+                   _ queue: DispatchQueue,
+                   _ perform: @escaping () throws -> T) async throws where T: ManageableSource {
         try await write(queue) {
             let model = try perform()
             isCascading ? delete(cascade: model) : delete(model)
@@ -147,7 +185,9 @@ extension Realm {
     ///   - model: <#model description#>
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
-    func remove<T>(_ model: T, _ isCascading: Bool, _ queue: DispatchQueue) async throws where T: ManageableSource {
+    func remove<T>(_ model: T,
+                   _ isCascading: Bool,
+                   _ queue: DispatchQueue) async throws where T: ManageableSource {
         try await remove(isCascading, queue) { model }
     }
     
@@ -156,7 +196,9 @@ extension Realm {
     ///   - models: <#models description#>
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
-    func remove<T>(allOf models: T, _ isCascading: Bool, _ queue: DispatchQueue) async throws where T: Sequence, T.Element: ManageableSource {
+    func remove<T>(allOf models: T,
+                   _ isCascading: Bool,
+                   _ queue: DispatchQueue) async throws where T: Sequence, T.Element: ManageableSource {
         try await write(queue) { isCascading ? delete(cascade: models) : delete(models) }
     }
     
@@ -165,7 +207,9 @@ extension Realm {
     ///   - type: <#type description#>
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
-    func remove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) async throws where T: ManageableSource {
+    func remove<T>(allOfType type: T.Type,
+                   _ isCascading: Bool,
+                   _ queue: DispatchQueue) async throws where T: ManageableSource {
         try await write(queue) {
             let models = objects(type)
             try writeChecking { isCascading ? delete(cascade: models) : delete(models) }
@@ -184,7 +228,9 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishRemove<T>(_ model: T, _ isCascading: Bool, _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+    func publishRemove<T>(_ model: T,
+                          _ isCascading: Bool,
+                          _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishWrite(queue) { isCascading ? delete(cascade: model) : delete(model) }
     }
     
@@ -207,7 +253,9 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishRemove<T>(allOfType type: T.Type, _ isCascading: Bool, _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
+    func publishRemove<T>(allOfType type: T.Type,
+                          _ isCascading: Bool,
+                          _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishAsync(queue) {
             let models = objects(type)
             try writeChecking { isCascading ? delete(cascade: models) : delete(models) }
