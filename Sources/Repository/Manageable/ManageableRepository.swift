@@ -258,6 +258,7 @@ public extension ManageableRepository {
         publishPut(allOf: models, policy: .default)
     }
     
+    @discardableResult
     /// <#Description#>
     /// - Parameters:
     ///   - type: <#type description#>

@@ -121,6 +121,14 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// - Parameter indexes: <#indexes description#>
     /// - Returns: <#description#>
     func pick(_ indexes: IndexSet) async throws -> [Element]
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func first() async throws -> Element?
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func last() async throws -> Element?
 }
 
 // MARK: - RepositoryResultCollection + Default
@@ -195,6 +203,14 @@ public extension RepositoryResultCollection {
             }
             return elements
         }
+    }
+    
+    func first() async throws -> Element? {
+        try await asyncThrowing { unsafe.first }
+    }
+    
+    func last() async throws -> Element? {
+        try await asyncThrowing { unsafe.last }
     }
     
     func apply(_ body: @escaping () -> UnsafeRepositoryResult<Element>) async -> Self {
@@ -291,6 +307,42 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                     do {
                         let elements = try await result.pick(indexes)
                         promise(.success(elements))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: result.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func first() -> AnyPublisher<Self.Output.Element?, Self.Failure> {
+        flatMap { result in
+            Future { promise in
+                Task {
+                    do {
+                        let element = try await result.first()
+                        promise(.success(element))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: result.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func last() -> AnyPublisher<Self.Output.Element?, Self.Failure> {
+        flatMap { result in
+            Future { promise in
+                Task {
+                    do {
+                        let element = try await result.last()
+                        promise(.success(element))
                     } catch {
                         promise(.failure(error))
                     }
