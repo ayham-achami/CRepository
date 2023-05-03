@@ -135,6 +135,14 @@ public protocol ChangesetCollection: QueuingCollection {
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func first() async -> Element?
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func last() async throws -> Element?
 }
 
 // MARK: - ChangesetCollection + Default
@@ -193,6 +201,14 @@ public extension ChangesetCollection {
     
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
         try await asyncThrowing { try elements.compactMap(transform) }
+    }
+    
+    func first() async -> Element? {
+        await async { elements.first }
+    }
+    
+    func last() async throws -> Element? {
+        await async { elements.last }
     }
 }
 
@@ -257,8 +273,11 @@ public extension Publisher where Self.Output: Changeset,
         flatMap { changeset in
             Future { promise in
                 Task {
-                    let isReseted = await changeset.result.isEmpty
-                    guard changeset.kind == .update, !isReseted else { return }
+                    guard
+                        changeset.kind == .update,
+                        !changeset.deletions.isEmpty,
+                        await !changeset.result.isEmpty
+                    else { return }
                     promise(.success(.init(changeset.deletions)))
                 }
             }
@@ -272,8 +291,11 @@ public extension Publisher where Self.Output: Changeset,
         flatMap { changeset in
             Future { promise in
                 Task {
-                    let isReseted = await changeset.result.isEmpty
-                    guard changeset.kind == .update, isReseted else { return }
+                    guard
+                        changeset.kind == .update,
+                        !changeset.deletions.isEmpty,
+                        await changeset.result.isEmpty
+                    else { return }
                     promise(.success(()))
                 }
             }
