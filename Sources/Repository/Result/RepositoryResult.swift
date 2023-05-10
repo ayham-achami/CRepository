@@ -56,6 +56,16 @@ import RealmSwift
             }
         }
     }
+    
+    public func element(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self {
+        try await asyncThrowing { try perform(unsafe[index]) }
+        return .init(queue, unsafe, controller)
+    }
+    
+    public func modificat(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self {
+        try await controller.manageable.write { try perform(unsafe[index]) }
+        return .init(queue, unsafe, controller)
+    }
 }
 
 // MARK: - RepositoryResult + RepositoryCollectionFrozer

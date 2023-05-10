@@ -72,6 +72,22 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// <#Description#>
     subscript(_ index: Index) -> Element { get async }
     
+    @discardableResult
+    /// <#Description#>
+    /// - Parameters:
+    ///   - index: <#index description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func element(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self 
+    
+    @discardableResult
+    /// <#Description#>
+    /// - Parameters:
+    ///   - index: <#index description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func modificat(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self
+    
     /// <#Description#>
     /// - Parameter descriptors: <#descriptors description#>
     /// - Returns: <#description#>
