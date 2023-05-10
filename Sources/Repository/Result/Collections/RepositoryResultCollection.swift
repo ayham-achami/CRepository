@@ -133,6 +133,16 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// <#Description#>
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
+    func mapFirst<T>(_ transform: @escaping (Element) throws -> T) async throws -> T
+    
+    /// <#Description#>
+    /// - Parameter transform: <#transform description#>
+    /// - Returns: <#description#>
+    func mapLast<T>(_ transform: @escaping (Element) throws -> T) async throws -> T
+    
+    /// <#Description#>
+    /// - Parameter transform: <#transform description#>
+    /// - Returns: <#description#>
     func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T]
     
     /// <#Description#>
@@ -207,6 +217,24 @@ public extension RepositoryResultCollection {
     
     func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
         try await asyncThrowing { try unsafe.last(where: predicate) }
+    }
+    
+    func mapFirst<T>(_ transform: @escaping (Element) throws -> T) async throws -> T {
+        try await asyncThrowing {
+            guard
+                let first = unsafe.first
+            else { throw RepositoryFetchError.notFound }
+            return try transform(first)
+        }
+    }
+    
+    func mapLast<T>(_ transform: @escaping (Element) throws -> T) async throws -> T {
+        try await asyncThrowing {
+            guard
+                let last = unsafe.last
+            else { throw RepositoryFetchError.notFound }
+            return try transform(last)
+        }
     }
     
     func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
