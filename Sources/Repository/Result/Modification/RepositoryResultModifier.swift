@@ -39,14 +39,17 @@ public protocol RepositoryResultModifier {
     
     @discardableResult
     /// <#Description#>
-    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Parameters:
+    ///   - isCascading: <#isCascading description#>
+    ///   - isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
-    func remove(where isIncluded: @escaping ((Query<Base>) -> Query<Bool>)) async throws -> Self
+    func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Base>) -> Query<Bool>)) async throws -> Self
     
     @discardableResult
     /// <#Description#>
+    /// - Parameter isCascading: <#isCascading description#>
     /// - Returns: <#description#>
-    func removeAll() async throws -> RepositoryController
+    func removeAll(isCascading: Bool) async throws -> RepositoryController
     
     @discardableResult
     /// <#Description#>
@@ -56,14 +59,47 @@ public protocol RepositoryResultModifier {
     
     @discardableResult
     /// <#Description#>
-    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Parameters:
+    ///   - isCascading: <#isCascading description#>
+    ///   - isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
-    func remove(where isIncluded: @escaping ((Query<Self.Base>) -> Query<Bool>)) -> AnyPublisher<Self, Swift.Error>
+    func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Self.Base>) -> Query<Bool>)) -> AnyPublisher<Self, Swift.Error>
     
     @discardableResult
     /// <#Description#>
+    /// - Parameter isCascading: <#isCascading description#>
     /// - Returns: <#description#>
-    func removeAll() -> AnyPublisher<RepositoryController, Swift.Error>
+    func removeAll(isCascading: Bool) -> AnyPublisher<RepositoryController, Swift.Error>
+}
+
+// MARK: - RepositoryResultModifier + Default
+public extension RepositoryResultModifier {
+    
+    /// <#Description#>
+    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Returns: <#description#>
+    func remove(where isIncluded: @escaping ((Query<Base>) -> Query<Bool>)) async throws -> Self {
+        try await remove(isCascading: true, where: isIncluded)
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func removeAll() async throws -> RepositoryController {
+        try await removeAll(isCascading: true)
+    }
+    
+    /// <#Description#>
+    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Returns: <#description#>
+    func remove(where isIncluded: @escaping ((Query<Self.Base>) -> Query<Bool>)) -> AnyPublisher<Self, Swift.Error> {
+        remove(isCascading: true, where: isIncluded)
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func removeAll() -> AnyPublisher<RepositoryController, Swift.Error> {
+        removeAll(isCascading: true)
+    }
 }
 
 // MARK: - Publisher + RepositoryResultModifier + RepositoryResultCollection

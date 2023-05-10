@@ -85,25 +85,25 @@ extension RepositoryRepresentedResult: RepositoryResultModifier {
     }
 
     @discardableResult
-    public func remove(where isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) async throws -> Self {
-        .init(try await result.remove(where: isIncluded))
+    public func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) async throws -> Self {
+        .init(try await result.remove(isCascading: isCascading, where: isIncluded))
     }
 
     @discardableResult
-    public func removeAll() async throws -> RepositoryController {
-        try await result.removeAll()
+    public func removeAll(isCascading: Bool) async throws -> RepositoryController {
+        try await result.removeAll(isCascading: isCascading)
     }
     
     public func forEach(_ body: @escaping (Element.RepresentedType) -> Void) -> AnyPublisher<Self, Error> {
         result.forEach(body).map { .init($0) }.eraseToAnyPublisher()
     }
     
-    public func remove(where isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) -> AnyPublisher<Self, Error> {
-        result.remove(where: isIncluded).map { .init($0) }.eraseToAnyPublisher()
+    public func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) -> AnyPublisher<Self, Error> {
+        result.remove(isCascading: isCascading, where: isIncluded).map { .init($0) }.eraseToAnyPublisher()
     }
     
-    public func removeAll() -> AnyPublisher<RepositoryController, Error> {
-        result.removeAll().eraseToAnyPublisher()
+    public func removeAll(isCascading: Bool) -> AnyPublisher<RepositoryController, Error> {
+        result.removeAll(isCascading: isCascading).eraseToAnyPublisher()
     }
 }
 

@@ -67,7 +67,7 @@ import RealmSwift
         return .init(queue, unsafe, controller)
     }
     
-    public func mapElement<T>(at index:Index, _ transform: @escaping (Element) throws -> T) async throws -> T {
+    public func mapElement<T>(at index: Index, _ transform: @escaping (Element) throws -> T) async throws -> T {
         return try await asyncThrowing { try transform(unsafe[index]) }
     }
 }
@@ -110,16 +110,16 @@ extension RepositoryResult: RepositoryResultModifier {
     }
     
     @discardableResult
-    public func remove(where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async throws -> Self {
+    public func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async throws -> Self {
         let result = await async { Array(unsafe.filter(isIncluded).map { $0 }) }
-        try await controller.manageable.remove(allOf: result)
+        try await controller.manageable.remove(allOf: result, isCascading: isCascading)
         return .init(queue, unsafe, controller)
     }
     
     @discardableResult
-    public func removeAll() async throws -> RepositoryController {
+    public func removeAll(isCascading: Bool) async throws -> RepositoryController {
         let result = await async { Array(unsafe.map { $0 }) }
-        try await controller.manageable.remove(allOf: result)
+        try await controller.manageable.remove(allOf: result, isCascading: isCascading)
         return controller
     }
     
@@ -127,11 +127,11 @@ extension RepositoryResult: RepositoryResultModifier {
         preconditionFailure("")
     }
     
-    public func remove(where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) -> AnyPublisher<RepositoryResult<Element>, Error> {
+    public func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) -> AnyPublisher<RepositoryResult<Element>, Error> {
         preconditionFailure("")
     }
     
-    public func removeAll() -> AnyPublisher<RepositoryController, Error> {
+    public func removeAll(isCascading: Bool) -> AnyPublisher<RepositoryController, Error> {
         preconditionFailure("")
     }
 }
