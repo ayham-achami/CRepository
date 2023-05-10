@@ -124,6 +124,13 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element?
     
     /// <#Description#>
+    /// - Parameters:
+    ///   - index: <#index description#>
+    ///   - transform: <#transform description#>
+    /// - Returns: <#description#>
+    func mapElement<T>(at index:Index, _ transform: @escaping (Element) throws -> T) async throws -> T
+    
+    /// <#Description#>
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
     func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T]

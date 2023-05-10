@@ -66,6 +66,10 @@ import RealmSwift
         try await controller.manageable.write { try perform(unsafe[index]) }
         return .init(queue, unsafe, controller)
     }
+    
+    public func mapElement<T>(at index:Index, _ transform: @escaping (Element) throws -> T) async throws -> T {
+        return try await asyncThrowing { try transform(unsafe[index]) }
+    }
 }
 
 // MARK: - RepositoryResult + RepositoryCollectionFrozer
