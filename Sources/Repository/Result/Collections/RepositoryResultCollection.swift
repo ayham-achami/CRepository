@@ -124,11 +124,11 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     
     /// <#Description#>
     /// - Returns: <#description#>
-    func first() async throws -> Element?
+    func first() async throws -> Element
     
     /// <#Description#>
     /// - Returns: <#description#>
-    func last() async throws -> Element?
+    func last() async throws -> Element
 }
 
 // MARK: - RepositoryResultCollection + Default
@@ -205,12 +205,22 @@ public extension RepositoryResultCollection {
         }
     }
     
-    func first() async throws -> Element? {
-        try await asyncThrowing { unsafe.first }
+    func first() async throws -> Element {
+        try await asyncThrowing {
+            guard
+                let first = unsafe.first
+            else { throw RepositoryFetchError.notFound }
+            return first
+        }
     }
     
-    func last() async throws -> Element? {
-        try await asyncThrowing { unsafe.last }
+    func last() async throws -> Element {
+        try await asyncThrowing {
+            guard
+                let last = unsafe.last
+            else { throw RepositoryFetchError.notFound }
+            return last
+        }
     }
     
     func apply(_ body: @escaping () -> UnsafeRepositoryResult<Element>) async -> Self {
@@ -318,7 +328,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     
     /// <#Description#>
     /// - Returns: <#description#>
-    func first() -> AnyPublisher<Self.Output.Element?, Self.Failure> {
+    func first() -> AnyPublisher<Self.Output.Element, Self.Failure> {
         flatMap { result in
             Future { promise in
                 Task {
@@ -336,7 +346,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     
     /// <#Description#>
     /// - Returns: <#description#>
-    func last() -> AnyPublisher<Self.Output.Element?, Self.Failure> {
+    func last() -> AnyPublisher<Self.Output.Element, Self.Failure> {
         flatMap { result in
             Future { promise in
                 Task {

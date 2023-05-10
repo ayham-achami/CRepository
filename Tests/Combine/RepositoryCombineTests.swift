@@ -117,7 +117,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
     }
     
     func testModification() {
-        subscribe("") { expectation in
+        subscribe("Modification ManageableSpeaker") { expectation in
             repository
                 .inMemory
                 .publishManageable
@@ -126,6 +126,34 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .modificat(ManageableSpeaker.self, with: 1) { $0.name = "Modificated name" } // When
                 .flatMap { $0.publishLazy.fetch(oneOf: ManageableSpeaker.self, with: 1) }
                 .sink("", expectation) { XCTAssertEqual($0.name, "Modificated name") } // Then
+        }
+    }
+    
+    func testFirst() {
+        subscribe("First ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .first()
+                .sink("", expectation) { XCTAssertEqual($0.id, 1) } // Then
+        }
+    }
+    
+    func testLast() {
+        subscribe("Last ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .last()
+                .sink("", expectation) { XCTAssertEqual($0.id, 10) } // Then
         }
     }
     

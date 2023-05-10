@@ -111,6 +111,14 @@ public protocol RepositoryRepresentedCollection: RepositoryRepresentedCollection
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func first() async throws -> Element
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func last() async throws -> Element
 }
 
 // MARK: - RepositoryRepresentedCollection + Default
@@ -178,6 +186,14 @@ public extension RepositoryRepresentedCollection {
     
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
         try await result.compactMap { try transform(.init(from: $0)) }
+    }
+    
+    func first() async throws -> Element {
+        .init(from: try await result.first())
+    }
+    
+    func last() async throws -> Element {
+        .init(from: try await result.last())
     }
 }
 
@@ -261,6 +277,40 @@ public extension Publisher where Self.Output: RepositoryRepresentedCollection,
     func sorted(with descriptors: [PathSorted<Self.Output.Element.RepresentedType>]) -> AnyPublisher<Self.Output, Self.Failure> {
         map { result in
             apply { .init(result: result, unsafe: result.result.unsafe.sorted(with: descriptors)) }
+        }.eraseToAnyPublisher()
+    }
+
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func first() -> AnyPublisher<Self.Output.Element, Self.Failure> {
+        flatMap { result in
+            Future { promise in
+                Task {
+                    do {
+                        let element = try await result.first()
+                        promise(.success(element))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func last() -> AnyPublisher<Self.Output.Element, Self.Failure> {
+        flatMap { result in
+            Future { promise in
+                Task {
+                    do {
+                        let element = try await result.last()
+                        promise(.success(element))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
         }.eraseToAnyPublisher()
     }
     

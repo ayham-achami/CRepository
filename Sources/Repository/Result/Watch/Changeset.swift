@@ -85,7 +85,7 @@ public protocol Changeset {
 }
 
 /// <#Description#>
-public protocol ChangesetCollection: QueuingCollection {
+public protocol ChangesetCollection: QueuingCollection, Equatable {
     
     /// <#Description#>
     typealias Index = Int
