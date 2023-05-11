@@ -33,11 +33,11 @@ protocol ModelGenerator {
     
     func productInfo(id: Int) -> ProductInfo
     
-    func company(count: Int) -> [Company]
+    func companions(count: Int) -> [Company]
     
     func speakers(count: Int) -> [Speaker]
     
-    func productInfo(count: Int) -> [ProductInfo]
+    func productInfos(count: Int) -> [ProductInfo]
 }
 
 extension ModelGenerator {
@@ -54,7 +54,7 @@ extension ModelGenerator {
         .init(id: id, name: .random)
     }
     
-    func company(count: Int) -> [Company] {
+    func companions(count: Int) -> [Company] {
         (1...count).map { id in
             company(id: id)
         }
@@ -66,7 +66,7 @@ extension ModelGenerator {
         }
     }
     
-    func productInfo(count: Int) -> [ProductInfo] {
+    func productInfos(count: Int) -> [ProductInfo] {
         (1...count).map { id in
             productInfo(id: id)
         }
@@ -75,42 +75,48 @@ extension ModelGenerator {
 
 protocol ManageableModelGenerator {
     
-    func company(count: Int) -> [ManageableCompany]
+    func manageableCompany(id: Int) -> ManageableCompany
     
-    func speakers(count: Int) -> [ManageableSpeaker]
+    func manageableSpeaker(id: Int) -> ManageableSpeaker
     
-    func productInfo(count: Int) -> [ManageableProductInfo]
+    func manageableProductInfo(id: Int) -> ManageableProductInfo
+    
+    func manageableCompanions(count: Int) -> [ManageableCompany]
+    
+    func manageableSpeakers(count: Int) -> [ManageableSpeaker]
+    
+    func manageableProductInfos(count: Int) -> [ManageableProductInfo]
 }
 
 extension ManageableModelGenerator {
 
-    func company(id: Int) -> ManageableCompany {
+    func manageableCompany(id: Int) -> ManageableCompany {
         .init(id: id, name: .random, logoId: Int.randomOrNil(to: id))
     }
     
-    func speakers(id: Int) -> ManageableSpeaker {
+    func manageableSpeaker(id: Int) -> ManageableSpeaker {
         .init(id: id, name: .random, isPinned: .random(), entryTime: .random)
     }
     
-    func productInfo(id: Int) -> ManageableProductInfo {
+    func manageableProductInfo(id: Int) -> ManageableProductInfo {
         .init(id: id, name: .random)
     }
     
-    func company(count: Int) -> [ManageableCompany] {
+    func manageableCompanions(count: Int) -> [ManageableCompany] {
         (1...count).map { id in
-            company(id: id)
+            manageableCompany(id: id)
         }
     }
     
-    func speakers(count: Int) -> [ManageableSpeaker] {
+    func manageableSpeakers(count: Int) -> [ManageableSpeaker] {
         (1...count).map { id in
-            speakers(id: id)
+            manageableSpeaker(id: id)
         }
     }
     
-    func productInfo(count: Int) -> [ManageableProductInfo] {
+    func manageableProductInfos(count: Int) -> [ManageableProductInfo] {
         (1...count).map { id in
-            productInfo(id: id)
+            manageableProductInfo(id: id)
         }
     }
 }

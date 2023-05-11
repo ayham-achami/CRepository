@@ -44,6 +44,12 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     var count: Int { get async }
     
     /// <#Description#>
+    var startIndex: Index { get async }
+    
+    /// <#Description#>
+    var endIndex: Index { get async }
+    
+    /// <#Description#>
     var description: String { get async }
     
     /// <#Description#>
@@ -128,7 +134,7 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     ///   - index: <#index description#>
     ///   - transform: <#transform description#>
     /// - Returns: <#description#>
-    func mapElement<T>(at index:Index, _ transform: @escaping (Element) throws -> T) async throws -> T
+    func mapElement<T>(at index: Index, _ transform: @escaping (Element) throws -> T) async throws -> T
     
     /// <#Description#>
     /// - Parameter transform: <#transform description#>
@@ -420,6 +426,35 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
         let container = try body()
         // swiftlint:disable:next force_cast
         return RepositoryResult(container.result.queue, container.unsafe, container.result.controller) as! Self.Output
+    }
+}
+
+// MARK: - Publisher + RepositoryController
+public extension Publisher where Self.Output: RepositoryResultCollection,
+                                 Self.Output.Element: ManageableSource,
+                                 Self.Failure == Swift.Error,
+                                 Self.Output.Index: Comparable {
+    
+    /// <#Description#>
+    /// - Parameter index: <#index description#>
+    /// - Returns: <#description#>
+    func element(at index: Self.Output.Index) -> AnyPublisher<Self.Output.Element, Self.Failure> {
+        flatMap { result in
+            Future { promise in
+                Task {
+                    do {
+                        guard
+                            await result.startIndex < index, await result.endIndex > index
+                        else { throw RepositoryFetchError.notFound }
+                        let element = await result[index]
+                        promise(.success(element))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+            .receive(on: result.queue)
+        }.eraseToAnyPublisher()
     }
 }
 

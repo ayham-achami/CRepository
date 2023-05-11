@@ -33,7 +33,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
     let speakersCount = 10
     
     lazy var speakers: [ManageableSpeaker] = {
-        speakers(count: speakersCount)
+        manageableSpeakers(count: speakersCount)
     }()
     
     func testPutting() {
@@ -48,7 +48,6 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
     }
     
     func testFetching() {
-        // When
         subscribe("Fetching ManageableSpeaker") { expectation in
             repository
                 .inMemory
@@ -91,13 +90,12 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
     }
     
     func testDeleting() {
-        // When
         subscribe("Delete ManageableSpeaker") { expectation in
             repository
                 .inMemory
                 .publishManageable
                 .reset()
-                .put(speakers(id: 1)) // Given
+                .put(manageableSpeaker(id: 1)) // Given
                 .remove(onOf: ManageableSpeaker.self, with: 1) // When
                 .lazy()
                 .fetch(allOf: ManageableSpeaker.self)
@@ -122,7 +120,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .inMemory
                 .publishManageable
                 .reset()
-                .put(speakers(id: 1)) // Given
+                .put(manageableSpeaker(id: 1)) // Given
                 .modificat(ManageableSpeaker.self, with: 1) { $0.name = "Modificated name" } // When
                 .flatMap { $0.publishLazy.fetch(oneOf: ManageableSpeaker.self, with: 1) }
                 .sink("", expectation) { XCTAssertEqual($0.name, "Modificated name") } // Then
@@ -154,6 +152,54 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .fetch(allOf: ManageableSpeaker.self)
                 .last()
                 .sink("", expectation) { XCTAssertEqual($0.id, 10) } // Then
+        }
+    }
+    
+    func testModelUnion() {
+        subscribe("Union ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // When
+                .represented()
+                .union(company(id: 1), with: ManageableSpeaker.self, unionPolicy: .query(1)) { represented, manageable in
+                    // Given
+                    let company = ManageableCompany(from: represented)
+                    company.name = "\(manageable.id)Test"
+                    return company
+                }
+                .lazy()
+                .fetch(oneOf: ManageableCompany.self, with: 1)
+                .sink("", expectation) {
+                    // Then
+                    XCTAssertEqual($0.id, 1)
+                    XCTAssertEqual($0.name, "1Test")
+                }
+        }
+    }
+
+    func testModelsUnion() {
+        subscribe("Union ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // When
+                .represented()
+                .union(allOf: companions(count: 3), with: ManageableSpeaker.self, unionPolicy: .query(1)) { represented, manageable in
+                    // Given
+                    let company = ManageableCompany(from: represented)
+                    company.name = "\(manageable.id)Test"
+                    return company
+                }
+                .lazy()
+                .fetch(allOf: ManageableCompany.self)
+                .sink("", expectation) {
+                    // Then
+                    XCTAssertEqual($0.unsafe.map(\.id), [1, 2, 3])
+                    XCTAssertEqual($0.unsafe.map(\.name), ["1Test", "1Test", "1Test"])
+                }
         }
     }
     
@@ -193,13 +239,13 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .publishManageable
                 .reset()
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .put(speakers(id: 1))
+                .put(manageableSpeaker(id: 1))
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(self.speakers(id: 2)) }
+                .flatMap { $0.publishPut(self.manageableSpeaker(id: 2)) }
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
                 .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 1) }
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(allOf: [self.speakers(id: 1), self.speakers(id: 3)]) }
+                .flatMap { $0.publishPut(allOf: [self.manageableSpeaker(id: 1), self.manageableSpeaker(id: 3)]) }
                 .sink("Success Watch count of ManageableSpeaker", expectation)
         }
     }

@@ -37,6 +37,22 @@ import RealmSwift
     public let controller: RepositoryController
     public let unsafe: UnsafeRepositoryResult<Element>
     
+    public var startIndex: Int {
+        get async {
+            await async {
+                unsafe.startIndex
+            }
+        }
+    }
+
+    public var endIndex: Int {
+        get async {
+            await async {
+                unsafe.endIndex
+            }
+        }
+    }
+    
     public init(_ queue: DispatchQueue, _ results: Results<Element>, _ controller: RepositoryController) {
         self.queue = queue
         self.unsafe = .init(results)
@@ -68,7 +84,12 @@ import RealmSwift
     }
     
     public func mapElement<T>(at index: Index, _ transform: @escaping (Element) throws -> T) async throws -> T {
-        return try await asyncThrowing { try transform(unsafe[index]) }
+        return try await asyncThrowing {
+            guard
+                !unsafe.isEmpty, index < unsafe.endIndex
+            else { throw RepositoryFetchError.notFound }
+            return try transform(unsafe[index])
+        }
     }
 }
 

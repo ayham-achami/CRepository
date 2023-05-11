@@ -125,7 +125,35 @@ extension Realm.Configuration {
 extension Realm {
     
     /// <#Description#>
-    private static var inMemoryCache = [String: Realm]()
+    private class Cache {
+        
+        private var source = [String: Realm]()
+        private let semaphore = DispatchSemaphore(value: 1)
+        
+        /// <#Description#>
+        /// - Parameters:
+        ///   - realm: <#realm description#>
+        ///   - key: <#key description#>
+        func store(_ realm: Realm, for key: String) {
+            perform { source[key] = realm }
+        }
+        
+        /// <#Description#>
+        /// - Parameter key: <#key description#>
+        /// - Returns: <#description#>
+        func restore(for key: String) -> Realm? {
+            perform { source[key] }
+        }
+        
+        private func perform<T>(_ block: () -> T) -> T {
+            semaphore.wait()
+            defer { semaphore.signal() }
+            return block()
+        }
+    }
+    
+    /// <#Description#>
+    private static let inMemoryCache = Cache()
     
     /// <#Description#>
     /// - Parameters:
@@ -133,13 +161,13 @@ extension Realm {
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) throws {
-        if let cachedRealm = Self.inMemoryCache[configuration.userName] {
+        if let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
             self = cachedRealm
         } else {
             try self.init(configuration: try .init(kind, configuration), queue: queue)
         }
         guard case .inMemory = kind else { return }
-        Self.inMemoryCache[configuration.userName] = self
+        Self.inMemoryCache.store(self, for: configuration.userName)
     }
     
     /// <#Description#>
@@ -148,7 +176,7 @@ extension Realm {
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
-        if let cachedRealm = Self.inMemoryCache[configuration.userName] {
+        if let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
             self = cachedRealm
         } else {
             self = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Self, Swift.Error>) in
@@ -167,7 +195,7 @@ extension Realm {
             }
         }
         guard case .inMemory = kind else { return }
-        Self.inMemoryCache[configuration.userName] = self
+        Self.inMemoryCache.store(self, for: configuration.userName)
     }
     
     /// <#Description#>
