@@ -28,7 +28,7 @@ import RealmSwift
 import Foundation
 
 /// <#Description#>
-public protocol RepositoryRepresentedCollectionProtocol {
+public protocol RepositoryRepresentedCollectionProtocol: QueuingCollection {
     
     associatedtype Index
     associatedtype Element: ManageableRepresented
@@ -124,6 +124,10 @@ public protocol RepositoryRepresentedCollection: RepositoryRepresentedCollection
 // MARK: - RepositoryRepresentedCollection + Default
 public extension RepositoryRepresentedCollection {
     
+    var queue: DispatchQueue {
+        result.queue
+    }
+    
     var isEmpty: Bool {
         get async {
             await result.isEmpty
@@ -169,31 +173,51 @@ public extension RepositoryRepresentedCollection {
     }
     
     func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
-        try await result.map(Element.init(from:)).filter(isIncluded)
+        try await asyncThrowing {
+            try result.unsafe.map(Element.init(from:)).filter(isIncluded)
+        }
     }
     
     func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        .init(orNil: try await result.first(where: { try predicate(.init(from: $0)) }))
+        try await asyncThrowing {
+            .init(orNil: try result.unsafe.first(where: { try predicate(.init(from: $0)) }))
+        }
     }
     
     func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        .init(orNil: try await result.last(where: { try predicate(.init(from: $0)) }))
+        try await asyncThrowing {
+            .init(orNil: try result.unsafe.last(where: { try predicate(.init(from: $0)) }))
+        }
     }
     
     func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
-        try await result.map { try transform(.init(from: $0)) }
+        try await asyncThrowing {
+            try result.unsafe.map { try transform(.init(from: $0)) }
+        }
     }
     
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
-        try await result.compactMap { try transform(.init(from: $0)) }
+        try await asyncThrowing {
+            try result.unsafe.compactMap { try transform(.init(from: $0)) }
+        }
     }
     
     func first() async throws -> Element {
-        .init(from: try await result.first())
+        try await asyncThrowing {
+            guard
+                let first = result.unsafe.first
+            else { throw RepositoryFetchError.notFound }
+            return .init(from: first)
+        }
     }
     
     func last() async throws -> Element {
-        .init(from: try await result.last())
+        try await asyncThrowing {
+            guard
+                let last = result.unsafe.last
+            else { throw RepositoryFetchError.notFound }
+            return .init(from: last)
+        }
     }
 }
 
