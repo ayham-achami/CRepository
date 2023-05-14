@@ -136,6 +136,38 @@ public protocol RepresentedRepository: RepositoryController {
     /// <#Description#>
     /// - Parameters:
     ///   - model: <#model description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func union<T, U, M>(_ model: T,
+                        updatePolicy: Realm.UpdatePolicy,
+                        with unionized: U,
+                        _ perform: @escaping (T, U) throws -> M) async throws -> RepresentedRepository where T: ManageableRepresented,
+                                                                                                             T.RepresentedType: ManageableSource,
+                                                                                                             T.RepresentedType.ManageableType == T,
+                                                                                                             U: ManageableSource,
+                                                                                                             M: ManageableSource
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - models: <#models description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func union<T, U, M>(allOf models: T,
+                        updatePolicy: Realm.UpdatePolicy,
+                        with unionized: U,
+                        _ perform: @escaping (T.Element, U) throws -> M) async throws -> RepresentedRepository where T: Sequence,
+                                                                                                                     T.Element: ManageableRepresented,
+                                                                                                                     T.Element.RepresentedType: ManageableSource,
+                                                                                                                     T.Element.RepresentedType.ManageableType == T.Element,
+                                                                                                                     U: ManageableSource,
+                                                                                                                     M: ManageableSource
+    /// <#Description#>
+    /// - Parameters:
+    ///   - model: <#model description#>
     ///   - policy: <#policy description#>
     /// - Returns: <#description#>
     func publishPut<T>(_ model: T, policy: Realm.UpdatePolicy) -> AnyPublisher<RepresentedRepository, Swift.Error> where T: ManageableRepresented,
@@ -182,6 +214,39 @@ public protocol RepresentedRepository: RepositoryController {
                                updatePolicy: Realm.UpdatePolicy,
                                with type: U.Type,
                                unionPolicy: UnionPolicy,
+                               _ perform: @escaping (T.Element, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: Sequence,
+                                                                                                                                    T.Element: ManageableRepresented,
+                                                                                                                                    T.Element.RepresentedType: ManageableSource,
+                                                                                                                                    T.Element.RepresentedType.ManageableType == T.Element,
+                                                                                                                                    U: ManageableSource,
+                                                                                                                                    M: ManageableSource
+
+    /// <#Description#>
+    /// - Parameters:
+    ///   - model: <#model description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func publishUnion<T, U, M>(_ model: T,
+                               updatePolicy: Realm.UpdatePolicy,
+                               with unionized: U,
+                               _ perform: @escaping (T, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: ManageableRepresented,
+                                                                                                                            T.RepresentedType: ManageableSource,
+                                                                                                                            T.RepresentedType.ManageableType == T,
+                                                                                                                            U: ManageableSource,
+                                                                                                                            M: ManageableSource
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - models: <#models description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func publishUnion<T, U, M>(allOf models: T,
+                               updatePolicy: Realm.UpdatePolicy,
+                               with unionized: U,
                                _ perform: @escaping (T.Element, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: Sequence,
                                                                                                                                     T.Element: ManageableRepresented,
                                                                                                                                     T.Element.RepresentedType: ManageableSource,
@@ -304,7 +369,9 @@ public extension RepresentedRepository {
                                                                                                              U: ManageableSource,
                                                                                                              M: ManageableSource {
         let unionized = try await unionPolicy.model(type, from: lazy)
-        let manageableModel = try await manageable.async { try perform(model, unionized) }
+        let manageableModel = try await manageable.async {
+            try perform(model, unionized)
+        }
         try await manageable.put(manageableModel)
         return self
     }
@@ -324,6 +391,39 @@ public extension RepresentedRepository {
         let models = try await manageable.async {
             try models.map { model in
                 try perform(model, unionized)
+            }
+        }
+        try await manageable.put(allOf: models)
+        return self
+    }
+    
+    func union<T, U, M>(_ model: T,
+                        updatePolicy: Realm.UpdatePolicy = .default,
+                        with unionized: U,
+                        _ perform: @escaping (T, U) throws -> M) async throws -> RepresentedRepository where T: ManageableRepresented,
+                                                                                                             T.RepresentedType: ManageableSource,
+                                                                                                             T.RepresentedType.ManageableType == T,
+                                                                                                             U: ManageableSource,
+                                                                                                             M: ManageableSource {
+        let manageableModel = try await self.manageable.async {
+            try perform(model, unionized)
+        }
+        try await self.manageable.put(manageableModel)
+        return self
+    }
+    
+    func union<T, U, M>(allOf models: T,
+                        updatePolicy: Realm.UpdatePolicy = .default,
+                        with unionized: U,
+                        _ perform: @escaping (T.Element, U) throws -> M) async throws -> RepresentedRepository where T: Sequence,
+                                                                                                                     T.Element: ManageableRepresented,
+                                                                                                                     T.Element.RepresentedType: ManageableSource,
+                                                                                                                     T.Element.RepresentedType.ManageableType == T.Element,
+                                                                                                                     U: ManageableSource,
+                                                                                                                     M: ManageableSource {
+        let models = try await manageable.async {
+            try models.map { representedModel in
+                try perform(representedModel, unionized)
             }
         }
         try await manageable.put(allOf: models)
@@ -370,13 +470,11 @@ public extension RepresentedRepository {
     /// <#Description#>
     /// - Parameters:
     ///   - models: <#models description#>
-    ///   - updatePolicy: <#updatePolicy description#>
     ///   - type: <#type description#>
     ///   - unionPolicy: <#unionPolicy description#>
     ///   - perform: <#perform description#>
     /// - Returns: <#description#>
     func publishUnion<T, U, M>(allOf models: T,
-                               updatePolicy: Realm.UpdatePolicy,
                                with type: U.Type,
                                unionPolicy: UnionPolicy,
                                _ perform: @escaping (T.Element, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: Sequence,
@@ -386,6 +484,39 @@ public extension RepresentedRepository {
                                                                                                                                     U: ManageableSource,
                                                                                                                                     M: ManageableSource {
         publishUnion(allOf: models, updatePolicy: .default, with: type, unionPolicy: unionPolicy, perform)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - model: <#model description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func publishUnion<T, U, M>(_ model: T,
+                               with unionized: U,
+                               _ perform: @escaping (T, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: ManageableRepresented,
+                                                                                                                            T.RepresentedType: ManageableSource,
+                                                                                                                            T.RepresentedType.ManageableType == T,
+                                                                                                                            U: ManageableSource,
+                                                                                                                            M: ManageableSource {
+        publishUnion(model, updatePolicy: .default, with: unionized, perform)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - models: <#models description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
+    func publishUnion<T, U, M>(allOf models: T,
+                               with unionized: U,
+                               _ perform: @escaping (T.Element, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: Sequence,
+                                                                                                                                    T.Element: ManageableRepresented,
+                                                                                                                                    T.Element.RepresentedType: ManageableSource,
+                                                                                                                                    T.Element.RepresentedType.ManageableType == T.Element,
+                                                                                                                                    U: ManageableSource,
+                                                                                                                                    M: ManageableSource {
+        publishUnion(allOf: models, updatePolicy: .default, with: unionized, perform)
     }
     
     @discardableResult

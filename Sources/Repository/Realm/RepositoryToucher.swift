@@ -220,6 +220,43 @@ extension RepositoryToucher: ManageableRepository {
             }.eraseToAnyPublisher()
     }
     
+    func publishUnion<T, U, M>(_ model: T,
+                               updatePolicy: Realm.UpdatePolicy,
+                               with unionized: U,
+                               _ perform: @escaping (T, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: ManageableRepresented,
+                                                                                                                            T.RepresentedType: ManageableSource,
+                                                                                                                            T.RepresentedType.ManageableType == T,
+                                                                                                                            U: ManageableSource,
+                                                                                                                            M: ManageableSource {
+        publishManageable
+            .receive(on: queue)
+            .flatMap { manageable in
+                manageable.publishPut(perform(model, unionized))
+            }
+            .flatMap { manageable in
+                manageable.publishRepresented
+            }.eraseToAnyPublisher()
+    }
+    
+    func publishUnion<T, U, M>(allOf models: T,
+                               updatePolicy: Realm.UpdatePolicy,
+                               with unionized: U,
+                               _ perform: @escaping (T.Element, U) -> M) -> AnyPublisher<RepresentedRepository, Swift.Error>  where T: Sequence,
+                                                                                                                                    T.Element: ManageableRepresented,
+                                                                                                                                    T.Element.RepresentedType: ManageableSource,
+                                                                                                                                    T.Element.RepresentedType.ManageableType == T.Element,
+                                                                                                                                    U: ManageableSource,
+                                                                                                                                    M: ManageableSource {
+        publishManageable
+            .receive(on: queue)
+            .flatMap { manageable in
+                manageable.publishPut(allOf: models.map { perform($0, unionized) })
+            }
+            .flatMap { manageable in
+                manageable.publishRepresented
+            }.eraseToAnyPublisher()
+    }
+    
     func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool) async throws -> ManageableRepository where T: ManageableSource {
         try await realm.remove(onOf: type, with: primaryKey, isCascading, queue)
         return self

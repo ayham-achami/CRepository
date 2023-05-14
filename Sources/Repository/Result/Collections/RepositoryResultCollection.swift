@@ -168,6 +168,11 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// <#Description#>
     /// - Returns: <#description#>
     func last() async throws -> Element
+    
+    /// <#Description#>
+    /// - Parameter predicate: <#predicate description#>
+    /// - Returns: <#description#>
+    func contents(where predicate: @escaping (Element) throws -> Bool) async throws -> Bool
 }
 
 // MARK: - RepositoryResultCollection + Default
@@ -277,6 +282,12 @@ public extension RepositoryResultCollection {
                 let last = unsafe.last
             else { throw RepositoryFetchError.notFound }
             return last
+        }
+    }
+    
+    func contents(where predicate: @escaping (Element) throws -> Bool) async throws -> Bool {
+        try await asyncThrowing {
+           try unsafe.contains(where: predicate)
         }
     }
     

@@ -55,7 +55,6 @@
 		DFE5014A29D2DB3300836713 /* PathSorted.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5014929D2DB3300836713 /* PathSorted.swift */; };
 		DFE5014E29D2DB9300836713 /* Changeset.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5014D29D2DB9300836713 /* Changeset.swift */; };
 		DFE5015029D2DCD900836713 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5014F29D2DCD900836713 /* Container.swift */; };
-		DFF1697529DFEEF6009B8C55 /* RepositoryCollectionPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF1697429DFEEF6009B8C55 /* RepositoryCollectionPublisher.swift */; };
 		E7C190FC061241B081865FA3 /* Pods_Playground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8D59FA633CADA1A934ACD55 /* Pods_Playground.framework */; };
 		F085199326C524CE00EDBCAB /* CRepository.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F085198926C524CE00EDBCAB /* CRepository.framework */; };
 		F08519EE26C54D7700EDBCAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08519ED26C54D7700EDBCAB /* AppDelegate.swift */; };
@@ -172,7 +171,6 @@
 		DFE5014929D2DB3300836713 /* PathSorted.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSorted.swift; sourceTree = "<group>"; };
 		DFE5014D29D2DB9300836713 /* Changeset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Changeset.swift; sourceTree = "<group>"; };
 		DFE5014F29D2DCD900836713 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
-		DFF1697429DFEEF6009B8C55 /* RepositoryCollectionPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryCollectionPublisher.swift; sourceTree = "<group>"; };
 		F085198926C524CE00EDBCAB /* CRepository.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CRepository.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F085199226C524CE00EDBCAB /* CRepositoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CRepositoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F085199926C524CE00EDBCAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -291,7 +289,6 @@
 				DFE5014B29D2DB4100836713 /* Sort */,
 				DF6FD42F29D4409E007E6CAA /* Freeze */,
 				DFE5014C29D2DB8500836713 /* Watch */,
-				DFF1697329DFEEE4009B8C55 /* Combine */,
 				DFE5015229D2E42B00836713 /* Modification */,
 			);
 			path = Result;
@@ -458,14 +455,6 @@
 				DFE5014729D2DADD00836713 /* RepositoryResultModifier.swift */,
 			);
 			path = Modification;
-			sourceTree = "<group>";
-		};
-		DFF1697329DFEEE4009B8C55 /* Combine */ = {
-			isa = PBXGroup;
-			children = (
-				DFF1697429DFEEF6009B8C55 /* RepositoryCollectionPublisher.swift */,
-			);
-			path = Combine;
 			sourceTree = "<group>";
 		};
 		F085197F26C524CE00EDBCAB = {
@@ -903,7 +892,6 @@
 			files = (
 				F0C2708226CAAA5C00211F15 /* RepositoryCreator.swift in Sources */,
 				F0C2708326CAAA5C00211F15 /* Realm+Repository.swift in Sources */,
-				DFF1697529DFEEF6009B8C55 /* RepositoryCollectionPublisher.swift in Sources */,
 				DF13F26C29BB7EFB00369EF6 /* LazyRepository.swift in Sources */,
 				DF13F26E29BB7F0A00369EF6 /* ManageableRepository.swift in Sources */,
 				DF6FD42C29D42FDD007E6CAA /* RepositoryRepresentedResult.swift in Sources */,
