@@ -133,6 +133,7 @@ public protocol RepresentedRepository: RepositoryController {
                                                                                                                      U: ManageableSource,
                                                                                                                      M: ManageableSource
     
+    @discardableResult
     /// <#Description#>
     /// - Parameters:
     ///   - model: <#model description#>
@@ -149,6 +150,7 @@ public protocol RepresentedRepository: RepositoryController {
                                                                                                              U: ManageableSource,
                                                                                                              M: ManageableSource
     
+    @discardableResult
     /// <#Description#>
     /// - Parameters:
     ///   - models: <#models description#>
@@ -397,6 +399,7 @@ public extension RepresentedRepository {
         return self
     }
     
+    @discardableResult
     func union<T, U, M>(_ model: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
                         with unionized: U,
@@ -412,6 +415,7 @@ public extension RepresentedRepository {
         return self
     }
     
+    @discardableResult
     func union<T, U, M>(allOf models: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
                         with unionized: U,
