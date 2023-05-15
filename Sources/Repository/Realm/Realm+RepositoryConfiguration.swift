@@ -82,12 +82,12 @@ extension Realm.Configuration {
            let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
             if #available(iOS 16.0, *) {
                 destinationDirectory = documentDirectory
-                    .appending(component: category)
                     .appending(component: directory)
+                    .appending(component: category)
             } else {
                 destinationDirectory = documentDirectory
-                    .appendingPathComponent(category)
                     .appendingPathComponent(directory)
+                    .appendingPathComponent(category)
             }
         } else if let defaultDirectory = realmConfiguration.fileURL {
             if #available(iOS 16.0, *) {
@@ -161,7 +161,7 @@ extension Realm {
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) throws {
-        if let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
+        if case .inMemory = kind, let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
             self = cachedRealm
         } else {
             try self.init(configuration: try .init(kind, configuration), queue: queue)
@@ -176,7 +176,7 @@ extension Realm {
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
     init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
-        if let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
+        if case .inMemory = kind, let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
             self = cachedRealm
         } else {
             self = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Self, Swift.Error>) in
