@@ -32,6 +32,7 @@ import RealmSwift
     
     public typealias Index = Int
     public typealias Element = Element
+    public typealias ChangeElement = Element
     
     public let queue: DispatchQueue
     public let controller: RepositoryController
@@ -78,7 +79,7 @@ import RealmSwift
         return .init(queue, unsafe, controller)
     }
     
-    public func modificat(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self {
+    public func modify(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self {
         try await controller.manageable.write { try perform(unsafe[index]) }
         return .init(queue, unsafe, controller)
     }

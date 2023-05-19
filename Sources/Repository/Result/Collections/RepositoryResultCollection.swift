@@ -28,14 +28,15 @@ import RealmSwift
 import Foundation
 
 /// <#Description#>
-public protocol RepositoryResultCollectionProtocol: QueuingCollection {
+public protocol RepositoryResultCollectionProtocol: QueuingCollection, UnsafeSymmetricComparable, SymmetricComparable {
     
     associatedtype Index
     associatedtype Element: Manageable
 }
 
 /// <#Description#>
-public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol where Element: ManageableSource {
+public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol where Element: ManageableSource,
+                                                                                     ChangeElement == Element {
     
     /// <#Description#>
     var isEmpty: Bool { get async }
@@ -92,7 +93,7 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     ///   - index: <#index description#>
     ///   - perform: <#perform description#>
     /// - Returns: <#description#>
-    func modificat(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self
+    func modify(at index: Index, perform: @escaping (Element) throws -> Void) async throws -> Self
     
     /// <#Description#>
     /// - Parameter descriptors: <#descriptors description#>
@@ -300,6 +301,18 @@ public extension RepositoryResultCollection {
     }
 }
 
+// MARK: - RepositoryResult + UnsafeSymmetricComparator
+public extension RepositoryResultCollection {
+    
+    func difference(_ other: Self) -> CollectionDifference<ChangeElement> {
+        unsafe.elements.difference(from: other.unsafe.elements)
+    }
+    
+    func symmetricDifference(_ other: Self) -> Set<ChangeElement> {
+        Set(unsafe.elements).symmetricDifference(other.unsafe)
+    }
+}
+
 // MARK: - RepositoryResult + ManageableType
 public extension RepositoryResultCollection where Element: ManageableSource,
                                                   Element.ManageableType.RepresentedType == Element {
@@ -427,6 +440,32 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                 }
             }
             .receive(on: result.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - other: <#other description#>
+    ///   - transform: <#transform description#>
+    /// - Returns: <#description#>
+    func combineLatestResults<P, T>(_ other: P,
+                                    _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
+                                                                                                                                Self.Output == P.Output,
+                                                                                                                                Self.Failure == P.Failure {
+        flatMap { result in
+            receive(on: result.queue)
+                .combineLatest(other, transform)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter comparator: <#comparator description#>
+    /// - Returns: <#description#>
+    func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap { result in
+            Publishers.SymmetricRemoveDuplicates(queue: result.queue, upstream: self) { lhs, rhs in
+                lhs.isEmpty(rhs, comparator: comparator)
+            }
         }.eraseToAnyPublisher()
     }
     

@@ -31,9 +31,9 @@ import Foundation
 @frozen public struct RepositoryRepresentedResult<Element>: RepositoryRepresentedCollection where Element: ManageableRepresented,
                                                                                                   Element.RepresentedType: ManageableSource,
                                                                                                   Element.RepresentedType.ManageableType == Element {
-    
     public typealias Index = Int
     public typealias Element = Element
+    public typealias ChangeElement = Element.RepresentedType
     
     public let result: RepositoryResult<Element.RepresentedType>
     

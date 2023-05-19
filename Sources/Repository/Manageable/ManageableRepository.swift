@@ -193,7 +193,7 @@ public extension ManageableRepository {
     ///   - type: <#type description#>
     ///   - primaryKey: <#primaryKey description#>
     ///   - modification: <#modification description#>
-    func modificat<T>(_ type: T.Type, with primaryKey: AnyHashable, _ modification: @escaping (T) throws -> Void) async throws where T: ManageableSource {
+    func modify<T>(_ type: T.Type, with primaryKey: AnyHashable, _ modification: @escaping (T) throws -> Void) async throws where T: ManageableSource {
         let model = try await lazy.fetch(oneOf: type, with: primaryKey)
         try await write { try modification(model) }
     }
@@ -227,9 +227,9 @@ public extension ManageableRepository {
     ///   - primaryKey: <#primaryKey description#>
     ///   - modification: <#modification description#>
     /// - Returns: <#description#>
-    func publishModificat<T>(_ type: T.Type,
-                             with primaryKey: AnyHashable,
-                             _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
+    func publishModify<T>(_ type: T.Type,
+                          with primaryKey: AnyHashable,
+                          _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
         publishLazy
             .fetch(oneOf: type, with: primaryKey)
             .flatMap { model in
@@ -367,10 +367,10 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - primaryKey: <#primaryKey description#>
     ///   - modification: <#modification description#>
     /// - Returns: <#description#>
-    func modificat<T>(_ type: T.Type,
-                      with primaryKey: AnyHashable,
-                      _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
-        flatMap { $0.publishModificat(type, with: primaryKey, modification) }.eraseToAnyPublisher()
+    func modify<T>(_ type: T.Type,
+                   with primaryKey: AnyHashable,
+                   _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
+        flatMap { $0.publishModify(type, with: primaryKey, modification) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>

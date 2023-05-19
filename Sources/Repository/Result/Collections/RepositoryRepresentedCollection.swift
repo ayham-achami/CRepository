@@ -28,7 +28,7 @@ import RealmSwift
 import Foundation
 
 /// <#Description#>
-public protocol RepositoryRepresentedCollectionProtocol: QueuingCollection {
+public protocol RepositoryRepresentedCollectionProtocol: QueuingCollection, SymmetricComparable, UnsafeSymmetricComparable {
     
     associatedtype Index
     associatedtype Element: ManageableRepresented
@@ -36,7 +36,8 @@ public protocol RepositoryRepresentedCollectionProtocol: QueuingCollection {
 
 /// <#Description#>
 public protocol RepositoryRepresentedCollection: RepositoryRepresentedCollectionProtocol where Element.RepresentedType: ManageableSource,
-                                                                                               Element.RepresentedType.ManageableType == Element {
+                                                                                               Element.RepresentedType.ManageableType == Element,
+                                                                                               ChangeElement == Element.RepresentedType {
     
     /// <#Description#>
     var isEmpty: Bool { get async }
@@ -218,6 +219,18 @@ public extension RepositoryRepresentedCollection {
             else { throw RepositoryFetchError.notFound }
             return .init(from: last)
         }
+    }
+}
+
+// MARK: RepositoryRepresentedCollection + UnsafeSymmetricComparator
+public extension RepositoryRepresentedCollection {
+    
+    func difference(_ other: Self) -> CollectionDifference<ChangeElement> {
+        result.difference(other.result)
+    }
+    
+    func symmetricDifference(_ other: Self) -> Set<ChangeElement> {
+        result.symmetricDifference(other.result)
     }
 }
 

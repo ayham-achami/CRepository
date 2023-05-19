@@ -37,7 +37,7 @@ public enum ChangesetKind {
 }
 
 /// <#Description#>
-public protocol Changeset {
+public protocol Changeset: SymmetricComparable, UnsafeSymmetricComparable {
     
     /// <#Description#>
     associatedtype Result
@@ -58,9 +58,32 @@ public protocol Changeset {
     var modifications: [Int] { get }
 }
 
+// MARK: - Changeset + UnsafeSymmetricComparable + SymmetricComparable
+public extension Changeset where Result: UnsafeSymmetricComparable & SymmetricComparable,
+                                 Result.ChangeElement == ChangeElement {
+    
+    func difference(_ other: Self) -> CollectionDifference<ChangeElement> {
+        result.difference(other.result)
+    }
+    
+    func symmetricDifference(_ other: Self) -> Set<ChangeElement> {
+        result.symmetricDifference(other.result)
+    }
+    
+    func difference(from other: Self) async -> RepositoryDifference<Result.ChangeElement> {
+        await result.difference(from: other.result)
+    }
+    
+    func symmetricDifference(from other: Self) async -> RepositorySet<Result.ChangeElement> {
+        await result.symmetricDifference(from: other.result)
+    }
+}
+
 /// <#Description#>
 @frozen public struct RepositoryChangeset<Result>: Changeset where Result: RepositoryResultCollection,
                                                                    Result.Element: ManageableSource {
+    
+    public typealias ChangeElement = Result.ChangeElement
     
     public let result: Result
     public let kind: ChangesetKind
@@ -76,6 +99,8 @@ public protocol Changeset {
                                                                               Result.Element.RepresentedType: ManageableSource,
                                                                               Result.Element.RepresentedType.ManageableType == Result.Element {
     
+    public typealias ChangeElement = Result.ChangeElement
+    
     public let result: Result
     public let kind: ChangesetKind
     
@@ -85,7 +110,7 @@ public protocol Changeset {
 }
 
 /// <#Description#>
-public protocol ChangesetCollection: QueuingCollection, Equatable {
+public protocol ChangesetCollection: QueuingCollection, UnsafeSymmetricComparable, SymmetricComparable, Equatable {
     
     /// <#Description#>
     typealias Index = Int
@@ -212,9 +237,23 @@ public extension ChangesetCollection {
     }
 }
 
+// MARK: - ChangesetCollection + UnsafeSymmetricComparable + SymmetricComparable
+public extension ChangesetCollection where ChangeElement == Element {
+    
+    func difference(_ other: Self) -> CollectionDifference<ChangeElement> {
+        elements.difference(from: other.elements)
+    }
+    
+    func symmetricDifference(_ other: Self) -> Set<ChangeElement> {
+        Set(elements).symmetricDifference(other.elements)
+    }
+}
+
 /// <#Description#>
 @frozen public struct ChangesetSequence<Element>: ChangesetCollection where Element: ManageableSource {
-    
+        
+    public typealias ChangeElement = Element
+
     public let indexes: IndexSet
     public let elements: [Element]
     public let queue: DispatchQueue
@@ -340,6 +379,32 @@ public extension Publisher where Self.Output: Changeset,
             .receive(on: changeset.result.queue)
         }.eraseToAnyPublisher()
     }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - other: <#other description#>
+    ///   - transform: <#transform description#>
+    /// - Returns: <#description#>
+    func combineLatestResults<P, T>(_ other: P,
+                                    _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
+                                                                                                                                Self.Output == P.Output,
+                                                                                                                                Self.Failure == P.Failure {
+        flatMap { result in
+            receive(on: result.result.queue)
+                .combineLatest(other, transform)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter comparator: <#comparator description#>
+    /// - Returns: <#description#>
+    func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap { result in
+            Publishers.SymmetricRemoveDuplicates(queue: result.result.queue, upstream: self) { lhs, rhs in
+                lhs.isEmpty(rhs, comparator: comparator)
+            }
+        }.eraseToAnyPublisher()
+    }
 }
 
 // MARK: - Publisher + ManageableSource
@@ -361,6 +426,32 @@ public extension Publisher where Self.Output: ChangesetCollection,
                         promise(.failure(error))
                     }
                 }
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - other: <#other description#>
+    ///   - transform: <#transform description#>
+    /// - Returns: <#description#>
+    func combineLatestResults<P, T>(_ other: P,
+                                    _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
+                                                                                                                                Self.Output == P.Output,
+                                                                                                                                Self.Failure == P.Failure {
+        flatMap { result in
+            receive(on: result.queue)
+                .combineLatest(other, transform)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter comparator: <#comparator description#>
+    /// - Returns: <#description#>
+    func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap { result in
+            Publishers.SymmetricRemoveDuplicates(queue: result.queue, upstream: self) { lhs, rhs in
+                lhs.isEmpty(rhs, comparator: comparator)
             }
         }.eraseToAnyPublisher()
     }
