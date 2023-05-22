@@ -288,6 +288,8 @@ public extension Publisher where Self.Output: Changeset,
                                  Self.Output.Result.Element: ManageableSource,
                                  Self.Failure == Swift.Error {
     
+    /// <#Description#>
+    /// - Returns: <#description#>
     func initialization() -> AnyPublisher<ChangesetSequence<Self.Output.Result.Element>, Self.Failure> {
         flatMap { changeset in
             Future { promise in
@@ -389,9 +391,31 @@ public extension Publisher where Self.Output: Changeset,
                                     _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
                                                                                                                                 Self.Output == P.Output,
                                                                                                                                 Self.Failure == P.Failure {
-        flatMap { result in
-            receive(on: result.result.queue)
+        flatMap { changeset in
+            receive(on: changeset.result.queue)
                 .combineLatest(other, transform)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Returns: <#description#>
+    func filterResults(_ isIncluded: @escaping (Self.Output) -> Bool) -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap { changeset in
+            receive(on: changeset.result.queue)
+                .filter(isIncluded)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - initialResult: <#initialResult description#>
+    ///   - nextPartialResult: <#nextPartialResult description#>
+    /// - Returns: <#description#>
+    func scan<T>(_ initialResult: T, _ nextPartialResult: @escaping (T, Self.Output) -> T) -> AnyPublisher<T, Self.Failure> {
+        flatMap { changeset in
+            receive(on: changeset.result.queue)
+                .scan(initialResult, nextPartialResult)
         }.eraseToAnyPublisher()
     }
     
@@ -399,8 +423,8 @@ public extension Publisher where Self.Output: Changeset,
     /// - Parameter comparator: <#comparator description#>
     /// - Returns: <#description#>
     func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Publishers.SymmetricRemoveDuplicates(queue: result.result.queue, upstream: self) { lhs, rhs in
+        flatMap { changeset in
+            Publishers.SymmetricRemoveDuplicates(queue: changeset.result.queue, upstream: self) { lhs, rhs in
                 lhs.isEmpty(rhs, comparator: comparator)
             }
         }.eraseToAnyPublisher()
@@ -442,6 +466,28 @@ public extension Publisher where Self.Output: ChangesetCollection,
         flatMap { result in
             receive(on: result.queue)
                 .combineLatest(other, transform)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Returns: <#description#>
+    func filterResults(_ isIncluded: @escaping (Self.Output) -> Bool) -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap { result in
+            receive(on: result.queue)
+                .filter(isIncluded)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - initialResult: <#initialResult description#>
+    ///   - nextPartialResult: <#nextPartialResult description#>
+    /// - Returns: <#description#>
+    func scan<T>(_ initialResult: T, _ nextPartialResult: @escaping (T, Self.Output) -> T) -> AnyPublisher<T, Self.Failure> {
+        flatMap { result in
+            receive(on: result.queue)
+                .scan(initialResult, nextPartialResult)
         }.eraseToAnyPublisher()
     }
     
