@@ -273,6 +273,9 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 case 3:
                     XCTAssertEqual(changeset.kind, .update)
                     XCTAssertEqual(changeset.modifications, [1])
+                case 4:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.modifications, [1])
                 default:
                     XCTFail("Receive unknown case")
                 }
@@ -282,7 +285,8 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         let speaker1 = self.manageableSpeaker(id: 1)
         let speaker2 = self.manageableSpeaker(id: 2)
         let speaker3 = self.manageableSpeaker(id: 2)
-        speaker3.name = "test"
+        speaker3.name = "test remove duplicates"
+        let speaker4 = self.manageableSpeaker(id: 2)
         // When
         subscribe("Remove duplicates of ManageableSpeaker") { expectation in
             reservedRepository
@@ -298,7 +302,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
                 .flatMap { $0.publishPut(speaker3) }
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(speaker2) }
+                .flatMap { $0.publishPut(speaker4) }
                 .sink("Success remove duplicates of ManageableSpeaker", expectation)
         }
     }
