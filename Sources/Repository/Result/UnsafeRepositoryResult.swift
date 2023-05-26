@@ -84,6 +84,15 @@ import Foundation
         .init(results.where(isIncluded))
     }
     
+    public func pick(_ indexes: IndexSet) -> [Element] {
+        var elements = [Element]()
+        for (index, element) in results.enumerated() {
+            guard indexes.contains(index) else { continue }
+            elements.append(element)
+        }
+        return elements
+    }
+    
     /// <#Description#>
     /// - Parameter keyPaths: <#keyPaths description#>
     /// - Returns: <#description#>
@@ -100,7 +109,7 @@ import Foundation
 }
 
 // MARK: - UnsafeRepositoryResultCollectionFrozer
-extension UnsafeRepositoryResult: UnsafeRepositoryResultCollectionFrozer {
+extension UnsafeRepositoryResult: RepositoryCollectionUnsafeFrozer {
     
     public var isFrozen: Bool {
         results.isFrozen

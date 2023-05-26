@@ -320,34 +320,18 @@ public extension Publisher where Self.Output: RepositoryRepresentedCollection,
     /// <#Description#>
     /// - Returns: <#description#>
     func first() -> AnyPublisher<Self.Output.Element, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let element = try await result.first()
-                        promise(.success(element))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
+        tryMap { result in
+            guard let first = result.result.unsafe.first else { throw RepositoryFetchError.notFound }
+            return .init(from: first)
         }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func last() -> AnyPublisher<Self.Output.Element, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let element = try await result.last()
-                        promise(.success(element))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
+        tryMap { result in
+            guard let last = result.result.unsafe.last else { throw RepositoryFetchError.notFound }
+            return .init(from: last)
         }.eraseToAnyPublisher()
     }
     

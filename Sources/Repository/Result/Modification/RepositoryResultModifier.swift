@@ -75,6 +75,7 @@ public protocol RepositoryResultModifier {
 // MARK: - RepositoryResultModifier + Default
 public extension RepositoryResultModifier {
     
+    @discardableResult
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
@@ -82,12 +83,14 @@ public extension RepositoryResultModifier {
         try await remove(isCascading: true, where: isIncluded)
     }
     
+    @discardableResult
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() async throws -> RepositoryController {
         try await removeAll(isCascading: true)
     }
     
+    @discardableResult
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
@@ -95,6 +98,7 @@ public extension RepositoryResultModifier {
         remove(isCascading: true, where: isIncluded)
     }
     
+    @discardableResult
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() -> AnyPublisher<RepositoryController, Swift.Error> {

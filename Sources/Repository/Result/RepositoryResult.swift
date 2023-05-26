@@ -94,30 +94,20 @@ import RealmSwift
     }
 }
 
-// MARK: - RepositoryResult + RepositoryCollectionFrozer
-extension RepositoryResult: RepositoryCollectionFrozer {
+// MARK: - RepositoryResult + RepositoryCollectionFrozer + RepositoryCollectionUnsafeFrozer
+extension RepositoryResult: RepositoryCollectionFrozer, RepositoryCollectionUnsafeFrozer {
     
     public var isFrozen: Bool {
-        get async {
-            await async {
-                unsafe.isFrozen
-            }
-        }
+        unsafe.isFrozen
     }
     
-    public var freeze: Self {
-        get async {
-            await apply {
-                unsafe.freeze
-            }
-        }
+    public var freeze: RepositoryResult<Element> {
+        .init(queue, unsafe.freeze, controller)
     }
     
-    public var thaw: Self {
-        get async throws {
-            try await applyThrowing {
-                try unsafe.thaw
-            }
+    public var thaw: RepositoryResult<Element> {
+        get throws {
+            .init(queue, try unsafe.thaw, controller)
         }
     }
 }

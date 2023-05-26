@@ -45,6 +45,8 @@
 		DF701BA629D16CD300EF67F7 /* Results+Manageable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF701BA529D16CD300EF67F7 /* Results+Manageable.swift */; };
 		DF701BA829D1703A00EF67F7 /* UnsafeRepositoryResultCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF701BA729D1703A00EF67F7 /* UnsafeRepositoryResultCollection.swift */; };
 		DF701BAA29D170ED00EF67F7 /* UnsafeRepositoryResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF701BA929D170ED00EF67F7 /* UnsafeRepositoryResult.swift */; };
+		DFB95DEB2A1BFA6C0085564E /* RepositorySequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB95DEA2A1BFA6C0085564E /* RepositorySequence.swift */; };
+		DFB95DED2A1BFABE0085564E /* RepositoryCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB95DEC2A1BFABE0085564E /* RepositoryCollection.swift */; };
 		DFBEE824274237610058E5AB /* RealmAsyncRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */; };
 		DFBEE82C27423B2A0058E5AB /* CombineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE826274238EE0058E5AB /* CombineRepository.swift */; };
 		DFBEE82E27423B2A0058E5AB /* CombineApparentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE828274238EE0058E5AB /* CombineApparentRepository.swift */; };
@@ -60,6 +62,8 @@
 		DFE5014A29D2DB3300836713 /* PathSorted.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5014929D2DB3300836713 /* PathSorted.swift */; };
 		DFE5014E29D2DB9300836713 /* Changeset.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5014D29D2DB9300836713 /* Changeset.swift */; };
 		DFE5015029D2DCD900836713 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5014F29D2DCD900836713 /* Container.swift */; };
+		DFFC24882A1FD7E40020D7A2 /* SymmetricFreezeRemoveDuplicates.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFC24872A1FD7E40020D7A2 /* SymmetricFreezeRemoveDuplicates.swift */; };
+		DFFC248A2A1FFD810020D7A2 /* ChangesetCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFC24892A1FFD810020D7A2 /* ChangesetCollection.swift */; };
 		E7C190FC061241B081865FA3 /* Pods_Playground.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8D59FA633CADA1A934ACD55 /* Pods_Playground.framework */; };
 		F085199326C524CE00EDBCAB /* CRepository.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F085198926C524CE00EDBCAB /* CRepository.framework */; };
 		F08519EE26C54D7700EDBCAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08519ED26C54D7700EDBCAB /* AppDelegate.swift */; };
@@ -166,6 +170,8 @@
 		DF701BA729D1703A00EF67F7 /* UnsafeRepositoryResultCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsafeRepositoryResultCollection.swift; sourceTree = "<group>"; };
 		DF701BA929D170ED00EF67F7 /* UnsafeRepositoryResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsafeRepositoryResult.swift; sourceTree = "<group>"; };
 		DF89E63029F7F75700598827 /* CRepository.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = CRepository.xctestplan; path = Tests/CRepository.xctestplan; sourceTree = SOURCE_ROOT; };
+		DFB95DEA2A1BFA6C0085564E /* RepositorySequence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RepositorySequence.swift; sourceTree = "<group>"; };
+		DFB95DEC2A1BFABE0085564E /* RepositoryCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryCollection.swift; sourceTree = "<group>"; };
 		DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmAsyncRepositoryTests.swift; sourceTree = "<group>"; };
 		DFBEE826274238EE0058E5AB /* CombineRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CombineRepository.swift; sourceTree = "<group>"; };
 		DFBEE828274238EE0058E5AB /* CombineApparentRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CombineApparentRepository.swift; sourceTree = "<group>"; };
@@ -181,6 +187,8 @@
 		DFE5014929D2DB3300836713 /* PathSorted.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSorted.swift; sourceTree = "<group>"; };
 		DFE5014D29D2DB9300836713 /* Changeset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Changeset.swift; sourceTree = "<group>"; };
 		DFE5014F29D2DCD900836713 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
+		DFFC24872A1FD7E40020D7A2 /* SymmetricFreezeRemoveDuplicates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymmetricFreezeRemoveDuplicates.swift; sourceTree = "<group>"; };
+		DFFC24892A1FFD810020D7A2 /* ChangesetCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangesetCollection.swift; sourceTree = "<group>"; };
 		F085198926C524CE00EDBCAB /* CRepository.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CRepository.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F085199226C524CE00EDBCAB /* CRepositoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CRepositoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F085199926C524CE00EDBCAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -295,6 +303,7 @@
 				DFBF9EE22A16C289009EC9E8 /* RepositorySet.swift */,
 				DF68EEA329B7852F00381CE1 /* RepositoryResult.swift */,
 				DFBF9EE02A16BE94009EC9E8 /* RepositoryDifference.swift */,
+				DFB95DEA2A1BFA6C0085564E /* RepositorySequence.swift */,
 				DF701BA929D170ED00EF67F7 /* UnsafeRepositoryResult.swift */,
 				DF6FD42B29D42FDD007E6CAA /* RepositoryRepresentedResult.swift */,
 				DF49E93D29E80E20009C9E88 /* Collections */,
@@ -371,6 +380,7 @@
 			isa = PBXGroup;
 			children = (
 				DF49E93B29E80D54009C9E88 /* QueuingCollection.swift */,
+				DFB95DEC2A1BFABE0085564E /* RepositoryCollection.swift */,
 				DFBF9EDE2A16BB7F009EC9E8 /* SymmetricComparator.swift */,
 				DF13F25D29BA62E000369EF6 /* RepositoryResultCollection.swift */,
 				DF6FD42D29D43059007E6CAA /* RepositoryRepresentedCollection.swift */,
@@ -449,6 +459,7 @@
 			children = (
 				DFBF9EDC2A16B141009EC9E8 /* PredicateProducer.swift */,
 				DF6375602A16052500BBFE46 /* SymmetricRemoveDuplicates.swift */,
+				DFFC24872A1FD7E40020D7A2 /* SymmetricFreezeRemoveDuplicates.swift */,
 			);
 			path = Combine;
 			sourceTree = "<group>";
@@ -466,6 +477,7 @@
 			isa = PBXGroup;
 			children = (
 				DFE5014D29D2DB9300836713 /* Changeset.swift */,
+				DFFC24892A1FFD810020D7A2 /* ChangesetCollection.swift */,
 				DF6FD43729D4E3C5007E6CAA /* RepositoryChangesetWatcher.swift */,
 				DF6FD43929D4E737007E6CAA /* RepositoryRepresentedChangesetWatcher.swift */,
 			);
@@ -926,9 +938,11 @@
 				F0C2709626CAAA5C00211F15 /* RepositoryError.swift in Sources */,
 				DF6375612A16052500BBFE46 /* SymmetricRemoveDuplicates.swift in Sources */,
 				F0C2709826CAAA5C00211F15 /* Localization+String.swift in Sources */,
+				DFB95DED2A1BFABE0085564E /* RepositoryCollection.swift in Sources */,
 				F0C2709226CAAA5C00211F15 /* MigrationController.swift in Sources */,
 				DF307BCE273D3D4C00540031 /* AsyncRepository.swift in Sources */,
 				DF3BFFC62770882C00A1D5B4 /* AsyncRealmRepository.swift in Sources */,
+				DFB95DEB2A1BFA6C0085564E /* RepositorySequence.swift in Sources */,
 				DFE5015029D2DCD900836713 /* Container.swift in Sources */,
 				F0C2708526CAAA5C00211F15 /* SafeRepository.swift in Sources */,
 				DF3BFFC42770881500A1D5B4 /* SyncRealmRepository.swift in Sources */,
@@ -949,6 +963,7 @@
 				DF13F26529BB512D00369EF6 /* RealmRepository.swift in Sources */,
 				DFBEE8392742579A0058E5AB /* SyncApparentRepository.swift in Sources */,
 				F0C2708426CAAA5C00211F15 /* Realm+CascadeDeleteing.swift in Sources */,
+				DFFC24882A1FD7E40020D7A2 /* SymmetricFreezeRemoveDuplicates.swift in Sources */,
 				DF6FD43A29D4E737007E6CAA /* RepositoryRepresentedChangesetWatcher.swift in Sources */,
 				DF307BCD273D3D4C00540031 /* AsyncApparentRepository.swift in Sources */,
 				DFE5014829D2DADD00836713 /* RepositoryResultModifier.swift in Sources */,
@@ -958,6 +973,7 @@
 				DFBEE82E27423B2A0058E5AB /* CombineApparentRepository.swift in Sources */,
 				DF13F25E29BA62E000369EF6 /* RepositoryResultCollection.swift in Sources */,
 				DFBEE8382742579A0058E5AB /* SyncRepository.swift in Sources */,
+				DFFC248A2A1FFD810020D7A2 /* ChangesetCollection.swift in Sources */,
 				DF6FD43429D4D35F007E6CAA /* WatchRepository.swift in Sources */,
 				F0C2709326CAAA5C00211F15 /* MigrationControllerProducer.swift in Sources */,
 				DF13F2A729C2365D00369EF6 /* Realm+Manageable.swift in Sources */,

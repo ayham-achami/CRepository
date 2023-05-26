@@ -1,5 +1,7 @@
 //
-//  UnsafeRepositoryResultCollection.swift
+//  RepositoryCollection.swift
+//
+//  The MIT License (MIT)
 //
 //  Copyright (c) 2019 Community Arch
 //
@@ -21,38 +23,41 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Combine
-import RealmSwift
 import Foundation
 
-/// <#Description#>
-public protocol UnsafeRepositoryResultCollection: RandomAccessCollection, LazyCollectionProtocol, CustomStringConvertible where Element: Manageable {
+public protocol RepositoryCollection: QueuingCollection {
+    
+    associatedtype Index
+    associatedtype Element: ManageableSource
     
     /// <#Description#>
-    var throwIfEmpty: Self { get throws }
+    /// - Parameter contentsOf: <#contentsOf description#>
+    mutating func append(contentsOf content: [RepositoryResult<Element>])
     
     /// <#Description#>
-    /// - Parameter descriptors: <#descriptors description#>
+    /// - Parameters:
+    ///   - index: <#index description#>
+    ///   - transform: <#transform description#>
     /// - Returns: <#description#>
-    func sorted(with descriptors: [Sorted]) -> Self
+    func mapElement<T>(at index: Index, _ transform: @escaping (Element) throws -> T) async throws -> T
     
     /// <#Description#>
-    /// - Parameter descriptors: <#descriptors description#>
+    /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
-    func sorted(with descriptors: [PathSorted<Element>]) -> Self
+    func mapFirst<T>(_ transform: @escaping (Element) throws -> T) async throws -> T
     
     /// <#Description#>
-    /// - Parameter predicate: <#predicate description#>
+    /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
-    func filter(by predicate: NSPredicate) -> Self
+    func mapLast<T>(_ transform: @escaping (Element) throws -> T) async throws -> T
     
     /// <#Description#>
-    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
-    func filter(_ isIncluded: ((Query<Element>) -> Query<Bool>)) -> Self
+    func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T]
     
     /// <#Description#>
-    /// - Parameter indexes: <#indexes description#>
+    /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
-    func pick(_ indexes: IndexSet) -> [Element]
+    func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
 }

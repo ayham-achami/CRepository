@@ -153,8 +153,9 @@ class PredicateProducer<Downstream: Subscriber,
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
     private func perform<T>(_ perform: () throws -> T) rethrows -> T {
-        defer { semaphore.signal() }
-        semaphore.wait()
+        // defer { semaphore.signal() }
+        // semaphore.wait()
+        // FIXME: Atomic
         return try perform()
     }
 }

@@ -27,16 +27,54 @@ import Combine
 import Foundation
 
 /// <#Description#>
+public protocol RepositoryCollectionUnsafeFrozer {
+    
+    /// <#Description#>
+    var isFrozen: Bool { get }
+    
+    /// <#Description#>
+    var freeze: Self { get }
+    
+    /// <#Description#>
+    var thaw: Self { get throws }
+}
+
+/// <#Description#>
 public protocol RepositoryCollectionFrozer {
- 
-    /// <#Description#>
-    var isFrozen: Bool { get async }
     
     /// <#Description#>
-    var freeze: Self { get async }
+    var unsafeFrozer: RepositoryCollectionUnsafeFrozer { get }
     
     /// <#Description#>
-    var thaw: Self { get async throws }
+    func isFrozen() async -> Bool
+    
+    /// <#Description#>
+    func freeze() async -> Self
+    
+    func thaw() async throws -> Self
+}
+
+// MARK: - RepositoryCollectionFrozer + QueuingCollection + RepositoryCollectionUnsafeFrozer
+public extension RepositoryCollectionFrozer where Self: QueuingCollection, Self: RepositoryCollectionUnsafeFrozer {
+    
+    /// <#Description#>
+    var unsafeFrozer: RepositoryCollectionUnsafeFrozer {
+        self
+    }
+    
+    func isFrozen() async -> Bool {
+        await async { unsafeFrozer.isFrozen }
+    }
+    
+    func freeze() async -> Self {
+        // swiftlint:disable:next force_cast
+        await async { unsafeFrozer.freeze as! Self }
+    }
+    
+    func thaw() async throws -> Self {
+        // swiftlint:disable:next force_cast
+        try await asyncThrowing { try unsafeFrozer.thaw as! Self }
+    }
 }
 
 // MARK: - Publisher + RepositoryResultCollectionFrozer
@@ -50,7 +88,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
         flatMap { result in
             Future { promise in
                 Task {
-                    let freezed = await result.freeze
+                    let freezed = await result.freeze()
                     promise(.success(freezed))
                 }
             }.receive(on: result.queue)
@@ -64,7 +102,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
             Future { promise in
                 Task {
                     do {
-                        let freezed = try await result.thaw
+                        let freezed = try await result.thaw()
                         promise(.success(freezed))
                     } catch {
                         promise(.failure(error))
@@ -86,7 +124,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
         flatMap { result in
             Future { promise in
                 Task {
-                    let freezed = await result.freeze
+                    let freezed = await result.freeze()
                     promise(.success(freezed))
                 }
             }.receive(on: result.result.queue)
@@ -100,7 +138,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
             Future { promise in
                 Task {
                     do {
-                        let freezed = try await result.thaw
+                        let freezed = try await result.thaw()
                         promise(.success(freezed))
                     } catch {
                         promise(.failure(error))

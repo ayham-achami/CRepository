@@ -37,7 +37,7 @@ public enum ChangesetKind {
 }
 
 /// <#Description#>
-public protocol Changeset: SymmetricComparable, UnsafeSymmetricComparable {
+public protocol Changeset: QueuingCollection, SymmetricComparable, UnsafeSymmetricComparable {
     
     /// <#Description#>
     associatedtype Result
@@ -59,7 +59,8 @@ public protocol Changeset: SymmetricComparable, UnsafeSymmetricComparable {
 }
 
 // MARK: - Changeset + UnsafeSymmetricComparable + SymmetricComparable
-public extension Changeset where Result: UnsafeSymmetricComparable & SymmetricComparable,
+public extension Changeset where Result: SymmetricComparable,
+                                 Result: UnsafeSymmetricComparable,
                                  Result.ChangeElement == ChangeElement {
     
     func difference(_ other: Self) -> CollectionDifference<ChangeElement> {
@@ -79,11 +80,24 @@ public extension Changeset where Result: UnsafeSymmetricComparable & SymmetricCo
     }
 }
 
+// MARK: - Changeset + Elements
+public extension Changeset where Result: RepositoryResultCollection {
+    
+    /// <#Description#>
+    var elements: [Result.Element] {
+        Array(result.unsafe.elements)
+    }
+}
+
 /// <#Description#>
 @frozen public struct RepositoryChangeset<Result>: Changeset where Result: RepositoryResultCollection,
                                                                    Result.Element: ManageableSource {
     
     public typealias ChangeElement = Result.ChangeElement
+    
+    public var queue: DispatchQueue {
+        result.queue
+    }
     
     public let result: Result
     public let kind: ChangesetKind
@@ -91,6 +105,33 @@ public extension Changeset where Result: UnsafeSymmetricComparable & SymmetricCo
     public let deletions: [Int]
     public let insertions: [Int]
     public let modifications: [Int]
+}
+
+// MARK: - RepositoryChangeset + RepositoryCollectionUnsafeFrozer + RepositoryCollectionFrozer
+extension RepositoryChangeset: RepositoryCollectionUnsafeFrozer, RepositoryCollectionFrozer where Result: RepositoryCollectionUnsafeFrozer,
+                                                                                                  Result: RepositoryCollectionFrozer {
+    
+    public var isFrozen: Bool {
+        result.isFrozen
+    }
+    
+    public var freeze: RepositoryChangeset<Result> {
+        .init(result: result.freeze,
+              kind: kind,
+              deletions: deletions,
+              insertions: insertions,
+              modifications: modifications)
+    }
+    
+    public var thaw: RepositoryChangeset<Result> {
+        get throws {
+            .init(result: try result.thaw,
+                  kind: kind,
+                  deletions: deletions,
+                  insertions: insertions,
+                  modifications: modifications)
+        }
+    }
 }
 
 /// <#Description#>
@@ -101,6 +142,10 @@ public extension Changeset where Result: UnsafeSymmetricComparable & SymmetricCo
     
     public typealias ChangeElement = Result.ChangeElement
     
+    public var queue: DispatchQueue {
+        result.queue
+    }
+    
     public let result: Result
     public let kind: ChangesetKind
     
@@ -109,396 +154,29 @@ public extension Changeset where Result: UnsafeSymmetricComparable & SymmetricCo
     public let modifications: [Int]
 }
 
-/// <#Description#>
-public protocol ChangesetCollection: QueuingCollection, UnsafeSymmetricComparable, SymmetricComparable, Equatable {
+// MARK: - RepositoryRepresentedChangeset + RepositoryCollectionUnsafeFrozer + RepositoryCollectionFrozer
+extension RepositoryRepresentedChangeset: RepositoryCollectionUnsafeFrozer, RepositoryCollectionFrozer where Result: RepositoryCollectionUnsafeFrozer,
+                                                                                                             Result: RepositoryCollectionFrozer {
     
-    /// <#Description#>
-    typealias Index = Int
+    public var isFrozen: Bool {
+        result.isFrozen
+    }
     
-    /// <#Description#>
-    associatedtype Element: Manageable
+    public var freeze: RepositoryRepresentedChangeset<Result> {
+        .init(result: result.freeze,
+              kind: kind,
+              deletions: deletions,
+              insertions: insertions,
+              modifications: modifications)
+    }
     
-    /// <#Description#>
-    var indexes: IndexSet { get }
-    
-    /// <#Description#>
-    var elements: [Element] { get }
-    
-    /// <#Description#>
-    var isEmpty: Bool { get async }
-    
-    /// <#Description#>
-    var count: Int { get async }
-    
-    /// <#Description#>
-    var description: String { get async }
-    
-    /// <#Description#>
-    subscript(_ index: Index) -> Element { get async }
-    
-    /// <#Description#>
-    /// - Parameter isIncluded: <#isIncluded description#>
-    /// - Returns: <#description#>
-    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element]
-    
-    /// <#Description#>
-    /// - Parameter predicate: <#predicate description#>
-    /// - Returns: <#description#>
-    func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element?
-    
-    /// <#Description#>
-    /// - Parameter predicate: <#predicate description#>
-    /// - Returns: <#description#>
-    func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element?
-    
-    /// <#Description#>
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
-    func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T]
-    
-    /// <#Description#>
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
-    func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func first() async -> Element?
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func last() async throws -> Element?
-}
-
-// MARK: - ChangesetCollection + Default
-public extension ChangesetCollection {
-    
-    var isEmpty: Bool {
-        get async {
-            await async {
-                elements.isEmpty
-            }
+    public var thaw: RepositoryRepresentedChangeset<Result> {
+        get throws {
+            .init(result: try result.thaw,
+                  kind: kind,
+                  deletions: deletions,
+                  insertions: insertions,
+                  modifications: modifications)
         }
-    }
-    
-    var count: Int {
-        get async {
-            await async {
-                elements.count
-            }
-        }
-    }
-
-    var description: String {
-        get async {
-            await async {
-            """
-            Indexes: [\(indexes.map { "\($0)" }.joined(separator: ", "))]
-            Element: \(elements.description)
-            """
-            }
-        }
-    }
-    
-    subscript(_ index: Index) -> Element {
-        get async {
-            await async {
-                elements[index]
-            }
-        }
-    }
-    
-    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
-        try await asyncThrowing { try elements.filter(isIncluded) }
-    }
-    
-    func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        try await asyncThrowing { try elements.first(where: predicate) }
-    }
-    
-    func last(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
-        try await asyncThrowing { try elements.last(where: predicate) }
-    }
-    
-    func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
-        try await asyncThrowing { try elements.map(transform) }
-    }
-    
-    func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
-        try await asyncThrowing { try elements.compactMap(transform) }
-    }
-    
-    func first() async -> Element? {
-        await async { elements.first }
-    }
-    
-    func last() async throws -> Element? {
-        await async { elements.last }
-    }
-}
-
-// MARK: - ChangesetCollection + UnsafeSymmetricComparable + SymmetricComparable
-public extension ChangesetCollection where ChangeElement == Element {
-    
-    func difference(_ other: Self) -> CollectionDifference<ChangeElement> {
-        elements.difference(from: other.elements)
-    }
-    
-    func symmetricDifference(_ other: Self) -> Set<ChangeElement> {
-        Set(elements).symmetricDifference(other.elements)
-    }
-}
-
-/// <#Description#>
-@frozen public struct ChangesetSequence<Element>: ChangesetCollection where Element: ManageableSource {
-        
-    public typealias ChangeElement = Element
-
-    public let indexes: IndexSet
-    public let elements: [Element]
-    public let queue: DispatchQueue
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - indexes: <#indexes description#>
-    ///   - elements: <#elements description#>
-    ///   - queue: <#queue description#>
-    public init(_ indexes: IndexSet, _ elements: [Element], _ queue: DispatchQueue) {
-        self.queue = queue
-        self.indexes = indexes
-        self.elements = elements
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - indexes: <#indexes description#>
-    ///   - elements: <#elements description#>
-    ///   - queue: <#queue description#>
-    public init(_ indexes: [Int], _ elements: [Element], _ queue: DispatchQueue) {
-        self.queue = queue
-        self.elements = elements
-        self.indexes = .init(indexes)
-        
-    }
-}
-
-// MARK: Publisher + Changeset
-public extension Publisher where Self.Output: Changeset,
-                                 Self.Output.Result: RepositoryResultCollection,
-                                 Self.Output.Result.Element: ManageableSource,
-                                 Self.Failure == Swift.Error {
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func initialization() -> AnyPublisher<ChangesetSequence<Self.Output.Result.Element>, Self.Failure> {
-        flatMap { changeset in
-            Future { promise in
-                Task {
-                    do {
-                        guard changeset.kind == .initial else { return }
-                        let elements = try await changeset.result.map { $0 }
-                        let indexes = IndexSet()
-                        promise(.success(.init(indexes, elements, changeset.result.queue)))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .receive(on: changeset.result.queue)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func deletions() -> AnyPublisher<IndexSet, Self.Failure> {
-        flatMap { changeset in
-            Future { promise in
-                Task {
-                    guard
-                        changeset.kind == .update,
-                        !changeset.deletions.isEmpty,
-                        await !changeset.result.isEmpty
-                    else { return }
-                    promise(.success(.init(changeset.deletions)))
-                }
-            }
-            .receive(on: changeset.result.queue)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func resetting() -> AnyPublisher<Void, Self.Failure> {
-        flatMap { changeset in
-            Future { promise in
-                Task {
-                    guard
-                        changeset.kind == .update,
-                        !changeset.deletions.isEmpty,
-                        await changeset.result.isEmpty
-                    else { return }
-                    promise(.success(()))
-                }
-            }
-            .receive(on: changeset.result.queue)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func insertions() -> AnyPublisher<ChangesetSequence<Self.Output.Result.Element>, Self.Failure> {
-        flatMap { changeset in
-            Future { promise in
-                Task {
-                    do {
-                        guard changeset.kind == .update, !changeset.insertions.isEmpty else { return }
-                        let elements = try await changeset.result.pick(.init(changeset.insertions))
-                        promise(.success(.init(changeset.insertions, elements, changeset.result.queue)))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .receive(on: changeset.result.queue)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func modifications() -> AnyPublisher<ChangesetSequence<Self.Output.Result.Element>, Self.Failure> {
-        flatMap { changeset in
-            Future { promise in
-                Task {
-                    do {
-                        guard changeset.kind == .update, !changeset.modifications.isEmpty else { return }
-                        let elements = try await changeset.result.pick(.init(changeset.modifications))
-                        promise(.success(.init(changeset.modifications, elements, changeset.result.queue)))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .receive(on: changeset.result.queue)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - other: <#other description#>
-    ///   - transform: <#transform description#>
-    /// - Returns: <#description#>
-    func combineLatestResults<P, T>(_ other: P,
-                                    _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
-                                                                                                                                Self.Output == P.Output,
-                                                                                                                                Self.Failure == P.Failure {
-        flatMap { changeset in
-            receive(on: changeset.result.queue)
-                .combineLatest(other, transform)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameter isIncluded: <#isIncluded description#>
-    /// - Returns: <#description#>
-    func filterResults(_ isIncluded: @escaping (Self.Output) -> Bool) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { changeset in
-            receive(on: changeset.result.queue)
-                .filter(isIncluded)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - initialResult: <#initialResult description#>
-    ///   - nextPartialResult: <#nextPartialResult description#>
-    /// - Returns: <#description#>
-    func scan<T>(_ initialResult: T, _ nextPartialResult: @escaping (T, Self.Output) -> T) -> AnyPublisher<T, Self.Failure> {
-        flatMap { changeset in
-            receive(on: changeset.result.queue)
-                .scan(initialResult, nextPartialResult)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameter comparator: <#comparator description#>
-    /// - Returns: <#description#>
-    func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { changeset in
-            Publishers.SymmetricRemoveDuplicates(queue: changeset.result.queue, upstream: self) { lhs, rhs in
-                lhs.isEmpty(rhs, comparator: comparator)
-            }
-        }.eraseToAnyPublisher()
-    }
-}
-
-// MARK: - Publisher + ManageableSource
-public extension Publisher where Self.Output: ChangesetCollection,
-                                 Self.Output.Element: ManageableSource,
-                                 Self.Output.Element.ManageableType.RepresentedType == Self.Output.Element,
-                                 Self.Failure == Swift.Error {
-    
-    /// <#Description#>
-    /// - Returns: <#description#>
-    func mapRepresented() -> AnyPublisher<[Self.Output.Element.ManageableType], Self.Failure> {
-        flatMap { changeset in
-            Future { promise in
-                Task {
-                    do {
-                        let elements = try await changeset.map(Self.Output.Element.ManageableType.init(from:))
-                        promise(.success(elements))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - other: <#other description#>
-    ///   - transform: <#transform description#>
-    /// - Returns: <#description#>
-    func combineLatestResults<P, T>(_ other: P,
-                                    _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
-                                                                                                                                Self.Output == P.Output,
-                                                                                                                                Self.Failure == P.Failure {
-        flatMap { result in
-            receive(on: result.queue)
-                .combineLatest(other, transform)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameter isIncluded: <#isIncluded description#>
-    /// - Returns: <#description#>
-    func filterResults(_ isIncluded: @escaping (Self.Output) -> Bool) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            receive(on: result.queue)
-                .filter(isIncluded)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - initialResult: <#initialResult description#>
-    ///   - nextPartialResult: <#nextPartialResult description#>
-    /// - Returns: <#description#>
-    func scan<T>(_ initialResult: T, _ nextPartialResult: @escaping (T, Self.Output) -> T) -> AnyPublisher<T, Self.Failure> {
-        flatMap { result in
-            receive(on: result.queue)
-                .scan(initialResult, nextPartialResult)
-        }.eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameter comparator: <#comparator description#>
-    /// - Returns: <#description#>
-    func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Publishers.SymmetricRemoveDuplicates(queue: result.queue, upstream: self) { lhs, rhs in
-                lhs.isEmpty(rhs, comparator: comparator)
-            }
-        }.eraseToAnyPublisher()
     }
 }

@@ -121,7 +121,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .publishManageable
                 .reset()
                 .put(manageableSpeaker(id: 1)) // Given
-                .modificat(ManageableSpeaker.self, with: 1) { $0.name = "Modificated name" } // When
+                .modify(ManageableSpeaker.self, with: 1) { $0.name = "Modificated name" } // When
                 .flatMap { $0.publishLazy.fetch(oneOf: ManageableSpeaker.self, with: 1) }
                 .sink("", expectation) { XCTAssertEqual($0.name, "Modificated name") } // Then
         }
@@ -247,6 +247,59 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
                 .flatMap { $0.publishPut(allOf: [self.manageableSpeaker(id: 1), self.manageableSpeaker(id: 3)]) }
                 .sink("Success Watch count of ManageableSpeaker", expectation)
+        }
+    }
+    
+    func testRemoveDuplicates() {
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishWatch
+            .watch(changedOf: ManageableSpeaker.self)
+            .removeDuplicates(comparator: .symmetric)
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { changeset in
+                switch notificationTick {
+                case 0:
+                    XCTAssertEqual(changeset.kind, .initial)
+                case 1:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.insertions, [0])
+                case 2:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.insertions, [1])
+                case 3:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.modifications, [1])
+                default:
+                    XCTFail("Receive unknown case")
+                }
+                notificationTick += 1
+            }.store(in: &subscriptions)
+        
+        let speaker1 = self.manageableSpeaker(id: 1)
+        let speaker2 = self.manageableSpeaker(id: 2)
+        let speaker3 = self.manageableSpeaker(id: 2)
+        speaker3.name = "test"
+        // When
+        subscribe("Remove duplicates of ManageableSpeaker") { expectation in
+            reservedRepository
+                .inMemory
+                .publishManageable
+                .reset()
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .put(speaker1)
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker1) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker2) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker3) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker2) }
+                .sink("Success remove duplicates of ManageableSpeaker", expectation)
         }
     }
 }

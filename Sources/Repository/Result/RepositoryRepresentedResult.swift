@@ -52,24 +52,20 @@ import Foundation
     }
 }
 
-// MARK: - RepositoryResult + RepositoryCollectionFrozer
-extension RepositoryRepresentedResult: RepositoryCollectionFrozer {
+// MARK: - RepositoryResult + RepositoryCollectionFrozer + RepositoryCollectionUnsafeFrozer
+extension RepositoryRepresentedResult: RepositoryCollectionFrozer, RepositoryCollectionUnsafeFrozer {
     
     public var isFrozen: Bool {
-        get async {
-            await result.isFrozen
-        }
+        result.isFrozen
     }
     
-    public var freeze: Self {
-        get async {
-            .init(await result.freeze)
-        }
+    public var freeze: RepositoryRepresentedResult<Element> {
+        .init(result.freeze)
     }
     
-    public var thaw: Self {
-        get async throws {
-            .init(try await result.thaw)
+    public var thaw: RepositoryRepresentedResult<Element> {
+        get throws {
+            .init(try result.thaw)
         }
     }
 }

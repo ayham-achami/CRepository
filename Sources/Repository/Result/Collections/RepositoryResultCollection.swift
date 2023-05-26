@@ -258,14 +258,7 @@ public extension RepositoryResultCollection {
     }
     
     func pick(_ indexes: IndexSet) async throws -> [Element] {
-        try await asyncThrowing {
-            var elements = [Element]()
-            for (index, element) in unsafe.enumerated() {
-                guard indexes.contains(index) else { continue }
-                elements.append(element)
-            }
-            return elements
-        }
+        try await asyncThrowing { unsafe.pick(indexes) }
     }
     
     func first() async throws -> Element {
@@ -326,6 +319,7 @@ public extension RepositoryResultCollection where Element: ManageableSource,
 
 // MARK: - Publisher + RepositoryController
 public extension Publisher where Self.Output: RepositoryResultCollection,
+                                 Self.Output: RepositoryCollectionUnsafeFrozer,
                                  Self.Output.Element: ManageableSource,
                                  Self.Failure == Swift.Error {
     
@@ -392,54 +386,24 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// - Parameter indexes: <#indexes description#>
     /// - Returns: <#description#>
     func pick(_ indexes: IndexSet) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let elements = try await result.pick(indexes)
-                        promise(.success(elements))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .receive(on: result.queue)
-        }.eraseToAnyPublisher()
+        map { result in result.unsafe.pick(indexes) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func first() -> AnyPublisher<Self.Output.Element, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let element = try await result.first()
-                        promise(.success(element))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .receive(on: result.queue)
+        tryMap { result in
+            guard let first = result.unsafe.first else { throw RepositoryFetchError.notFound }
+            return first
         }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func last() -> AnyPublisher<Self.Output.Element, Self.Failure> {
-        flatMap { result in
-            Future { promise in
-                Task {
-                    do {
-                        let element = try await result.last()
-                        promise(.success(element))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .receive(on: result.queue)
+        tryMap { result in
+            guard let last = result.unsafe.last else { throw RepositoryFetchError.notFound }
+            return last
         }.eraseToAnyPublisher()
     }
     
@@ -449,24 +413,31 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     ///   - transform: <#transform description#>
     /// - Returns: <#description#>
     func combineLatestResults<P, T>(_ other: P,
-                                    _ transform: @escaping (Self.Output, P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
-                                                                                                                                Self.Output == P.Output,
-                                                                                                                                Self.Failure == P.Failure {
-        flatMap { result in
-            receive(on: result.queue)
-                .combineLatest(other, transform)
+                                    _ transform: @escaping ([Self.Output.Element],
+                                                            [P.Output.Element]) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
+                                                                                                                             Self.Output == P.Output,
+                                                                                                                             Self.Failure == P.Failure {
+        combineLatest(other) { lhs, rhs in
+            transform(.init(lhs.unsafe.elements), .init(rhs.unsafe.elements))
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - initialResult: <#initialResult description#>
+    ///   - nextPartialResult: <#nextPartialResult description#>
+    /// - Returns: <#description#>
+    func scanResults<T>(_ initialResult: T, _ nextPartialResult: @escaping (T, [Self.Output.Element]) -> T) -> AnyPublisher<T, Self.Failure> {
+        scan(initialResult) { initial, changeset in
+            nextPartialResult(initial, .init(changeset.unsafe.elements))
         }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter comparator: <#comparator description#>
     /// - Returns: <#description#>
-    func removeDuplicates(comparator: SymmetricComparator) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
-            Publishers.SymmetricRemoveDuplicates(queue: result.queue, upstream: self) { lhs, rhs in
-                lhs.isEmpty(rhs, comparator: comparator)
-            }
-        }.eraseToAnyPublisher()
+    func removeDuplicates(comparator: SymmetricComparator) -> Publishers.SymmetricFreezeRemoveDuplicates<Self> {
+        Publishers.SymmetricFreezeRemoveDuplicates(upstream: self, comparator: comparator)
     }
     
     /// <#Description#>
