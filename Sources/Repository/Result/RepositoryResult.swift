@@ -136,15 +136,48 @@ extension RepositoryResult: RepositoryResultModifier {
     }
     
     public func forEach(_ body: @escaping (Element) -> Void) -> AnyPublisher<RepositoryResult<Element>, Error> {
-        preconditionFailure("")
+        Future { promise in
+            Task {
+                do {
+                    let result = try await forEach(body)
+                    promise(.success(result))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .receive(on: queue)
+        .eraseToAnyPublisher()
     }
     
     public func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) -> AnyPublisher<RepositoryResult<Element>, Error> {
-        preconditionFailure("")
+        Future { promise in
+            Task {
+                do {
+                    let result = try await remove(isCascading: isCascading, where: isIncluded)
+                    promise(.success(result))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .receive(on: queue)
+        .eraseToAnyPublisher()
     }
     
     public func removeAll(isCascading: Bool) -> AnyPublisher<RepositoryController, Error> {
-        preconditionFailure("")
+        Future { promise in
+            Task {
+                do {
+                    let result = try await removeAll(isCascading: isCascading)
+                    promise(.success(result))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+        .receive(on: queue)
+        .eraseToAnyPublisher()
     }
 }
 

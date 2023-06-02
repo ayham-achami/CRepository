@@ -37,6 +37,8 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         manageableSpeakers(count: speakersCount)
     }()
     
+    // MARK: - Test repository
+    
     func testPutting() {
         subscribe("Put ManageableSpeaker") { expectation in
             repository
@@ -48,45 +50,60 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         }
     }
     
-    func testFetching() {
-        subscribe("Fetching ManageableSpeaker") { expectation in
-            repository
+    func testRemoveDuplicates() {
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishWatch
+            .watch(changedOf: ManageableSpeaker.self)
+            .removeDuplicates(comparator: .symmetric)
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { changeset in
+                switch notificationTick {
+                case 0:
+                    XCTAssertEqual(changeset.kind, .initial)
+                case 1:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.insertions, [0])
+                case 2:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.insertions, [1])
+                case 3:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.modifications, [1])
+                case 4:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.modifications, [1])
+                default:
+                    XCTFail("Receive unknown case")
+                }
+                notificationTick += 1
+            }.store(in: &subscriptions)
+        
+        let speaker1 = self.manageableSpeaker(id: 1)
+        let speaker2 = self.manageableSpeaker(id: 2)
+        let speaker3 = self.manageableSpeaker(id: 2)
+        speaker3.name = "test remove duplicates"
+        let speaker4 = self.manageableSpeaker(id: 2)
+        // When
+        subscribe("Remove duplicates of ManageableSpeaker") { expectation in
+            reservedRepository
                 .inMemory
                 .publishManageable
                 .reset()
-                .put(allOf: speakers) // Given
-                .lazy()
-                .fetch(allOf: ManageableSpeaker.self) // When
-                .sorted(with: [.init(keyPath: \.id)])
-                .sink("Success Fetch ManageableSpeaker", expectation) { result in
-                    // Then
-                    var index = 0
-                    self.speakers.forEach { speaker in
-                        XCTAssertTrue(result.unsafe[index].isEqual(speaker))
-                        index += 1
-                    }
-                }
-        }
-    }
-    
-    func testSorting() {
-        subscribe("Sort ManageableSpeaker") { expectation in
-            repository
-                .inMemory
-                .publishManageable
-                .reset()
-                .put(allOf: speakers) // Given
-                .lazy()
-                .fetch(allOf: ManageableSpeaker.self)
-                .sorted(with: [.init(keyPath: \.id, ascending: false)]) // When
-                .sink("Success sort ManageableSpeaker", expectation) { result in
-                    // Then
-                    var index = 0
-                    self.speakers.reversed().forEach { speaker in
-                        XCTAssertTrue(result.unsafe[index].isEqual(speaker))
-                        index += 1
-                    }
-                }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .put(speaker1)
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker1) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker2) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker3) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(speaker4) }
+                .sink("Success remove duplicates of ManageableSpeaker", expectation)
         }
     }
     
@@ -100,16 +117,10 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .remove(onOf: ManageableSpeaker.self, with: 1) // When
                 .lazy()
                 .fetch(allOf: ManageableSpeaker.self)
-                .flatMap { result in
-                    Future { promise in
-                        Task {
-                            promise(.success(await result.count))
-                        }
-                    }
-                }
-                .sink("Success delete ManageableSpeaker", expectation) { count in
+                .map { result in result.unsafe.isEmpty }
+                .sink("Success delete ManageableSpeaker", expectation) { isEmpty in
                     // Then
-                    XCTAssertEqual(count, 0)
+                    XCTAssertTrue(isEmpty)
                 }
 
         }
@@ -124,35 +135,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .put(manageableSpeaker(id: 1)) // Given
                 .modify(ManageableSpeaker.self, with: 1) { $0.name = "Modificated name" } // When
                 .flatMap { $0.publishLazy.fetch(oneOf: ManageableSpeaker.self, with: 1) }
-                .sink("", expectation) { XCTAssertEqual($0.name, "Modificated name") } // Then
-        }
-    }
-    
-    func testFirst() {
-        subscribe("First ManageableSpeaker") { expectation in
-            repository
-                .inMemory
-                .publishManageable
-                .reset()
-                .put(allOf: speakers) // Given
-                .lazy()
-                .fetch(allOf: ManageableSpeaker.self)
-                .first()
-                .sink("", expectation) { XCTAssertEqual($0.id, 1) } // Then
-        }
-    }
-    
-    func testLast() {
-        subscribe("Last ManageableSpeaker") { expectation in
-            repository
-                .inMemory
-                .publishManageable
-                .reset()
-                .put(allOf: speakers) // Given
-                .lazy()
-                .fetch(allOf: ManageableSpeaker.self)
-                .last()
-                .sink("", expectation) { XCTAssertEqual($0.id, 10) } // Then
+                .sink("Success modification ManageableSpeaker", expectation) { XCTAssertEqual($0.name, "Modificated name") } // Then
         }
     }
     
@@ -302,7 +285,135 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         }
     }
     
-    func testWatchResultCount() {
+    // MARK: - Test results
+    
+    func testResultFetching() {
+        subscribe("Fetching ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self) // When
+                .sorted(with: [.init(keyPath: \.id)])
+                .sink("Success Fetch ManageableSpeaker", expectation) { result in
+                    // Then
+                    var index = 0
+                    self.speakers.forEach { speaker in
+                        XCTAssertTrue(result.unsafe[index].isEqual(speaker))
+                        index += 1
+                    }
+                }
+        }
+    }
+    
+    func testResultFirst() {
+        subscribe("First ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .first()
+                .sink("", expectation) { XCTAssertEqual($0.id, 1) } // Then
+        }
+    }
+    
+    func testResultLast() {
+        subscribe("Last ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .last()
+                .sink("", expectation) { XCTAssertEqual($0.id, 10) } // Then
+        }
+    }
+    
+    func testResultSorting() {
+        subscribe("Sort ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .sorted(with: [.init(keyPath: \.id, ascending: false)]) // When
+                .sink("Success sort ManageableSpeaker", expectation) { result in
+                    // Then
+                    var index = 0
+                    self.speakers.reversed().forEach { speaker in
+                        XCTAssertTrue(result.unsafe[index].isEqual(speaker))
+                        index += 1
+                    }
+                }
+        }
+    }
+    
+    func testResultForEach() {
+        subscribe("ForEach ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: manageableSpeakers(count: 2))
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .forEach { speaker in
+                    speaker.name = "Modificated name"
+                }
+                .forEach { speaker in
+                    XCTAssertEqual(speaker.name, "Modificated name")
+                }
+                .sink("Success forEach ManageableSpeaker", expectation)
+        }
+    }
+    
+    func testResultRemoveOne() {
+        subscribe("Remove one of ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: manageableSpeakers(count: 2))
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .remove(where: { query in
+                    query.id == 1
+                })
+                .sink("Success remove one of ManageableSpeaker", expectation) { result in
+                    XCTAssertEqual(result.unsafe.count, 1)
+                    XCTAssertEqual(result.unsafe[0].id, 2)
+                }
+        }
+    }
+    
+    func testResultRemoveAll() {
+        subscribe("Remove all ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: manageableSpeakers(count: 2))
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .removeAll()
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .sink("Success remove all ManageableSpeaker", expectation) { result in
+                    XCTAssertTrue(result.unsafe.isEmpty)
+                }
+        }
+    }
+    
+    func testResultWatchCount() {
         // Given
         var notificationTick = 0
         reservedRepository
@@ -350,7 +461,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         }
     }
 
-    func testResultDeletions() {
+    func testResultWatchDeletions() {
         // Given
         var notificationTick = 0
         reservedRepository
@@ -399,63 +510,6 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
                 .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 4) }
                 .sink("Success Watch deletions of ManageableSpeaker", expectation)
-        }
-    }
-    
-    func testRemoveDuplicates() {
-        var notificationTick = 0
-        reservedRepository
-            .inMemory
-            .publishWatch
-            .watch(changedOf: ManageableSpeaker.self)
-            .removeDuplicates(comparator: .symmetric)
-            .sink { completion in
-                guard case let .failure(error) = completion else { return }
-                XCTFail("Watch count fail with error \(error)")
-            } receiveValue: { changeset in
-                switch notificationTick {
-                case 0:
-                    XCTAssertEqual(changeset.kind, .initial)
-                case 1:
-                    XCTAssertEqual(changeset.kind, .update)
-                    XCTAssertEqual(changeset.insertions, [0])
-                case 2:
-                    XCTAssertEqual(changeset.kind, .update)
-                    XCTAssertEqual(changeset.insertions, [1])
-                case 3:
-                    XCTAssertEqual(changeset.kind, .update)
-                    XCTAssertEqual(changeset.modifications, [1])
-                case 4:
-                    XCTAssertEqual(changeset.kind, .update)
-                    XCTAssertEqual(changeset.modifications, [1])
-                default:
-                    XCTFail("Receive unknown case")
-                }
-                notificationTick += 1
-            }.store(in: &subscriptions)
-        
-        let speaker1 = self.manageableSpeaker(id: 1)
-        let speaker2 = self.manageableSpeaker(id: 2)
-        let speaker3 = self.manageableSpeaker(id: 2)
-        speaker3.name = "test remove duplicates"
-        let speaker4 = self.manageableSpeaker(id: 2)
-        // When
-        subscribe("Remove duplicates of ManageableSpeaker") { expectation in
-            reservedRepository
-                .inMemory
-                .publishManageable
-                .reset()
-                .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .put(speaker1)
-                .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(speaker1) }
-                .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(speaker2) }
-                .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(speaker3) }
-                .delay(for: .seconds(1), scheduler: RunLoop.current)
-                .flatMap { $0.publishPut(speaker4) }
-                .sink("Success remove duplicates of ManageableSpeaker", expectation)
         }
     }
 }
