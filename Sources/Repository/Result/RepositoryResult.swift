@@ -36,7 +36,7 @@ import RealmSwift
     
     public let queue: DispatchQueue
     public let controller: RepositoryController
-    public let unsafe: UnsafeRepositoryResult<Element>
+    public let unsafe: RepositoryUnsafeResult<Element>
     
     public var startIndex: Int {
         get async {
@@ -45,7 +45,7 @@ import RealmSwift
             }
         }
     }
-
+    
     public var endIndex: Int {
         get async {
             await async {
@@ -60,7 +60,7 @@ import RealmSwift
         self.controller = controller
     }
     
-    public init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element>, _ controller: RepositoryController) {
+    public init(_ queue: DispatchQueue, _ unsafe: RepositoryUnsafeResult<Element>, _ controller: RepositoryController) {
         self.queue = queue
         self.unsafe = unsafe
         self.controller = controller
@@ -154,40 +154,30 @@ extension RepositoryResult: RepositoryChangesetWatcher {
     public typealias WatchType = Self
     
     public func watch(keyPaths: [PartialKeyPath<WatchType.Element>]? = nil) -> AnyPublisher<RepositoryChangeset<WatchType>, Swift.Error> {
-        Deferred {
-            unsafe.watch(keyPaths: keyPaths)
-        }
-        .subscribe(on: queue)
-        .tryMap { (changset) -> RepositoryChangeset<Self> in
-            switch changset {
-            case let .update(result, deletions, insertions, modifications):
-                return .init(result: .init(queue, result, controller),
-                             kind: .update,
-                             deletions: deletions,
-                             insertions: insertions,
-                             modifications: modifications)
-            case let .initial(result):
-                return .init(result: .init(queue, .init(result), controller),
-                             kind: .initial,
-                             deletions: [],
-                             insertions: [],
-                             modifications: [])
-            case let .error(error):
-                throw error
+        unsafe
+            .watch(keyPaths: keyPaths)
+            .tryMap { (changset) -> RepositoryChangeset<Self> in
+                switch changset {
+                case let .update(result, deletions, insertions, modifications):
+                    return .init(result: .init(queue, result, controller),
+                                 kind: .update,
+                                 deletions: deletions,
+                                 insertions: insertions,
+                                 modifications: modifications)
+                case let .initial(result):
+                    return .init(result: .init(queue, .init(result), controller),
+                                 kind: .initial,
+                                 deletions: [],
+                                 insertions: [],
+                                 modifications: [])
+                case let .error(error):
+                    throw error
+                }
             }
-        }
-        .share()
-        .receive(on: queue)
-        .eraseToAnyPublisher()
+            .eraseToAnyPublisher()
     }
     
     public func watchCount(keyPaths: [PartialKeyPath<WatchType.Element>]?) -> AnyPublisher<Int, Swift.Error> {
-        Deferred {
-            unsafe.watch(countOf: keyPaths)
-        }
-        .subscribe(on: queue)
-        .share()
-        .receive(on: queue)
-        .eraseToAnyPublisher()
+        unsafe.watch(countOf: keyPaths).eraseToAnyPublisher()
     }
 }

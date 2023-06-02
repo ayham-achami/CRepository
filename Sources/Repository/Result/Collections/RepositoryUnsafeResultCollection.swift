@@ -1,7 +1,5 @@
 //
-//  Container.swift
-//
-//  The MIT License (MIT)
+//  UnsafeRepositoryResultCollection.swift
 //
 //  Copyright (c) 2019 Community Arch
 //
@@ -23,22 +21,38 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+import Combine
+import RealmSwift
 import Foundation
 
 /// <#Description#>
-struct Container<Result> where Result: RepositoryResultCollection, Result.Element: ManageableSource {
+public protocol RepositoryUnsafeResultCollection: RandomAccessCollection, LazyCollectionProtocol, CustomStringConvertible where Element: Manageable {
     
     /// <#Description#>
-    let result: Result
-    /// <#Description#>
-    let unsafe: RepositoryUnsafeResult<Result.Element>
-}
-
-/// <#Description#>
-struct RepresentedContainer<Result> where Result: RepositoryRepresentedCollection {
+    var throwIfEmpty: Self { get throws }
     
     /// <#Description#>
-    let result: Result
+    /// - Parameter descriptors: <#descriptors description#>
+    /// - Returns: <#description#>
+    func sorted(with descriptors: [Sorted]) -> Self
+    
     /// <#Description#>
-    let unsafe: RepositoryUnsafeResult<Result.Element.RepresentedType>
+    /// - Parameter descriptors: <#descriptors description#>
+    /// - Returns: <#description#>
+    func sorted(with descriptors: [PathSorted<Element>]) -> Self
+    
+    /// <#Description#>
+    /// - Parameter predicate: <#predicate description#>
+    /// - Returns: <#description#>
+    func filter(by predicate: NSPredicate) -> Self
+    
+    /// <#Description#>
+    /// - Parameter isIncluded: <#isIncluded description#>
+    /// - Returns: <#description#>
+    func filter(_ isIncluded: ((Query<Element>) -> Query<Bool>)) -> Self
+    
+    /// <#Description#>
+    /// - Parameter indexes: <#indexes description#>
+    /// - Returns: <#description#>
+    func pick(_ indexes: IndexSet) -> [Element]
 }

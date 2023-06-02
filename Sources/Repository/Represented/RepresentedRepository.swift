@@ -589,19 +589,19 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     /// <#Description#>
     /// - Returns: <#description#>
     func lazy() -> AnyPublisher<LazyRepository, Self.Failure> {
-        flatMap { $0.publishLazy }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishLazy }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func manageable() -> AnyPublisher<ManageableRepository, Self.Failure> {
-        flatMap { $0.publishManageable }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishManageable }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func watcher() -> AnyPublisher<WatchRepository, Self.Failure> {
-        flatMap { $0.publishWatch }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishWatch }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -612,7 +612,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Swift.Error> where T: ManageableRepresented,
                                                                                                           T.RepresentedType: ManageableSource,
                                                                                                           T.RepresentedType.ManageableType == T {
-        flatMap { $0.publishFetch(oneOf: type, with: primaryKey) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishFetch(oneOf: type, with: primaryKey) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -621,7 +621,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     func fetch<T>(allOf type: T.Type) -> AnyPublisher<RepositoryRepresentedResult<T>, Swift.Error> where T: ManageableRepresented,
                                                                                                          T.RepresentedType: ManageableSource,
                                                                                                          T.RepresentedType.ManageableType == T {
-        flatMap { $0.publishFetch(allOf: type) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishFetch(allOf: type) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -632,7 +632,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     func put<T>(_ model: T, policy: Realm.UpdatePolicy = .default) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableRepresented,
                                                                                                                     T.RepresentedType: ManageableSource,
                                                                                                                     T.RepresentedType.ManageableType == T {
-        flatMap { $0.publishPut(model, policy: policy) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishPut(model, policy: policy) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -641,10 +641,10 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     ///   - policy: <#policy description#>
     /// - Returns: <#description#>
     func put<T>(allOf models: T, policy: Realm.UpdatePolicy = .default) -> AnyPublisher<Self.Output, Self.Failure> where T: Sequence,
-                                                                                                                           T.Element: ManageableRepresented,
-                                                                                                                           T.Element.RepresentedType: ManageableSource,
-                                                                                                                           T.Element.RepresentedType.ManageableType == T.Element {
-        flatMap { $0.publishPut(allOf: models, policy: policy) }.eraseToAnyPublisher()
+                                                                                                                         T.Element: ManageableRepresented,
+                                                                                                                         T.Element.RepresentedType: ManageableSource,
+                                                                                                                         T.Element.RepresentedType.ManageableType == T.Element {
+        flatMap(maxPublishers: .max(1)) { $0.publishPut(allOf: models, policy: policy) }.eraseToAnyPublisher()
     }
     
     func union<T, U, M>(_ model: T,
@@ -656,7 +656,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
                                                                                                                      T.RepresentedType.ManageableType == T,
                                                                                                                      U: ManageableSource,
                                                                                                                      M: ManageableSource {
-        flatMap { $0.publishUnion(model, updatePolicy: updatePolicy, with: type, unionPolicy: unionPolicy, perform) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishUnion(model, updatePolicy: updatePolicy, with: type, unionPolicy: unionPolicy, perform) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -676,8 +676,9 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
                                                                                                                              T.Element.RepresentedType: ManageableSource,
                                                                                                                              T.Element.RepresentedType.ManageableType == T.Element,
                                                                                                                              U: ManageableSource,
-                                                                                                                             M: ManageableSource {
-        flatMap { $0.publishUnion(allOf: models, updatePolicy: updatePolicy, with: type, unionPolicy: unionPolicy, perform) }.eraseToAnyPublisher()
+                                                                                                                             M: ManageableSource
+    {
+        flatMap(maxPublishers: .max(1)) { $0.publishUnion(allOf: models, updatePolicy: updatePolicy, with: type, unionPolicy: unionPolicy, perform) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -688,7 +689,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     func remove<T>(_ model: T, isCascading: Bool = true) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableRepresented,
                                                                                                           T.RepresentedType: ManageableSource,
                                                                                                           T.RepresentedType.ManageableType == T {
-        flatMap { $0.publishRemove(model, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(model, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -700,7 +701,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
                                                                                                                T.Element: ManageableRepresented,
                                                                                                                T.Element.RepresentedType: ManageableSource,
                                                                                                                T.Element.RepresentedType.ManageableType == T.Element {
-        flatMap { $0.publishRemove(allOf: models, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(allOf: models, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -711,12 +712,12 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
     func remove<T>(allOfType type: T.Type, isCascading: Bool = true) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableRepresented,
                                                                                                                       T.RepresentedType: ManageableSource,
                                                                                                                       T.RepresentedType.ManageableType == T {
-        flatMap { $0.publishRemove(allOfType: type, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(allOfType: type, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func reset() -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.publishReset() }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishReset() }.eraseToAnyPublisher()
     }
 }

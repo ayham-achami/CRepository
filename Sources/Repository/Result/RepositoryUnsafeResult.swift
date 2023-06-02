@@ -1,5 +1,5 @@
 //
-//  UnsafeRepositoryResult.swift
+//  RepositoryUnsafeResult.swift
 //
 //  Copyright (c) 2019 Community Arch
 //
@@ -26,7 +26,7 @@ import RealmSwift
 import Foundation
 
 /// <#Description#>
-@frozen public struct UnsafeRepositoryResult<Element>: UnsafeRepositoryResultCollection where Element: Manageable {
+@frozen public struct RepositoryUnsafeResult<Element>: RepositoryUnsafeResultCollection where Element: Manageable {
     
     /// <#Description#>
     public enum Error: Swift.Error {
@@ -109,7 +109,7 @@ import Foundation
 }
 
 // MARK: - UnsafeRepositoryResultCollectionFrozer
-extension UnsafeRepositoryResult: RepositoryCollectionUnsafeFrozer {
+extension RepositoryUnsafeResult: RepositoryCollectionUnsafeFrozer {
     
     public var isFrozen: Bool {
         results.isFrozen

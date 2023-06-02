@@ -339,26 +339,26 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     /// <#Description#>
     /// - Returns: <#description#>
     func lazy() -> AnyPublisher<LazyRepository, Self.Failure> {
-        flatMap { $0.publishLazy }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishLazy }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func represented() -> AnyPublisher<RepresentedRepository, Self.Failure> {
-        flatMap { $0.publishRepresented }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRepresented }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func watcher() -> AnyPublisher<WatchRepository, Self.Failure> {
-        flatMap { $0.publishWatch }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishWatch }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter perform: <#perform description#>
     /// - Returns: <#description#>
     func write(_ perform: @escaping () -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.publishWrite(perform) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishWrite(perform) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -370,7 +370,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     func modify<T>(_ type: T.Type,
                    with primaryKey: AnyHashable,
                    _ modification: @escaping (T) throws -> Void) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
-        flatMap { $0.publishModify(type, with: primaryKey, modification) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishModify(type, with: primaryKey, modification) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -380,7 +380,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     /// - Returns: <#description#>
     func put<T>(policy: Realm.UpdatePolicy,
                 _ perform: @escaping () throws -> T) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableSource {
-        flatMap { $0.publishPut(policy: policy, perform) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishPut(policy: policy, perform) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -389,7 +389,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - policy: <#policy description#>
     /// - Returns: <#description#>
     func put<T>(_ model: T, policy: Realm.UpdatePolicy = .default) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableSource {
-        flatMap { $0.publishPut(model, policy: policy) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishPut(model, policy: policy) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -398,7 +398,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - policy: <#policy description#>
     /// - Returns: <#description#>
     func put<T>(allOf models: [T], policy: Realm.UpdatePolicy = .default) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableSource {
-        flatMap { $0.publishPut(allOf: models, policy: policy) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishPut(allOf: models, policy: policy) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -408,7 +408,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - isCascading: <#isCascading description#>
     /// - Returns: <#description#>
     func remove<T>(onOf type: T.Type, with primaryKey: AnyHashable, isCascading: Bool = true) -> AnyPublisher<ManageableRepository, Swift.Error> where T: ManageableSource {
-        flatMap { $0.publishRemove(onOf: type, with: primaryKey, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(onOf: type, with: primaryKey, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -417,7 +417,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - isCascading: <#isCascading description#>
     /// - Returns: <#description#>
     func remove<T>(_ model: T, isCascading: Bool = true) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableSource {
-        flatMap { $0.publishRemove(model, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(model, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -426,7 +426,7 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - isCascading: <#isCascading description#>
     /// - Returns: <#description#>
     func remove<T>(allOf models: T, isCascading: Bool = true) -> AnyPublisher<Self.Output, Self.Failure> where T: Sequence, T.Element: ManageableSource {
-        flatMap { $0.publishRemove(allOf: models, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(allOf: models, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -435,12 +435,12 @@ public extension Publisher where Self.Output == ManageableRepository, Self.Failu
     ///   - isCascading: <#isCascading description#>
     /// - Returns: <#description#>
     func remove<T>(allOfType type: T.Type, isCascading: Bool = true) -> AnyPublisher<Self.Output, Self.Failure> where T: ManageableSource {
-        flatMap { $0.publishRemove(allOfType: type, isCascading: isCascading) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRemove(allOfType: type, isCascading: isCascading) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func reset() -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.publishReset() }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishReset() }.eraseToAnyPublisher()
     }
 }

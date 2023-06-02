@@ -63,7 +63,7 @@ public protocol RepositoryRepresentedCollection: RepositoryRepresentedCollection
     ///   - queue: <#queue description#>
     ///   - unsafe: <#unsafe description#>
     ///   - controller: <#controller description#>
-    init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element.RepresentedType>, _ controller: RepositoryController)
+    init(_ queue: DispatchQueue, _ unsafe: RepositoryUnsafeResult<Element.RepresentedType>, _ controller: RepositoryController)
     
     /// <#Description#>
     subscript(_ index: Index) -> Element { get async }
@@ -254,17 +254,17 @@ public extension Publisher where Self.Output: RepositoryRepresentedCollection,
     
     /// <#Description#>
     func lazy() -> AnyPublisher<LazyRepository, Self.Failure> {
-        flatMap { $0.result.controller.publishLazy }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.result.controller.publishLazy }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     func manageable() -> AnyPublisher<ManageableRepository, Self.Failure> {
-        flatMap { $0.result.controller.publishManageable }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.result.controller.publishManageable }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     func represented() -> AnyPublisher<RepresentedRepository, Self.Failure> {
-        flatMap { $0.result.controller.publishRepresented }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.result.controller.publishRepresented }.eraseToAnyPublisher()
     }
     
     /// <#Description#>

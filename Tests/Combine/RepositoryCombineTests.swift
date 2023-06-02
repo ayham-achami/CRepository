@@ -249,6 +249,157 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .sink("Success Watch count of ManageableSpeaker", expectation)
         }
     }
+
+    func testDeletions() {
+        // Given
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishManageable
+            .reset()
+            .put(allOf: speakers)
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { _ in
+                print("Success add speakers")
+            }.store(in: &subscriptions)
+        reservedRepository
+            .inMemory
+            .publishWatch
+            .watch(changedOf: ManageableSpeaker.self)
+            .deletions()
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { changeset in
+                // Then
+                switch notificationTick {
+                case 0...3:
+                    XCTAssertEqual(changeset.count, 1)
+                    XCTAssertEqual(changeset.first, 0)
+                default:
+                    XCTFail("Receive unknown notification")
+                }
+                notificationTick += 1
+            }.store(in: &subscriptions)
+        
+        // When
+        subscribe("Watch deletions of ManageableSpeaker") { expectation in
+            reservedRepository
+                .inMemory
+                .publishManageable
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .remove(onOf: ManageableSpeaker.self, with: 1)
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 2) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 3) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 4) }
+                .sink("Success Watch deletions of ManageableSpeaker", expectation)
+        }
+    }
+    
+    func testWatchResultCount() {
+        // Given
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishLazy
+            .fetch(allOf: ManageableSpeaker.self)
+            .watchCount()
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { count in
+                // Then
+                switch notificationTick {
+                case 0:
+                    XCTAssertEqual(count, 0)
+                case 1:
+                    XCTAssertEqual(count, 1)
+                case 2:
+                    XCTAssertEqual(count, 2)
+                case 3:
+                    XCTAssertEqual(count, 1)
+                case 4:
+                    XCTAssertEqual(count, 3)
+                default:
+                    XCTFail("Receive unknown count")
+                }
+                notificationTick += 1
+            }.store(in: &subscriptions)
+        
+        // When
+        subscribe("Watch count of ManageableSpeaker") { expectation in
+            reservedRepository
+                .inMemory
+                .publishManageable
+                .reset()
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .put(manageableSpeaker(id: 1))
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(self.manageableSpeaker(id: 2)) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 1) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishPut(allOf: [self.manageableSpeaker(id: 1), self.manageableSpeaker(id: 3)]) }
+                .sink("Success Watch count of ManageableSpeaker", expectation)
+        }
+    }
+
+    func testResultDeletions() {
+        // Given
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishManageable
+            .reset()
+            .put(allOf: speakers)
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { _ in
+                print("Success add speakers")
+            }.store(in: &subscriptions)
+        reservedRepository
+            .inMemory
+            .publishLazy
+            .fetch(allOf: ManageableSpeaker.self)
+            .watch()
+            .deletions()
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch count fail with error \(error)")
+            } receiveValue: { changeset in
+                // Then
+                switch notificationTick {
+                case 0...3:
+                    XCTAssertEqual(changeset.count, 1)
+                    XCTAssertEqual(changeset.first, 0)
+                default:
+                    XCTFail("Receive unknown notification")
+                }
+                notificationTick += 1
+            }.store(in: &subscriptions)
+        
+        // When
+        subscribe("Watch deletions of ManageableSpeaker") { expectation in
+            reservedRepository
+                .inMemory
+                .publishManageable
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .remove(onOf: ManageableSpeaker.self, with: 1)
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 2) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 3) }
+                .delay(for: .seconds(1), scheduler: RunLoop.current)
+                .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 4) }
+                .sink("Success Watch deletions of ManageableSpeaker", expectation)
+        }
+    }
     
     func testRemoveDuplicates() {
         var notificationTick = 0

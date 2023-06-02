@@ -60,19 +60,19 @@ public extension Publisher where Self.Output == LazyRepository, Self.Failure == 
     /// <#Description#>
     /// - Returns: <#description#>
     func manageable() -> AnyPublisher<ManageableRepository, Self.Failure> {
-        flatMap { $0.publishManageable }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishManageable }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func represented() -> AnyPublisher<RepresentedRepository, Self.Failure> {
-        flatMap { $0.publishRepresented }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRepresented }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func watcher() -> AnyPublisher<WatchRepository, Self.Failure> {
-        flatMap { $0.publishWatch }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishWatch }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -81,13 +81,13 @@ public extension Publisher where Self.Output == LazyRepository, Self.Failure == 
     ///   - primaryKey: <#primaryKey description#>
     /// - Returns: <#description#>
     func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
-        flatMap { $0.publishFetch(oneOf: type, with: primaryKey) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishFetch(oneOf: type, with: primaryKey) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter type: <#type description#>
     /// - Returns: <#description#>
     func fetch<T>(allOf type: T.Type) -> AnyPublisher<RepositoryResult<T>, Swift.Error> where T: ManageableSource {
-        flatMap { $0.publishFetch(allOf: type) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishFetch(allOf: type) }.eraseToAnyPublisher()
     }
 }

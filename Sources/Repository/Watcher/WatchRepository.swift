@@ -100,19 +100,19 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
     /// <#Description#>
     /// - Returns: <#description#>
     func lazy() -> AnyPublisher<LazyRepository, Self.Failure> {
-        flatMap { $0.publishLazy }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishLazy }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func manageable() -> AnyPublisher<ManageableRepository, Self.Failure> {
-        flatMap { $0.publishManageable }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishManageable }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func represented() -> AnyPublisher<RepresentedRepository, Self.Failure> {
-        flatMap { $0.publishRepresented }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.publishRepresented }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -122,7 +122,7 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
     /// - Returns: <#description#>
     func watch<T>(changedOf type: T.Type,
                   keyPaths: [PartialKeyPath<T>]? = nil) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Swift.Error> where T: ManageableSource {
-        flatMap { $0.watch(changedOf: type, keyPaths: keyPaths) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.watch(changedOf: type, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -132,7 +132,7 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
     /// - Returns: <#description#>
     func watch<T>(countOf type: T.Type,
                   keyPaths: [PartialKeyPath<T>]? = nil) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource {
-        flatMap { $0.watch(countOf: type, keyPaths: keyPaths) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.watch(countOf: type, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -142,8 +142,10 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
     /// - Returns: <#description#>
     func watch<T>(changedOf type: T.Type,
                   keyPaths: [PartialKeyPath<T.RepresentedType>]? = nil) ->
-    AnyPublisher<RepositoryRepresentedChangeset<RepositoryRepresentedResult<T>>, Swift.Error> where T: ManageableRepresented, T.RepresentedType: ManageableSource, T.RepresentedType.ManageableType == T {
-        flatMap { $0.watch(changedOf: type, keyPaths: keyPaths) }.eraseToAnyPublisher()
+    AnyPublisher<RepositoryRepresentedChangeset<RepositoryRepresentedResult<T>>, Swift.Error> where T: ManageableRepresented,
+                                                                                                    T.RepresentedType: ManageableSource,
+                                                                                                    T.RepresentedType.ManageableType == T {
+        flatMap(maxPublishers: .max(1)) { $0.watch(changedOf: type, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -155,6 +157,6 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
                   keyPaths: [PartialKeyPath<T.RepresentedType>]? = nil) -> AnyPublisher<Int, Swift.Error> where T: ManageableRepresented,
                                                                                                                 T.RepresentedType: ManageableSource,
                                                                                                                 T.RepresentedType.ManageableType == T {
-        flatMap { $0.watch(countOf: type.RepresentedType, keyPaths: keyPaths) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.watch(countOf: type.RepresentedType, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
 }

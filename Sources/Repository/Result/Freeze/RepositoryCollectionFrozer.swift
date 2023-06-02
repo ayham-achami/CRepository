@@ -85,7 +85,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
     /// <#Description#>
     /// - Returns: <#description#>
     func freeze() -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
+        flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
                 Task {
                     let freezed = await result.freeze()
@@ -98,7 +98,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
     /// <#Description#>
     /// - Returns: <#description#>
     func thaw() -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
+        flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
                 Task {
                     do {
@@ -121,7 +121,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
     /// <#Description#>
     /// - Returns: <#description#>
     func freeze() -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
+        flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
                 Task {
                     let freezed = await result.freeze()
@@ -134,7 +134,7 @@ public extension Publisher where Self.Output: RepositoryCollectionFrozer,
     /// <#Description#>
     /// - Returns: <#description#>
     func thaw() -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { result in
+        flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
                 Task {
                     do {

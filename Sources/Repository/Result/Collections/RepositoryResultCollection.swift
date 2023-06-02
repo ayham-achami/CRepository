@@ -60,7 +60,7 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     var controller: RepositoryController { get }
     
     /// <#Description#>
-    var unsafe: UnsafeRepositoryResult<Element> { get }
+    var unsafe: RepositoryUnsafeResult<Element> { get }
     
     /// <#Description#>
     /// - Parameters:
@@ -74,7 +74,7 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     ///   - queue: <#queue description#>
     ///   - unsafe: <#unsafe description#>
     ///   - controller: <#controller description#>
-    init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element>, _ controller: RepositoryController)
+    init(_ queue: DispatchQueue, _ unsafe: RepositoryUnsafeResult<Element>, _ controller: RepositoryController)
     
     /// <#Description#>
     subscript(_ index: Index) -> Element { get async }
@@ -285,11 +285,11 @@ public extension RepositoryResultCollection {
         }
     }
     
-    func apply(_ body: @escaping () -> UnsafeRepositoryResult<Element>) async -> Self {
+    func apply(_ body: @escaping () -> RepositoryUnsafeResult<Element>) async -> Self {
         await async { .init(queue, body(), controller) }
     }
     
-    func applyThrowing(_ body: @escaping () throws -> UnsafeRepositoryResult<Element>) async throws -> Self {
+    func applyThrowing(_ body: @escaping () throws -> RepositoryUnsafeResult<Element>) async throws -> Self {
         try await asyncThrowing { .init(queue, try body(), controller) }
     }
 }
@@ -325,17 +325,17 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     
     /// <#Description#>
     func lazy() -> AnyPublisher<LazyRepository, Self.Failure> {
-        flatMap { $0.controller.publishLazy }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.controller.publishLazy }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     func manageable() -> AnyPublisher<ManageableRepository, Self.Failure> {
-        flatMap { $0.controller.publishManageable }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.controller.publishManageable }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     func represented() -> AnyPublisher<RepresentedRepository, Self.Failure> {
-        flatMap { $0.controller.publishRepresented }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.controller.publishRepresented }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -460,7 +460,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// - Parameter index: <#index description#>
     /// - Returns: <#description#>
     func element(at index: Self.Output.Index) -> AnyPublisher<Self.Output.Element, Self.Failure> {
-        flatMap { result in
+        flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
                 Task {
                     do {

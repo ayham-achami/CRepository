@@ -41,7 +41,7 @@ import Foundation
         self.result = result
     }
     
-    public init(_ queue: DispatchQueue, _ unsafe: UnsafeRepositoryResult<Element.RepresentedType>, _ controller: RepositoryController) {
+    public init(_ queue: DispatchQueue, _ unsafe: RepositoryUnsafeResult<Element.RepresentedType>, _ controller: RepositoryController) {
         self.result = .init(queue, unsafe, controller)
     }
     

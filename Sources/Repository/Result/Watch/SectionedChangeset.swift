@@ -1,5 +1,5 @@
 //
-//  Container.swift
+//  SectionedChangeset.swift
 //
 //  The MIT License (MIT)
 //
@@ -23,22 +23,33 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+import Combine
 import Foundation
 
 /// <#Description#>
-struct Container<Result> where Result: RepositoryResultCollection, Result.Element: ManageableSource {
+public protocol SectionedChangeset: QueuingCollection, SymmetricComparable, UnsafeSymmetricComparable {
     
     /// <#Description#>
-    let result: Result
-    /// <#Description#>
-    let unsafe: RepositoryUnsafeResult<Result.Element>
-}
-
-/// <#Description#>
-struct RepresentedContainer<Result> where Result: RepositoryRepresentedCollection {
+    associatedtype Result
     
     /// <#Description#>
-    let result: Result
+    var kind: ChangesetKind { get }
+    
     /// <#Description#>
-    let unsafe: RepositoryUnsafeResult<Result.Element.RepresentedType>
+    var result: Result { get }
+    
+    /// <#Description#>
+    var deletions: [IndexPath] { get }
+    
+    /// <#Description#>
+    var insertions: [IndexPath] { get }
+    
+    /// <#Description#>
+    var modifications: [IndexPath] { get }
+    
+    /// <#Description#>
+    var insertionsSections: [IndexSet] { get }
+    
+    /// <#Description#>
+    var deletionsSections: [IndexSet] { get }
 }

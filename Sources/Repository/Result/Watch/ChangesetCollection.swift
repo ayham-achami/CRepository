@@ -211,7 +211,7 @@ public extension Publisher where Self.Output: Changeset,
         filter { changeset in
             changeset.kind == .initial
         }.map { changeset in
-                .init([], changeset.elements, changeset.result.queue)
+            .init([], changeset.elements, changeset.result.queue)
         }.eraseToAnyPublisher()
     }
     

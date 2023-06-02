@@ -70,13 +70,13 @@ public extension Publisher where Self.Output: RepositoryChangesetWatcher,
     /// - Parameter keyPaths: <#keyPaths description#>
     /// - Returns: <#description#>
     func watch(keyPaths: [PartialKeyPath<Self.Output.WatchType.Element>]? = nil) -> AnyPublisher<RepositoryChangeset<Self.Output.WatchType>, Swift.Error> {
-        flatMap { $0.watch(keyPaths: keyPaths) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.watch(keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter keyPaths: <#keyPaths description#>
     /// - Returns: <#description#>
     func watchCount(keyPaths: [PartialKeyPath<Self.Output.WatchType.Element>]? = nil) -> AnyPublisher<Int, Swift.Error> {
-        flatMap { $0.watchCount(keyPaths: keyPaths) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.watchCount(keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
 }

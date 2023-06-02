@@ -117,20 +117,20 @@ public extension Publisher where Self.Output: RepositoryResultModifier,
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     func forEach(_ body: @escaping (Self.Output.Element) -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.forEach(body) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.forEach(body) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
     func remove(where isIncluded: @escaping ((Query<Self.Output.Element>) -> Query<Bool>)) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.remove(where: isIncluded) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.remove(where: isIncluded) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() -> AnyPublisher<RepositoryController, Self.Failure> {
-        flatMap { $0.removeAll() }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.removeAll() }.eraseToAnyPublisher()
     }
 }
 
@@ -147,19 +147,19 @@ public extension Publisher where Self.Output: RepositoryResultModifier,
     /// - Parameter body: <#body description#>
     /// - Returns: <#description#>
     func forEach(_ body: @escaping (Self.Output.Element.RepresentedType) -> Void) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.forEach(body) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.forEach(body) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
     func remove(where isIncluded: @escaping ((Query<Self.Output.Element.RepresentedType>) -> Query<Bool>)) -> AnyPublisher<Self.Output, Self.Failure> {
-        flatMap { $0.remove(where: isIncluded) }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.remove(where: isIncluded) }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     func removeAll() -> AnyPublisher<RepositoryController, Self.Failure> {
-        flatMap { $0.removeAll() }.eraseToAnyPublisher()
+        flatMap(maxPublishers: .max(1)) { $0.removeAll() }.eraseToAnyPublisher()
     }
 }
