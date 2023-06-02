@@ -69,4 +69,3 @@ final class ManageableUser: Object, ManageableSource {
         self.isProfileFilled = user.isProfileFilled
     }
 }
-

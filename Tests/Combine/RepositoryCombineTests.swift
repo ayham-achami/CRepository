@@ -28,6 +28,7 @@ import Combine
 import RealmSwift
 import CRepository
 
+// swiftlint:disable:next type_body_length
 final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
     
     let speakersCount = 10

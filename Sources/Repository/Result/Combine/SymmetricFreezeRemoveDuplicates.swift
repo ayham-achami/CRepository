@@ -52,7 +52,7 @@ extension Publishers {
         }
         
         public func receive<S>(subscriber: S) where S: Subscriber, Upstream.Failure == S.Failure, Upstream.Output == S.Input {
-            upstream.subscribe(Inner(subscriber) { lhs, rhs in lhs.isEmpty(rhs, comparator: comparator) } )
+            upstream.subscribe(Inner(subscriber) { lhs, rhs in lhs.isEmpty(rhs, comparator: comparator) })
         }
     }
 }

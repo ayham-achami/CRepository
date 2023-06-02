@@ -676,8 +676,7 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
                                                                                                                              T.Element.RepresentedType: ManageableSource,
                                                                                                                              T.Element.RepresentedType.ManageableType == T.Element,
                                                                                                                              U: ManageableSource,
-                                                                                                                             M: ManageableSource
-    {
+                                                                                                                             M: ManageableSource {
         flatMap(maxPublishers: .max(1)) { $0.publishUnion(allOf: models, updatePolicy: updatePolicy, with: type, unionPolicy: unionPolicy, perform) }.eraseToAnyPublisher()
     }
     
