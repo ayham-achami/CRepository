@@ -258,6 +258,26 @@ public extension Publisher where Self.Output: Changeset,
     }
     
     /// <#Description#>
+    /// - Returns: <#description#>
+    func freeze() -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap(maxPublishers: .max(1)) { changeset in
+            map { result in
+                result.freeze
+            }.receive(on: changeset.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func thaw() -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap(maxPublishers: .max(1)) { changeset in
+            tryMap { result in
+                try result.thaw
+            }.receive(on: changeset.queue)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
     /// - Parameters:
     ///   - other: <#other description#>
     ///   - transform: <#transform description#>
@@ -299,6 +319,7 @@ public extension Publisher where Self.Output: Changeset,
         Publishers.SymmetricFreezeRemoveDuplicates(upstream: self, comparator: comparator)
     }
 }
+
 
 // MARK: - Publisher + ManageableSource
 public extension Publisher where Self.Output: ChangesetCollection,
