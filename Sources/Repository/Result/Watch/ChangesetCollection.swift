@@ -261,9 +261,11 @@ public extension Publisher where Self.Output: Changeset,
     /// - Returns: <#description#>
     func freeze() -> AnyPublisher<Self.Output, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { changeset in
-            map { result in
-                result.freeze
-            }.receive(on: changeset.queue)
+            Future { promise in
+                changeset.queue.async {
+                    promise(.success(changeset.freeze))
+                }
+            }
         }.eraseToAnyPublisher()
     }
     
@@ -271,9 +273,15 @@ public extension Publisher where Self.Output: Changeset,
     /// - Returns: <#description#>
     func thaw() -> AnyPublisher<Self.Output, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { changeset in
-            tryMap { result in
-                try result.thaw
-            }.receive(on: changeset.queue)
+            Future { promise in
+                changeset.queue.async {
+                    do {
+                        promise(.success(try changeset.thaw))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
         }.eraseToAnyPublisher()
     }
     
