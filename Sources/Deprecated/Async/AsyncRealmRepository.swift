@@ -100,9 +100,9 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
         @AsyncRealmActor
         func perform() async throws -> Output {
             guard let repository = await repository else { throw RepositoryError.transaction }
-            let realm = try Realm(configuration: repository.realmConfiguration, queue: nil)
             return try autoreleasepool {
-                try self.attemptToFulfill(realm, type(of: repository))
+                let realm = try Realm(configuration: repository.realmConfiguration, queue: nil)
+                return try self.attemptToFulfill(realm, type(of: repository))
             }
         }
     }
@@ -206,6 +206,7 @@ public actor AsyncRealmRepository: AsyncRepository, SafeRepository {
                 throw RepositoryFetchError.notFound
             }
             try safe.safePerform(in: realm) { realm in
+                guard !object.isInvalidated else { return }
                 cascading ? realm.cascadeDelete(try safe.safeConvert(object)) :
                 realm.delete(try safe.safeConvert(object))
             }
