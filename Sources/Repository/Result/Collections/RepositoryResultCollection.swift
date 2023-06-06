@@ -171,6 +171,16 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     func last() async throws -> Element
     
     /// <#Description#>
+    /// - Parameter maxLength: <#maxLength description#>
+    /// - Returns: <#description#>
+    func prefix(maxLength: Int) async -> [Element]
+    
+    /// <#Description#>
+    /// - Parameter maxLength: <#maxLength description#>
+    /// - Returns: <#description#>
+    func suffix(maxLength: Int) async -> [Element]
+    
+    /// <#Description#>
     /// - Parameter predicate: <#predicate description#>
     /// - Returns: <#description#>
     func contents(where predicate: @escaping (Element) throws -> Bool) async throws -> Bool
@@ -277,6 +287,14 @@ public extension RepositoryResultCollection {
             else { throw RepositoryFetchError.notFound }
             return last
         }
+    }
+
+    func prefix(maxLength: Int) async -> [Element] {
+        await async { .init(unsafe.prefix(maxLength)) }
+    }
+    
+    func suffix(maxLength: Int) async -> [Element] {
+        await async { .init(unsafe.suffix(maxLength)) }
     }
     
     func contents(where predicate: @escaping (Element) throws -> Bool) async throws -> Bool {
@@ -424,12 +442,53 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     
     /// <#Description#>
     /// - Parameters:
+    ///   - other: <#other description#>
+    ///   - transform: <#transform description#>
+    /// - Returns: <#description#>
+    func combineLatestResults<P, T>(_ other: P,
+                                    _ transform: @escaping ([Self.Output.Element], P.Output) -> T) -> AnyPublisher<T, Self.Failure> where P: Publisher,
+                                                                                                                                          Self.Failure == P.Failure {
+        combineLatest(other) { lhs, rhs in
+            transform(.init(lhs.unsafe.elements), rhs)
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
     ///   - initialResult: <#initialResult description#>
     ///   - nextPartialResult: <#nextPartialResult description#>
     /// - Returns: <#description#>
     func scanResults<T>(_ initialResult: T, _ nextPartialResult: @escaping (T, [Self.Output.Element]) -> T) -> AnyPublisher<T, Self.Failure> {
         scan(initialResult) { initial, changeset in
             nextPartialResult(initial, .init(changeset.unsafe.elements))
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter maxLength: <#maxLength description#>
+    /// - Returns: <#description#>
+    func prefix(maxLength: Int) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
+        flatMap(maxPublishers: .max(1)) { result in
+            Future { promise in
+                Task {
+                    let prefix = await result.prefix(maxLength: maxLength)
+                    promise(.success(prefix))
+                }
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter maxLength: <#maxLength description#>
+    /// - Returns: <#description#>
+    func suffix(maxLength: Int) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
+        flatMap(maxPublishers: .max(1)) { result in
+            Future { promise in
+                Task {
+                    let suffix = await result.suffix(maxLength: maxLength)
+                    promise(.success(suffix))
+                }
+            }
         }.eraseToAnyPublisher()
     }
     

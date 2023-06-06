@@ -328,7 +328,6 @@ public extension Publisher where Self.Output: Changeset,
     }
 }
 
-
 // MARK: - Publisher + ManageableSource
 public extension Publisher where Self.Output: ChangesetCollection,
                                  Self.Output.Element: ManageableSource,

@@ -345,7 +345,9 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - toucher: <#toucher description#>
     /// - Returns: <#description#>
-    private func objects<Element>(of type: Element.Type, _ queue: DispatchQueue, _ toucher: RepositoryToucher) -> RepositoryResult<Element> where Element: ManageableSource {
+    private func objects<Element>(of type: Element.Type,
+                                  _ queue: DispatchQueue,
+                                  _ toucher: RepositoryToucher) -> RepositoryResult<Element> where Element: ManageableSource {
         .init(queue, objects(type), toucher)
     }
 }
