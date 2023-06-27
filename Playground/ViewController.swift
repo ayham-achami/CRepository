@@ -76,6 +76,21 @@ class ViewController: UIViewController {
                 .inMemory
                 .manageable
                 .put(allOf: manageableUsers(count: 10))
+            
+            let result = try await repository.inMemory.lazy.fetch(allOf: ManageableUser.self)
+            
+            let sequence = try await RepositorySequence(result)
+            let stream = sequence
+                    .prefix(3)
+                    .filter { $0.id.count >= 4 }
+                    .map { $0.id }
+                    .stream
+            
+            for try await id in stream {
+                print(id)
+            }
+            
+            print(try await RepositorySequence(result).mapStream(User.init(from:)))
         }
     }
     
@@ -217,16 +232,16 @@ class ViewController: UIViewController {
     
     @IBAction private func didTestWatch(_ sender: Any) {
         print(#function)
-        repository
-            .basic
-            .publishWatch
-            .watch(changedOf: ManageableUser.self)
-            .sink { completion in
-                guard case let .failure(error) = completion else { return }
-                print("Error: \(error)")
-            } receiveValue: { changeset in
-                print("Changeset:\n\(changeset)")
-            }.store(in: &subscriptions)
+//        repository
+//            .basic
+//            .publishWatch
+//            .watch(changedOf: ManageableUser.self)
+//            .sink { completion in
+//                guard case let .failure(error) = completion else { return }
+//                print("Error: \(error)")
+//            } receiveValue: { changeset in
+//                print("Changeset:\n\(changeset)")
+//            }.store(in: &subscriptions)
         
         repository
             .basic
@@ -234,11 +249,15 @@ class ViewController: UIViewController {
             .fetch(allOf: ManageableUser.self)
             .filter { query in query.id.contains("1")}
             .watch(keyPaths: [\.email])
+            .touch { changeset in
+                print(try await changeset.result.map(\.id))
+                print("-------------------------------")
+            }
             .sink { completion in
                 guard case let .failure(error) =  completion else { return }
                 print("Error: \(error)")
             } receiveValue: { count in
-                print("Count:\n\(count)")
+                //print("Count:\(count)")
             }.store(in: &subscriptions)
         
         Task {
