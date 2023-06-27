@@ -1,5 +1,5 @@
 //
-//  ModelGenerator.swift
+//  Generator.swift
 //
 //  The MIT License (MIT)
 //
@@ -25,6 +25,7 @@
 
 import Foundation
 
+// MARK: - ModelGenerator
 protocol ModelGenerator {
     
     func company(id: Int) -> Company
@@ -40,6 +41,7 @@ protocol ModelGenerator {
     func productInfos(count: Int) -> [ProductInfo]
 }
 
+// MARK: - ModelGenerator + Default
 extension ModelGenerator {
     
     func company(id: Int) -> Company {
@@ -73,6 +75,7 @@ extension ModelGenerator {
     }
 }
 
+// MARK: - ManageableModelGenerator
 protocol ManageableModelGenerator {
     
     func manageableCompany(id: Int) -> ManageableCompany
@@ -88,6 +91,7 @@ protocol ManageableModelGenerator {
     func manageableProductInfos(count: Int) -> [ManageableProductInfo]
 }
 
+// MARK: - ManageableModelGenerator + Default
 extension ManageableModelGenerator {
 
     func manageableCompany(id: Int) -> ManageableCompany {
@@ -123,6 +127,7 @@ extension ManageableModelGenerator {
 
 typealias ModelsGenerator = ModelGenerator & ManageableModelGenerator
 
+// MARK: Types + Generation
 private extension Int {
     
     static func randomOrNil(to limit: Int) -> Int? {

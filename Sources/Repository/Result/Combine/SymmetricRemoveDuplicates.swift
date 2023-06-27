@@ -73,7 +73,7 @@ extension Publishers.SymmetricRemoveDuplicates {
         /// <#Description#>
         private var last: Input?
         
-        override func receive(newInput input: Input) -> PartialCompletion {
+        override func receive(newInput input: Input) -> PartialCompletion<Input, Failure> {
             defer { last = input }
             guard let last else { return .reach(input) }
             return predicate(last, input) ? .omit : .reach(input)

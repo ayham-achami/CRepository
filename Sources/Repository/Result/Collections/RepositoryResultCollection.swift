@@ -118,7 +118,7 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
-    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element]
+    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> RepositorySequence<Element>
     
     /// <#Description#>
     /// - Parameter predicate: <#predicate description#>
@@ -160,7 +160,7 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// <#Description#>
     /// - Parameter indexes: <#indexes description#>
     /// - Returns: <#description#>
-    func pick(_ indexes: IndexSet) async throws -> [Element]
+    func pick(_ indexes: IndexSet) async throws -> RepositorySequence<Element>
     
     /// <#Description#>
     /// - Returns: <#description#>
@@ -173,12 +173,12 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     /// <#Description#>
     /// - Parameter maxLength: <#maxLength description#>
     /// - Returns: <#description#>
-    func prefix(maxLength: Int) async -> [Element]
+    func prefix(maxLength: Int) async -> RepositorySequence<Element>
     
     /// <#Description#>
     /// - Parameter maxLength: <#maxLength description#>
     /// - Returns: <#description#>
-    func suffix(maxLength: Int) async -> [Element]
+    func suffix(maxLength: Int) async -> RepositorySequence<Element>
     
     /// <#Description#>
     /// - Parameter predicate: <#predicate description#>
@@ -229,8 +229,8 @@ public extension RepositoryResultCollection {
         await apply { unsafe.filter(isIncluded) }
     }
     
-    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> [Element] {
-        try await asyncThrowing { try unsafe.filter(isIncluded) }
+    func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> RepositorySequence<Element> {
+        .init(try await asyncThrowing { try unsafe.filter(isIncluded) }, queue: queue)
     }
     
     func first(where predicate: @escaping (Element) throws -> Bool) async throws -> Element? {
@@ -267,8 +267,8 @@ public extension RepositoryResultCollection {
         try await asyncThrowing { try unsafe.compactMap(transform) }
     }
     
-    func pick(_ indexes: IndexSet) async throws -> [Element] {
-        try await asyncThrowing { unsafe.pick(indexes) }
+    func pick(_ indexes: IndexSet) async throws -> RepositorySequence<Element> {
+        .init(try await asyncThrowing { unsafe.pick(indexes) }, queue: queue)
     }
     
     func first() async throws -> Element {
@@ -289,12 +289,12 @@ public extension RepositoryResultCollection {
         }
     }
 
-    func prefix(maxLength: Int) async -> [Element] {
-        await async { .init(unsafe.prefix(maxLength)) }
+    func prefix(maxLength: Int) async -> RepositorySequence<Element> {
+        .init(await async { unsafe.prefix(maxLength) }, queue: queue)
     }
     
-    func suffix(maxLength: Int) async -> [Element] {
-        await async { .init(unsafe.suffix(maxLength)) }
+    func suffix(maxLength: Int) async -> RepositorySequence<Element> {
+        .init(await async { unsafe.suffix(maxLength) }, queue: queue)
     }
     
     func contents(where predicate: @escaping (Element) throws -> Bool) async throws -> Bool {
@@ -470,9 +470,9 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     func prefix(maxLength: Int) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
         flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
-                Task {
-                    let prefix = await result.prefix(maxLength: maxLength)
-                    promise(.success(prefix))
+                result.queue.async {
+                    let prefix = result.unsafe.prefix(maxLength)
+                    promise(.success(.init(prefix)))
                 }
             }
         }.eraseToAnyPublisher()
@@ -484,9 +484,9 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     func suffix(maxLength: Int) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
         flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
-                Task {
-                    let suffix = await result.suffix(maxLength: maxLength)
-                    promise(.success(suffix))
+                result.queue.async {
+                    let suffix = result.unsafe.suffix(maxLength)
+                    promise(.success(.init(suffix)))
                 }
             }
         }.eraseToAnyPublisher()

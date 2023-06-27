@@ -348,19 +348,6 @@ public extension RepresentedRepository {
     }
     
     @discardableResult
-    /// <#Description#>
-    /// - Parameters:
-    ///   - models: <#models description#>
-    ///   - transform: <#transform description#>
-    /// - Returns: <#description#>
-    func put<T>(allOf models: T, transform: (T) -> T.Element.RepresentedType) async throws -> RepresentedRepository where T: Sequence,
-                                                                                                                          T.Element: ManageableRepresented,
-                                                                                                                          T.Element.RepresentedType: ManageableSource,
-                                                                                                                          T.Element.RepresentedType.ManageableType == T.Element {
-        try await put(allOf: models, policy: .default)
-    }
-    
-    @discardableResult
     func union<T, U, M>(_ model: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
                         with type: U.Type,

@@ -79,12 +79,12 @@ extension RepositoryRepresentedResult: RepositoryResultModifier {
     public func forEach(_ body: @escaping (Element.RepresentedType) throws -> Void) async throws -> Self {
         .init(try await result.forEach(body))
     }
-
+    
     @discardableResult
     public func remove(isCascading: Bool, where isIncluded: @escaping ((Query<Element.RepresentedType>) -> Query<Bool>)) async throws -> Self {
         .init(try await result.remove(isCascading: isCascading, where: isIncluded))
     }
-
+    
     @discardableResult
     public func removeAll(isCascading: Bool) async throws -> RepositoryController {
         try await result.removeAll(isCascading: isCascading)

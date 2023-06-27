@@ -126,3 +126,24 @@ extension RepositoryUnsafeResult: RepositoryCollectionUnsafeFrozer {
         }
     }
 }
+
+// MARK: - RepositoryUnsafeResult + IteratorProtocol
+extension RepositoryUnsafeResult: Sequence {
+    
+    @frozen public struct Iterator: IteratorProtocol {
+        
+        private var unsafe: RLMIterator<Element>
+        
+        init(unsafe: RLMIterator<Element>) {
+            self.unsafe = unsafe
+        }
+        
+        public mutating func next() -> Element? {
+            unsafe.next()
+        }
+    }
+    
+    public func makeIterator() -> Iterator {
+        .init(unsafe: results.makeIterator())
+    }
+}

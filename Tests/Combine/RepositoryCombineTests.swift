@@ -46,6 +46,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .publishManageable
                 .reset() // Given
                 .put(allOf: speakers) // When
+                .touch { _ in print("It's work") }
                 .sink("Success put ManageableSpeaker", expectation) // Then
         }
     }
@@ -179,6 +180,7 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 }
                 .lazy()
                 .fetch(allOf: ManageableCompany.self)
+                .touch { print(try await $0.map { $0.id }) }
                 .sink("", expectation) {
                     // Then
                     XCTAssertEqual($0.unsafe.map(\.id), [1, 2, 3])
@@ -305,6 +307,34 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                         index += 1
                     }
                 }
+        }
+    }
+    
+    func testPrefix() {
+        subscribe("Prefix ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .prefix(maxLength: 1)
+                .sink("", expectation) { XCTAssertEqual($0.first?.id, 1) } // Then
+        }
+    }
+    
+    func testSuffix() {
+        subscribe("Suffix ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .suffix(maxLength: 1)
+                .sink("", expectation) { XCTAssertEqual($0.first?.id, 10) } // Then
         }
     }
     

@@ -1,5 +1,5 @@
 //
-//  BaseTestCase.swift
+//  CombineTestCase.swift
 //
 //  The MIT License (MIT)
 //
@@ -24,27 +24,43 @@
 //  SOFTWARE.
 
 import XCTest
-import CRepository
+import Combine
+import Foundation
 
-// MARK: - BaseTestCase
-class BaseTestCase: XCTestCase {
+// MARK: - CombineTestCase
+class CombineTestCase: BaseTestCase {
+    
+    lazy var subscriptions: Set<AnyCancellable> = {
+        .init()
+    }()
 
-    lazy var repository: Repository = {
-        RealmRepository(Configuration())
-    }()
-    
-    lazy var reservedRepository: Repository = {
-        RealmRepository(ReservedConfiguration())
-    }()
-    
-    let timeout: TimeInterval = 30
-    
-    func assert(on queue: DispatchQueue, assertions: @escaping () -> Void) {
-        let expect = expectation(description: "all async assertions are complete")
-        queue.async {
-            assertions()
-            expect.fulfill()
-        }
+    override func tearDown() {
+        subscriptions.removeAll()
+        super.tearDown()
+    }
+
+    func subscribe(_ description: String, _ subscription: (XCTestExpectation) -> AnyCancellable) {
+        let expectation = expectation(description: description)
+        subscriptions.insert(subscription(expectation))
         waitForExpectations(timeout: timeout)
+    }
+}
+
+// MARK: - Publisher + Testing
+extension Publisher where Self.Failure == Swift.Error {
+    
+    func sink(_ description: String,
+              _ expectation: XCTestExpectation,
+              storeValue: ((Self.Output) -> Void)? = nil) -> AnyCancellable {
+        sink { completion in
+            if case let .failure(error) = completion {
+                XCTFail("Test couldn't be completed: \(error)")
+                expectation.fulfill()
+            }
+        } receiveValue: { output in
+            Swift.print(description)
+            storeValue?(output)
+            expectation.fulfill()
+        }
     }
 }

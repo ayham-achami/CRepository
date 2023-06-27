@@ -1,5 +1,5 @@
 //
-//  RepositoryCollection.swift
+//  RepositoryAsyncSequence.swift
 //
 //  The MIT License (MIT)
 //
@@ -25,39 +25,26 @@
 
 import Foundation
 
-public protocol RepositoryCollection: QueuingCollection {
-    
-    associatedtype Index
-    associatedtype Element: ManageableSource
+/// <#Description#>
+public protocol RepositoryAsyncIteratorProtocol {
+
+    /// <#Description#>
+    associatedtype Element
     
     /// <#Description#>
-    /// - Parameter contentsOf: <#contentsOf description#>
-    mutating func append(contentsOf content: [RepositoryResult<Element>])
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - index: <#index description#>
-    ///   - transform: <#transform description#>
     /// - Returns: <#description#>
-    func mapElement<T>(at index: Index, _ transform: @escaping (Element) throws -> T) async throws -> T
+    mutating func next() async throws -> Element?
+}
+
+/// <#Description#>
+public protocol RepositoryAsyncSequence: QueuingCollection {
     
     /// <#Description#>
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
-    func mapFirst<T>(_ transform: @escaping (Element) throws -> T) async throws -> T
+    associatedtype Element
+    /// <#Description#>
+    associatedtype RepositoryAsyncIterator: RepositoryAsyncIteratorProtocol where RepositoryAsyncIterator.Element == Element
     
     /// <#Description#>
-    /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
-    func mapLast<T>(_ transform: @escaping (Element) throws -> T) async throws -> T
-    
-    /// <#Description#>
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
-    func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T]
-    
-    /// <#Description#>
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
-    func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
+    __consuming func makeAsyncIterator() -> RepositoryAsyncIterator
 }

@@ -32,36 +32,11 @@ class PredicateProducer<Downstream: Subscriber,
                         Predicate>: Subscriber, Subscription where Downstream.Input == Upstream.Output,
                                                                    Downstream.Failure == Upstream.Failure {
     
-    /// <#Description#>
-    enum PartialCompletion {
-    
-        /// <#Description#>
-        case omit
-        /// <#Description#>
-        case finished
-        /// <#Description#>
-        case reach(Input)
-        /// <#Description#>
-        case failure(Failure)
-    }
-    
-    /// <#Description#>
-    private enum State {
-        
-        /// <#Description#>
-        case awaiting
-        /// <#Description#>
-        case completed
-        /// <#Description#>
-        case connected(Subscription)
-    }
-    
     typealias Input = Upstream.Output
     typealias Failure = Upstream.Failure
     
     /// <#Description#>
-    private var state: State = .awaiting
-    private var semaphore: DispatchSemaphore
+    private var state: SubscriberState = .awaiting
     
     let downstream: Downstream
     let predicate: Predicate
@@ -73,13 +48,12 @@ class PredicateProducer<Downstream: Subscriber,
     init(_ downstream: Downstream, _ predicate: Predicate) {
         self.downstream = downstream
         self.predicate = predicate
-        self.semaphore = .init(value: 1)
     }
     
     /// <#Description#>
     /// - Parameter input: <#input description#>
     /// - Returns: <#description#>
-    func receive(newInput input: Input) -> PartialCompletion {
+    func receive(newInput input: Input) -> PartialCompletion<Input, Failure> {
         .finished
     }
     
