@@ -62,12 +62,12 @@ import RealmSwift
     /// <#Description#>
     public let queue: DispatchQueue
     /// <#Description#>
-    public let source: AnyIterator<Element>
+    public private(set) var source: [Element]
     
     /// <#Description#>
     /// - Parameter result: <#result description#>
     public init(_ result: RepositoryResult<Element>) async throws {
-        self.source = .init(try await result.map { $0 }.makeIterator())
+        self.source = .init(try await result.map { $0 })
         self.queue = result.queue
     }
     
@@ -76,14 +76,26 @@ import RealmSwift
     ///   - source: <#source description#>
     ///   - queue: <#queue description#>
     public init<T>(_ source: T, queue: DispatchQueue) where T: Sequence, T.Element == Element {
-        self.source = .init(source.makeIterator())
+        self.source = .init(source)
         self.queue = queue
+    }
+    
+    /// <#Description#>
+    /// - Parameter sequence: <#sequence description#>
+    public mutating func append<S>(contentsOf sequence: S) where S: Sequence, S.Element == Element {
+        source.append(contentsOf: sequence)
+    }
+    
+    /// <#Description#>
+    /// - Parameter element: <#element description#>
+    public mutating func append(_ element: Element) {
+        source.append(element)
     }
     
     /// <#Description#>
     /// - Returns: <#description#>
     public func makeAsyncIterator() -> Iterator {
-        .init(queue: queue, iterator: source)
+        .init(queue: queue, iterator: .init(source.makeIterator()))
     }
 }
 
