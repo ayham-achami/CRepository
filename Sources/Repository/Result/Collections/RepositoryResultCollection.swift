@@ -467,12 +467,12 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// <#Description#>
     /// - Parameter maxLength: <#maxLength description#>
     /// - Returns: <#description#>
-    func prefix(maxLength: Int) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
+    func prefix(maxLength: Int) -> AnyPublisher<RepositorySequence<Self.Output.Element>, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
-                result.queue.async {
-                    let prefix = result.unsafe.prefix(maxLength)
-                    promise(.success(.init(prefix)))
+                Task {
+                    let prefix = await result.prefix(maxLength: maxLength)
+                    promise(.success(prefix))
                 }
             }
         }.eraseToAnyPublisher()
@@ -481,12 +481,12 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// <#Description#>
     /// - Parameter maxLength: <#maxLength description#>
     /// - Returns: <#description#>
-    func suffix(maxLength: Int) -> AnyPublisher<[Self.Output.Element], Self.Failure> {
+    func suffix(maxLength: Int) -> AnyPublisher<RepositorySequence<Self.Output.Element>, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { result in
             Future { promise in
-                result.queue.async {
-                    let suffix = result.unsafe.suffix(maxLength)
-                    promise(.success(.init(suffix)))
+                Task {
+                    let suffix = await result.suffix(maxLength: maxLength)
+                    promise(.success(suffix))
                 }
             }
         }.eraseToAnyPublisher()
