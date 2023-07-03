@@ -18,6 +18,45 @@ extension RepositoryAsyncSequence {
     public __consuming func filter(_ isIncluded: @escaping (Element) throws -> Bool) rethrows -> RepositoryAsyncFilterSequence<Self> {
         .init(self, isIncluded: isIncluded)
     }
+
+    @preconcurrency
+    @inlinable
+    /// <#Description#>
+    /// - Parameters:
+    ///   - key: <#key description#>
+    ///   - other: <#other description#>
+    /// - Returns: <#description#>
+    public __consuming func filter<T>(by key: KeyPath<Element, T>, _ other: T) -> RepositoryAsyncFilterSequence<Self> where T: Equatable {
+        filter { element in
+            element[keyPath: key] == other
+        }
+    }
+    
+    @preconcurrency
+    @inlinable
+    /// <#Description#>
+    /// - Parameters:
+    ///   - key: <#key description#>
+    ///   - sequence: <#sequence description#>
+    /// - Returns: <#description#>
+    public __consuming func filter<T, C>(by key: KeyPath<Element, T>, in collection: C) -> RepositoryAsyncFilterSequence<Self> where C: Collection, C.Element == T, T: Equatable {
+        filter { element in
+            collection.contains(element[keyPath: key])
+        }
+    }
+    
+    @preconcurrency
+    @inlinable
+    /// <#Description#>
+    /// - Parameters:
+    ///   - key: <#key description#>
+    ///   - sequence: <#sequence description#>
+    /// - Returns: <#description#>
+    public __consuming func filter<T, C>(by key: KeyPath<Element, T>, notIn collection: C) -> RepositoryAsyncFilterSequence<Self> where C: Collection, C.Element == T, T: Equatable {
+        filter { element in
+            !collection.contains(element[keyPath: key])
+        }
+    }
 }
 
 /// <#Description#>

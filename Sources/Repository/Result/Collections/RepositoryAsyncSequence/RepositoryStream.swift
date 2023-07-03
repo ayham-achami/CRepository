@@ -26,7 +26,9 @@
 import Foundation
 
 /// <#Description#>
-@frozen public struct RepositoryStream<StreamingElement, Source>: AsyncSequence, QueuingCollection where Source: RepositoryAsyncIteratorProtocol, Source.Element == StreamingElement {
+@frozen public struct RepositoryStream<StreamingElement, Source>: AsyncSequence,
+                                                                  QueuingCollection where Source: RepositoryAsyncIteratorProtocol,
+                                                                                          Source.Element == StreamingElement {
     
     /// <#Description#>
     @frozen public struct Iterator: AsyncIteratorProtocol {
@@ -67,36 +69,5 @@ import Foundation
     /// - Returns: <#description#>
     public func makeAsyncIterator() -> Iterator {
         .init(iterator: source)
-    }
-}
-
-// MARK: - RepositoryAsyncSequence + RepositoryStream
-public extension RepositoryAsyncSequence {
-    
-    /// <#Description#>
-    var stream: RepositoryStream<Element, RepositoryAsyncIterator> {
-        .init(source: makeAsyncIterator(), queue: queue)
-    }
-    
-    /// <#Description#>
-    var count: Int {
-        get async throws {
-            var count = 0
-            for try await _ in stream {
-                count += 1
-            }
-            return count
-        }
-    }
-    
-    /// <#Description#>
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
-    func mapStream<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
-        var elements = [T]()
-        for try await element in stream {
-            elements.append(try await asyncThrowing { try transform(element) })
-        }
-        return elements
     }
 }

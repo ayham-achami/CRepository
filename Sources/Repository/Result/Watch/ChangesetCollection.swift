@@ -207,6 +207,26 @@ public extension Publisher where Self.Output: Changeset,
     
     /// <#Description#>
     /// - Returns: <#description#>
+    func ignoreIfEmpty() -> AnyPublisher<Self.Output, Self.Failure> {
+        flatMap(maxPublishers: .max(1)) { changeset in
+            Future { promise in
+                Task {
+                    let isEmpty =  await changeset.result.isEmpty
+                    guard !isEmpty else { return }
+                    promise(.success(changeset))
+                }
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func sequence() -> AnyPublisher<RepositorySequence<Self.Output.Result.Element>, Self.Failure> {
+        map(\.result).sequence()
+    }
+    
+    /// <#Description#>
+    /// - Returns: <#description#>
     func initialization() -> AnyPublisher<ChangesetSequence<Self.Output.Result.Element>, Self.Failure> {
         filter { changeset in
             changeset.kind == .initial

@@ -18,10 +18,21 @@ extension RepositoryAsyncSequence {
     public __consuming func map<Transformed>(_ transform: @escaping (Element) throws -> Transformed) rethrows -> RepositoryAsyncMapSequence<Self, Transformed> {
         .init(self, transform: transform)
     }
+    
+    @preconcurrency
+    @inlinable
+    /// <#Description#>
+    /// - Parameter key: <#key description#>
+    /// - Returns: <#description#>
+    public __consuming func map<Transformed>(_ key: KeyPath<Element, Transformed>) -> RepositoryAsyncMapSequence<Self, Transformed> {
+        map { element in
+            element[keyPath: key]
+        }
+    }
 }
 
 /// <#Description#>
-public struct RepositoryAsyncMapSequence<Base: RepositoryAsyncSequence, Transformed> {
+public struct RepositoryAsyncMapSequence<Base: RepositoryAsyncSequence, Transformed> where Base.Element: ManageableSource {
     
     @usableFromInline
     /// <#Description#>

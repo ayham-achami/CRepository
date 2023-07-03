@@ -46,7 +46,6 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .publishManageable
                 .reset() // Given
                 .put(allOf: speakers) // When
-                .touch { _ in print("It's work") }
                 .sink("Success put ManageableSpeaker", expectation) // Then
         }
     }
@@ -180,11 +179,12 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 }
                 .lazy()
                 .fetch(allOf: ManageableCompany.self)
-                .touch { print(try await $0.map { $0.id }) }
-                .sink("", expectation) {
+                .awaitSink("", expectation) {
                     // Then
-                    XCTAssertEqual($0.unsafe.map(\.id), [1, 2, 3])
-                    XCTAssertEqual($0.unsafe.map(\.name), ["1Test", "1Test", "1Test"])
+                    let ids = await $0.map(\.id)
+                    let names = await $0.map(\.name)
+                    XCTAssertEqual(ids, [1, 2, 3])
+                    XCTAssertEqual(names, ["1Test", "1Test", "1Test"])
                 }
         }
     }
@@ -320,7 +320,10 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .lazy()
                 .fetch(allOf: ManageableSpeaker.self)
                 .prefix(maxLength: 1)
-                .sink("", expectation) { XCTAssertEqual($0.first?.id, 1) } // Then
+                .awaitSink("", expectation) { // Then
+                    let first = try await $0.map(\.id).first(where: { _ in true })
+                    XCTAssertEqual(first, 1)
+                }
         }
     }
     
@@ -334,7 +337,10 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .lazy()
                 .fetch(allOf: ManageableSpeaker.self)
                 .suffix(maxLength: 1)
-                .sink("", expectation) { XCTAssertEqual($0.first?.id, 10) } // Then
+                .awaitSink("", expectation) { // Then
+                    let first = try await $0.map(\.id).first(where: { _ in true })
+                    XCTAssertEqual(first, 10)
+                }
         }
     }
     

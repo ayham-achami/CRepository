@@ -153,6 +153,11 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     func map<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T]
     
     /// <#Description#>
+    /// - Parameter key: <#key description#>
+    /// - Returns: <#description#>
+    func map<T>(_ key: KeyPath<Element, T>) async -> [T]
+    
+    /// <#Description#>
     /// - Parameter transform: <#transform description#>
     /// - Returns: <#description#>
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T]
@@ -263,6 +268,10 @@ public extension RepositoryResultCollection {
         try await asyncThrowing { try unsafe.map(transform) }
     }
     
+    func map<T>(_ key: KeyPath<Element, T>) async -> [T] {
+        await async{ unsafe.map { $0[keyPath: key] } }
+    }
+    
     func compactMap<T>(_ transform: @escaping (Element) throws -> T?) async throws -> [T] {
         try await asyncThrowing { try unsafe.compactMap(transform) }
     }
@@ -290,11 +299,11 @@ public extension RepositoryResultCollection {
     }
 
     func prefix(maxLength: Int) async -> RepositorySequence<Element> {
-        .init(await async { unsafe.prefix(maxLength) }, queue: queue)
+        await async { .init(unsafe.prefix(maxLength) , queue: queue) }
     }
     
     func suffix(maxLength: Int) async -> RepositorySequence<Element> {
-        .init(await async { unsafe.suffix(maxLength) }, queue: queue)
+        await async { .init(unsafe.suffix(maxLength), queue: queue) }
     }
     
     func contents(where predicate: @escaping (Element) throws -> Bool) async throws -> Bool {
@@ -342,16 +351,18 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                                  Self.Failure == Swift.Error {
     
     /// <#Description#>
+    /// - Returns: <#description#>
     func lazy() -> AnyPublisher<LazyRepository, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { $0.controller.publishLazy }.eraseToAnyPublisher()
     }
     
     /// <#Description#>
+    /// - Returns: <#description#>
     func manageable() -> AnyPublisher<ManageableRepository, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { $0.controller.publishManageable }.eraseToAnyPublisher()
     }
-    
     /// <#Description#>
+    /// - Returns: <#description#>
     func represented() -> AnyPublisher<RepresentedRepository, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { $0.controller.publishRepresented }.eraseToAnyPublisher()
     }
@@ -534,6 +545,28 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                 }
             }
             .receive(on: result.queue)
+        }.eraseToAnyPublisher()
+    }
+}
+
+// MARK: - Publisher + RepositoryController
+public extension Publisher where Self.Output: RepositoryResultCollection,
+                                 Self.Output.Element: ManageableSource,
+                                 Self.Failure == Swift.Error {
+    /// <#Description#>
+    /// - Returns: <#description#>
+    func sequence() -> AnyPublisher<RepositorySequence<Self.Output.Element>, Self.Failure> {
+        flatMap(maxPublishers: .max(2)) { result in
+            Future { promise in
+                Task {
+                    do {
+                        let sequence = try await RepositorySequence(result)
+                        promise(.success(sequence))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
         }.eraseToAnyPublisher()
     }
 }

@@ -53,14 +53,33 @@ extension Publisher where Self.Failure == Swift.Error {
               _ expectation: XCTestExpectation,
               storeValue: ((Self.Output) -> Void)? = nil) -> AnyCancellable {
         sink { completion in
-            if case let .failure(error) = completion {
-                XCTFail("Test couldn't be completed: \(error)")
-                expectation.fulfill()
-            }
+            guard case let .failure(error) = completion else { return }
+            XCTFail("Test couldn't be completed: \(error)")
+            expectation.fulfill()
         } receiveValue: { output in
             Swift.print(description)
             storeValue?(output)
             expectation.fulfill()
+        }
+    }
+    
+    func awaitSink(_ description: String,
+                   _ expectation: XCTestExpectation,
+                   storeValue: ((Self.Output) async throws -> Void)? = nil) -> AnyCancellable {
+        sink { completion in
+            guard case let .failure(error) = completion else { return }
+            XCTFail("Test couldn't be completed: \(error)")
+            expectation.fulfill()
+        } receiveValue: { output in
+            Swift.print(description)
+            Task {
+                do {
+                    try await storeValue?(output)
+                } catch {
+                    XCTFail("Error store value: \(error)")
+                }
+                expectation.fulfill()
+            }
         }
     }
 }

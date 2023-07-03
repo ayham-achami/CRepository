@@ -77,7 +77,10 @@ class ViewController: UIViewController {
                 .manageable
                 .put(allOf: manageableUsers(count: 10))
             
-            let result = try await repository.inMemory.lazy.fetch(allOf: ManageableUser.self)
+            let result = try await repository
+                .inMemory
+                .lazy
+                .fetch(allOf: ManageableUser.self)
             
             let sequence = try await RepositorySequence(result)
             let stream = sequence
@@ -90,7 +93,7 @@ class ViewController: UIViewController {
                 print(id)
             }
             
-            print(try await RepositorySequence(result).mapStream(User.init(from:)))
+            print(try await RepositorySequence(result).map(User.init(from:)))
         }
     }
     
