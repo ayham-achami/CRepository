@@ -9,8 +9,8 @@ import RealmSwift
 import CRepository
 
 struct User {
-    
-    enum Role: String {
+
+    enum Role: String, PersistableEnum {
         
         case unknown = ""
         case guest
@@ -35,7 +35,7 @@ extension User: ManageableRepresented {
     init(from represented: ManageableUser) {
         self.id = represented.id
         self.name = represented.name
-        self.roles = represented.roles.compactMap(Role.init(rawValue:))
+        self.roles = .init(represented.roles)
         self.email = represented.email
         self.initials = represented.initials
         self.avatarHttpPath = represented.avatarHttpPath
@@ -52,7 +52,7 @@ final class ManageableUser: Object, ManageableSource {
     @Persisted var name: String
     @Persisted var email: String
     @Persisted var initials: String
-    @Persisted var roles: List<String>
+    @Persisted var roles: List<User.Role>
     @Persisted var avatarHttpPath: String
     @Persisted var position: String
     @Persisted var isProfileFilled: Bool
@@ -61,7 +61,7 @@ final class ManageableUser: Object, ManageableSource {
         self.init()
         self.id = user.id
         self.name = user.name
-        self.roles = .init(user.roles.map { $0.rawValue })
+        self.roles = .init(user.roles)
         self.email = user.email
         self.initials = user.initials
         self.avatarHttpPath = user.avatarHttpPath

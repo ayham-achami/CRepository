@@ -25,6 +25,41 @@ import Combine
 import RealmSwift
 import Foundation
 
+// MARK: - MigrationObject + MigrationManageable
+extension MigrationObject: DynamicManageable {
+
+    public func value<T>(of property: String, type: T.Type) -> T? {
+        self[property] as? T
+    }
+
+    public func set(value: Any?, of property: String) {
+        self[property] = value
+    }
+}
+
+// MARK: - Migration + MigrationContext
+extension Migration: MigrationContext {
+
+    public func forEach<T>(for model: T.Type, enumerate: @escaping (DynamicManageable, DynamicManageable) -> Void) where T: Manageable {
+        self.enumerateObjects(ofType: model.className()) { (old, new) in
+            guard let new = new, let old = old else { return }
+            enumerate(old, new)
+        }
+    }
+
+    public func renameProperty<T>(of model: T.Type, from oldName: String, to newName: String) where T: Manageable {
+        renameProperty(onType: model.className(), from: oldName, to: newName)
+    }
+
+    public func create<T>(_ model: T.Type) where T: Manageable {
+        create(model.className())
+    }
+
+    public func delete<T>(_ model: T.Type) where T: Manageable {
+        deleteData(forType: model.className())
+    }
+}
+
 // MARK: - Realm.Configuration + RepositoryConfiguration
 extension Realm.Configuration {
     

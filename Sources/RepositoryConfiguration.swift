@@ -25,20 +25,6 @@
 
 import Foundation
 
-/// Типы хранилища
-@available(*, deprecated, message: "Will be removed in next releases")
-public enum RepositoryType: Equatable {
-
-    /// Базовый тип
-    case basic(userName: String)
-    /// Данные будет хранятся в ОЗУ после перезапуска приложения данные теряются
-    /// Когда все экземпляры с определенным идентификатором выходят за рамки памяти, база данных удаляет все данные в этой области.
-    /// Чтобы избежать этого, сохраняйте сильную ссылку на базу в течение всего времени существования приложения.
-    case inMemory(identifier: String)
-    /// Базовый тип с шифрованием
-    case basicEncryption(userName: String, encryptionKey: Data)
-}
-
 /// конфигурация хранилища
 public protocol RepositoryConfiguration: AnyObject {
     
@@ -47,10 +33,6 @@ public protocol RepositoryConfiguration: AnyObject {
     
     /// Ключи шифрования 
     var encryptionKey: Data { get throws }
-    
-    @available(*, deprecated, message: "Use userName property")
-    /// тип хранилища
-    var repositoryType: RepositoryType { get }
     
     /// файл хранилища является ли защищенным от изменения в спящем режиме устройства,
     /// если создавать конфигурацию с значением isFileProtection = false
@@ -69,11 +51,4 @@ public protocol RepositoryConfiguration: AnyObject {
     /// - Parameter migration: контроллер миграции
     /// - See: `MigrationController`
     func repositoryDidBeginMigration(with controller: MigrationController)
-}
-
-public extension RepositoryConfiguration {
-    
-    var repositoryType: RepositoryType {
-        preconditionFailure("Use userName property")
-    }
 }
