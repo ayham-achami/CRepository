@@ -449,6 +449,23 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         }
     }
     
+    func testSequence() {
+        subscribe("Sequence ManageableSpeaker") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: manageableSpeakers(count: 2))
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .sequence()
+                .awaitSink("Success get sequence ManageableSpeaker", expectation) { sequence in
+                    let count = try await sequence.count
+                    XCTAssertEqual(count, 2)
+                }
+        }
+    }
+    
     func testResultWatchCount() {
         // Given
         var notificationTick = 0

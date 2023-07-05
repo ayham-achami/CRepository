@@ -101,7 +101,7 @@ extension RepositoryAsyncMapSequence: RepositoryAsyncSequence {
         }
         
         public mutating func next() async throws -> Transformed? {
-            while let element = try await baseIterator.next(), !element.isInvalidated {
+            while let element = try await baseIterator.next(), !element.isInvalidated { 
                 return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Transformed?, Error>) -> Void in
                     queue.async { [transform, element] in
                         do {

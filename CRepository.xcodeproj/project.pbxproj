@@ -51,8 +51,6 @@
 		DF937FB62A3C551400CDCB4A /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF937FB52A3C551400CDCB4A /* Configuration.swift */; };
 		DF937FB82A3C5C0800CDCB4A /* ConcurrencyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF937FB72A3C5C0800CDCB4A /* ConcurrencyTestCase.swift */; };
 		DF93C5ED2A540CB100036F69 /* Realm+Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF93C5EC2A540CB100036F69 /* Realm+Repository.swift */; };
-		DFBEE824274237610058E5AB /* RealmAsyncRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */; };
-		DFBEE83227423F730058E5AB /* RealmCombineRepositoryTestes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBEE83127423F730058E5AB /* RealmCombineRepositoryTestes.swift */; };
 		DFBF9EDD2A16B141009EC9E8 /* PredicateProducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBF9EDC2A16B141009EC9E8 /* PredicateProducer.swift */; };
 		DFBF9EDF2A16BB7F009EC9E8 /* SymmetricComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBF9EDE2A16BB7F009EC9E8 /* SymmetricComparator.swift */; };
 		DFBF9EE12A16BE94009EC9E8 /* RepositoryDifference.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBF9EE02A16BE94009EC9E8 /* RepositoryDifference.swift */; };
@@ -78,8 +76,6 @@
 		F08519FA26C54D7A00EDBCAB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F08519F826C54D7A00EDBCAB /* LaunchScreen.storyboard */; };
 		F0C26FED26C6A8ED00211F15 /* Company.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C26FEC26C6A8ED00211F15 /* Company.swift */; };
 		F0C26FEF26C6A93E00211F15 /* ProductInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C26FEE26C6A93E00211F15 /* ProductInfo.swift */; };
-		F0C2701526C6B7C200211F15 /* Configurations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2701426C6B7C200211F15 /* Configurations.swift */; };
-		F0C2701926C6B87100211F15 /* RealmSyncRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2701826C6B87100211F15 /* RealmSyncRepositoryTests.swift */; };
 		F0C2709026CAAA5C00211F15 /* RepositoryConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707026CAAA5B00211F15 /* RepositoryConfiguration.swift */; };
 		F0C2709126CAAA5C00211F15 /* Sorted.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707126CAAA5B00211F15 /* Sorted.swift */; };
 		F0C2709226CAAA5C00211F15 /* MigrationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C2707326CAAA5C00211F15 /* MigrationController.swift */; };
@@ -172,8 +168,6 @@
 		DF937FB52A3C551400CDCB4A /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		DF937FB72A3C5C0800CDCB4A /* ConcurrencyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcurrencyTestCase.swift; sourceTree = "<group>"; };
 		DF93C5EC2A540CB100036F69 /* Realm+Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Realm+Repository.swift"; sourceTree = "<group>"; };
-		DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmAsyncRepositoryTests.swift; sourceTree = "<group>"; };
-		DFBEE83127423F730058E5AB /* RealmCombineRepositoryTestes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmCombineRepositoryTestes.swift; sourceTree = "<group>"; };
 		DFBF9EDC2A16B141009EC9E8 /* PredicateProducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredicateProducer.swift; sourceTree = "<group>"; };
 		DFBF9EDE2A16BB7F009EC9E8 /* SymmetricComparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymmetricComparator.swift; sourceTree = "<group>"; };
 		DFBF9EE02A16BE94009EC9E8 /* RepositoryDifference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDifference.swift; sourceTree = "<group>"; };
@@ -208,8 +202,6 @@
 		F0851A0526C571F500EDBCAB /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		F0C26FEC26C6A8ED00211F15 /* Company.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Company.swift; sourceTree = "<group>"; };
 		F0C26FEE26C6A93E00211F15 /* ProductInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfo.swift; sourceTree = "<group>"; };
-		F0C2701426C6B7C200211F15 /* Configurations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configurations.swift; sourceTree = "<group>"; };
-		F0C2701826C6B87100211F15 /* RealmSyncRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmSyncRepositoryTests.swift; sourceTree = "<group>"; };
 		F0C2704E26CA764A00211F15 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		F0C2707026CAAA5B00211F15 /* RepositoryConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RepositoryConfiguration.swift; sourceTree = "<group>"; };
 		F0C2707126CAAA5B00211F15 /* Sorted.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sorted.swift; sourceTree = "<group>"; };
@@ -353,17 +345,6 @@
 				DF29298F2A45FB7C00D9B86C /* AsyncPrefixSequence.swift */,
 			);
 			path = Operators;
-			sourceTree = "<group>";
-		};
-		DF4645FB29F5B5C200D88F41 /* Deprecated */ = {
-			isa = PBXGroup;
-			children = (
-				F0C2701426C6B7C200211F15 /* Configurations.swift */,
-				F0C2701826C6B87100211F15 /* RealmSyncRepositoryTests.swift */,
-				DFBEE823274237610058E5AB /* RealmAsyncRepositoryTests.swift */,
-				DFBEE83127423F730058E5AB /* RealmCombineRepositoryTestes.swift */,
-			);
-			path = Deprecated;
 			sourceTree = "<group>";
 		};
 		DF4645FC29F5B5D400D88F41 /* AsyncAwait */ = {
@@ -575,7 +556,6 @@
 				F0C26FEB26C6A8B700211F15 /* Models */,
 				DF4645FD29F5B5E800D88F41 /* Combine */,
 				DF4645FC29F5B5D400D88F41 /* AsyncAwait */,
-				DF4645FB29F5B5C200D88F41 /* Deprecated */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -938,16 +918,12 @@
 				DF46460629F5BCB700D88F41 /* RepositoryCombineTests.swift in Sources */,
 				F0C26FEF26C6A93E00211F15 /* ProductInfo.swift in Sources */,
 				DF937FB42A3C54AE00CDCB4A /* CombineTestCase.swift in Sources */,
-				F0C2701526C6B7C200211F15 /* Configurations.swift in Sources */,
 				DF937FB82A3C5C0800CDCB4A /* ConcurrencyTestCase.swift in Sources */,
-				DFBEE824274237610058E5AB /* RealmAsyncRepositoryTests.swift in Sources */,
-				F0C2701926C6B87100211F15 /* RealmSyncRepositoryTests.swift in Sources */,
 				DF937FB62A3C551400CDCB4A /* Configuration.swift in Sources */,
 				DF46460929F5BFAB00D88F41 /* Generator.swift in Sources */,
 				DF46460429F5B94D00D88F41 /* BaseTestCase.swift in Sources */,
 				6BC270D128EEAE8800A12081 /* Speaker.swift in Sources */,
 				F0C26FED26C6A8ED00211F15 /* Company.swift in Sources */,
-				DFBEE83227423F730058E5AB /* RealmCombineRepositoryTestes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
