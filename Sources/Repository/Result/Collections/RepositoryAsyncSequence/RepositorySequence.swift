@@ -50,7 +50,10 @@ import RealmSwift
         public func next() async -> Element? {
             await withUnsafeContinuation { continuation in
                 queue.async { [weak self] in
-                    continuation.resume(returning: self?.iterator.next())
+                    while let element = self?.iterator.next(), !element.isInvalidated {
+                        continuation.resume(returning: self?.iterator.next())
+                        return
+                    }
                 }
             }
         }

@@ -1,14 +1,33 @@
 //
 //  AsyncMapSequence.swift
-//  CRepository
 //
-//  Created by Ayham Hylam on 23.06.2023.
+//  The MIT License (MIT)
 //
+//  Copyright (c) 2019 Community Arch
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 
 import Foundation
+import RealmSwift
 
 // MARK: RepositoryAsyncSequence + RepositoryAsyncMapSequence
-extension RepositoryAsyncSequence {
+extension RepositoryAsyncSequence where Element: ManageableSource {
     
     @preconcurrency
     @inlinable
@@ -82,18 +101,18 @@ extension RepositoryAsyncMapSequence: RepositoryAsyncSequence {
         }
         
         public mutating func next() async throws -> Transformed? {
-            guard
-                let element = try await baseIterator.next()
-            else { return nil }
-            return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Transformed?, Error>) -> Void in
-                queue.async { [transform, element] in
-                    do {
-                        continuation.resume(returning: try transform(element))
-                    } catch {
-                        continuation.resume(throwing: error)
+            while let element = try await baseIterator.next(), !element.isInvalidated {
+                return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Transformed?, Error>) -> Void in
+                    queue.async { [transform, element] in
+                        do {
+                            continuation.resume(returning: try transform(element))
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
                     }
                 }
             }
+            return nil
         }
     }
     

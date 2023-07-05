@@ -62,9 +62,7 @@ public extension RepositoryAsyncSequence {
     var count: Int {
         get async throws {
             var count = 0
-            for try await _ in stream {
-                count += 1
-            }
+            for try await _ in stream { count += 1 }
             return count
         }
     }
@@ -227,6 +225,7 @@ public extension RepositoryAsyncSequence where Element: Equatable {
 
 // MARK: - Publisher + RepositoryAsyncSequence
 public extension Publisher where Self.Output: RepositoryAsyncSequence,
+                                 Self.Output.Element: ManageableSource,
                                  Self.Failure == Swift.Error {
     
     /// <#Description#>
@@ -262,12 +261,6 @@ public extension Publisher where Self.Output: RepositoryAsyncSequence,
     func sequenceMap<T>(_ key: KeyPath<Self.Output.Element, T>) -> AnyPublisher<RepositoryAsyncMapSequence<Self.Output, T>, Self.Failure> {
         sequenceMap { $0[keyPath: key] }.eraseToAnyPublisher()
     }
-}
-
-// MARK: - Publisher + RepositorySequence + ManageableSource
-public extension Publisher where Self.Output: RepositoryAsyncSequence,
-                                 Self.Output.Element: ManageableSource,
-                                 Self.Failure == Swift.Error {
     
     /// <#Description#>
     /// - Parameter count: <#count description#>

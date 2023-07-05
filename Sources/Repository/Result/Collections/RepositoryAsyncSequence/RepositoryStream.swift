@@ -26,9 +26,7 @@
 import Foundation
 
 /// <#Description#>
-@frozen public struct RepositoryStream<StreamingElement, Source>: AsyncSequence,
-                                                                  QueuingCollection where Source: RepositoryAsyncIteratorProtocol,
-                                                                                          Source.Element == StreamingElement {
+@frozen public struct RepositoryStream<StreamingElement, Source>: AsyncSequence, QueuingCollection where Source: RepositoryAsyncIteratorProtocol, Source.Element == StreamingElement {
     
     /// <#Description#>
     @frozen public struct Iterator: AsyncIteratorProtocol {

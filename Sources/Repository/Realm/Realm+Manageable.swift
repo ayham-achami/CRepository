@@ -26,7 +26,7 @@ import Combine
 import Foundation
 import RealmSwift
 
-// MARK: -
+// MARK: - Realm + Functions 
 extension Realm {
     
     /// <#Description#>
@@ -270,6 +270,7 @@ extension Realm {
     }
 }
 
+// MARK: - Realm + Repository
 extension Realm {
     
     /// <#Description#>
@@ -352,6 +353,7 @@ extension Realm {
     }
 }
 
+// MARK: Realm + Async
 extension Realm {
     
     func async(_ queue: DispatchQueue, _ perform: @escaping () -> Void) {
@@ -435,6 +437,7 @@ extension Realm {
     }
 }
 
+// MARK: - Realm + Delete
 extension Realm {
     
     /// <#Description#>
