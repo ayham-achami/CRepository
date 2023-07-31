@@ -449,7 +449,7 @@ extension Realm {
     /// <#Description#>
     /// - Parameter entity: <#entity description#>
     private func delete(cascade entity: RLMObjectBase) {
-        guard let entity = entity as? Object else { return }
+        guard let entity = entity as? Object, !entity.isInvalidated else { return }
         var toBeDeleted = Set<RLMObjectBase>()
         toBeDeleted.insert(entity)
         while !toBeDeleted.isEmpty {

@@ -116,6 +116,11 @@ public protocol RepositoryResultCollection: RepositoryResultCollectionProtocol w
     func filter(_ isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async -> Self
     
     /// <#Description#>
+    /// - Parameter defaultValue: <#defaultValue description#>
+    /// - Returns: <#description#>
+    func replaceEmpty(with defaultValue: Element) async throws -> Self
+    
+    /// <#Description#>
     /// - Parameter isIncluded: <#isIncluded description#>
     /// - Returns: <#description#>
     func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> RepositorySequence<Element>
@@ -232,6 +237,17 @@ public extension RepositoryResultCollection {
     
     func filter(_ isIncluded: @escaping ((Query<Element>) -> Query<Bool>)) async -> Self {
         await apply { unsafe.filter(isIncluded) }
+    }
+    
+    func replaceEmpty(with defaultValue: Element) async throws -> Self {
+        do {
+            return try await self.throwIfEmpty
+        } catch RepositoryFetchError.notFound {
+            try await controller
+                        .manageable
+                        .put(defaultValue)
+            return .init(queue, unsafe, controller)
+        }
     }
     
     func filter(_ isIncluded: @escaping (Element) throws -> Bool) async throws -> RepositorySequence<Element> {
