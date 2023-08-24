@@ -12,12 +12,6 @@ import CRepository
 
 class ListTests: CombineTestCase, ModelsGenerator {
     
-    let chat = ChatInfo(id: 1, users: List(["0"]))
-    
-    lazy var manageableChat: ManageableChatInfo = {
-        .init(id: chat.id, users: chat.users)
-    }()
-    
     override func setUp() async throws {
         try await reservedRepository
             .inMemory
