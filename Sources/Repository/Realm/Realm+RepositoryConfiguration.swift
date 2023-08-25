@@ -216,12 +216,17 @@ extension Realm {
         } else {
             self = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Self, Swift.Error>) in
                 do {
-                    Self.asyncOpen(configuration: try .init(kind, configuration), callbackQueue: queue) { result in
+                    let realmConfiguration = try Configuration(kind, configuration)
+                    Self.asyncOpen(configuration: realmConfiguration, callbackQueue: queue) { result in
                         switch result {
                         case let .success(realm):
                             continuation.resume(returning: realm)
                         case let .failure(error):
-                            continuation.resume(throwing: error)
+                            if (error as NSError).code == 20 {
+                                continuation.resume(throwing: RepositoryError.initialization(fileURL: realmConfiguration.fileURL))
+                            } else {
+                                continuation.resume(throwing: error)
+                            }
                         }
                     }
                 } catch {
