@@ -221,12 +221,8 @@ extension Realm {
                         switch result {
                         case let .success(realm):
                             continuation.resume(returning: realm)
-                        case let .failure(error):
-                            if (error as NSError).code == 20 {
-                                continuation.resume(throwing: RepositoryError.initialization(fileURL: realmConfiguration.fileURL))
-                            } else {
-                                continuation.resume(throwing: error)
-                            }
+                        case .failure:
+                            continuation.resume(throwing: RepositoryError.initialization(fileURL: realmConfiguration.fileURL))
                         }
                     }
                 } catch {
