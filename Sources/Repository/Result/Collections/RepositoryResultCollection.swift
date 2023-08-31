@@ -553,7 +553,6 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                         let startIndex = await result.startIndex
                         let endIndex = await result.endIndex
                         let isEmpty = await result.isEmpty
-                        Swift.print(startIndex, endIndex, isEmpty)
                         guard
                             !isEmpty, startIndex <= index, endIndex > index
                         else { throw RepositoryFetchError.notFound }
