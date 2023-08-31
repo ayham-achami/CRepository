@@ -40,7 +40,16 @@ struct RepositoryToucher {
     ///   - queue: <#queue description#>
     init(kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) async throws {
         self.queue = queue
-        self.realm = try await Realm(kind, configuration, queue)
+        do {
+            self.realm = try await Realm(kind, configuration, queue)
+        } catch {
+            if case let RepositoryError.initialization(fileURL: url) = error, let url {
+                try FileManager.default.removeItem(at: url)
+                self.realm = try await Realm(kind, configuration, queue)
+            } else {
+                throw error
+            }
+        }
     }
     
     /// <#Description#>
