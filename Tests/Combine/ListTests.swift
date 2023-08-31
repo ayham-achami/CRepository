@@ -18,6 +18,8 @@ class ListTests: CombineTestCase, ModelsGenerator {
             .manageable
             .reset()
             .put(ManageableChatInfo(id: 0, users: .init(["0"])))
+            .put(ManageableChatInfo(id: 1, users: .init(["1"])))
+            .put(ManageableChatInfo(id: 2, users: .init(["2"])))
     }
     
     // MARK: - Insertions
@@ -220,6 +222,123 @@ class ListTests: CombineTestCase, ModelsGenerator {
                     }
                 }
                 .sink("Successful modificating of member ids", expectation)
+        }
+    }
+}
+
+// MARK: - ListTests + Watching first & last
+extension ListTests {
+    
+    // MARK: - Watch First
+    func testWatchFirst() {
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishLazy
+            .fetch(allOf: ManageableChatInfo.self)
+            .watchFirst()
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch First failed with error \(error)")
+            } receiveValue: { changeset in
+                switch notificationTick {
+                case 0:
+                    XCTAssertEqual(changeset.kind, .initial)
+                    XCTAssertTrue(changeset.collection.count == 2)
+                case 1:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.insertions, [2, 3])
+                case 2:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.deletions, [3])
+                    XCTAssertEqual(changeset.collection.last, "2")
+                case 3:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.modifications, [2])
+                    XCTAssertEqual(changeset.collection.last, "10")
+                default:
+                    XCTFail("Receive unknown case")
+                }
+                notificationTick += 1
+            }.store(in: &self.subscriptions)
+        
+        subscribe("Watch First") { expectation in
+            reservedRepository
+                .inMemory
+                .publishManageable
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list.append("1")
+                }
+                .delay(for: .milliseconds(100), scheduler: RunLoop.current)
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list.append(objectsIn: ["2", "3"])
+                }
+                .delay(for: .milliseconds(100), scheduler: RunLoop.current)
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list.removeLast()
+                }
+                .delay(for: .milliseconds(100), scheduler: RunLoop.current)
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list[2] = "10"
+                }
+                .sink("Successful Watch First", expectation)
+        }
+    }
+    
+    // MARK: - Watch Last
+    func testWatchLast() {
+        var notificationTick = 0
+        reservedRepository
+            .inMemory
+            .publishLazy
+            .fetch(allOf: ManageableChatInfo.self)
+            .watchLast()
+            .sink { completion in
+                guard case let .failure(error) = completion else { return }
+                XCTFail("Watch Last failed with error \(error)")
+            } receiveValue: { changeset in
+                switch notificationTick {
+                case 0:
+                    XCTAssertEqual(changeset.kind, .initial)
+                    XCTAssertTrue(changeset.collection.count == 2)
+                    XCTAssertTrue(changeset.collection.first == "2")
+                case 1:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.insertions, [2, 3])
+                case 2:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.deletions, [3])
+                    XCTAssertEqual(changeset.collection.last, "2")
+                case 3:
+                    XCTAssertEqual(changeset.kind, .update)
+                    XCTAssertEqual(changeset.modifications, [2])
+                    XCTAssertEqual(changeset.collection.last, "10")
+                default:
+                    XCTFail("Receive unknown case")
+                }
+                notificationTick += 1
+            }.store(in: &self.subscriptions)
+        
+        subscribe("Watch Last") { expectation in
+            reservedRepository
+                .inMemory
+                .publishManageable
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list.append("1")
+                }
+                .delay(for: .milliseconds(100), scheduler: RunLoop.current)
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list.append(objectsIn: ["2", "3"])
+                }
+                .delay(for: .milliseconds(100), scheduler: RunLoop.current)
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list.removeLast()
+                }
+                .delay(for: .milliseconds(100), scheduler: RunLoop.current)
+                .modify(ManageableChatInfo.self, with: 0) { manageable in
+                    manageable.list[2] = "10"
+                }
+                .sink("Successful Watch Last", expectation)
         }
     }
 }

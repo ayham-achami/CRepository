@@ -87,3 +87,18 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
         }.eraseToAnyPublisher()
     }
 }
+
+public extension Publisher where Self.Output: RepositoryResultCollection,
+                                 Self.Output.Element: ManageableSource,
+                                 Self.Output.Element: ListManageable,
+                                 Self.Output.Index == Int,
+                                 Self.Failure == Swift.Error {
+    
+    func watchFirst() -> AnyPublisher<ListChangeset<List<Self.Output.Element.Value>>, Self.Failure> {
+        first().watchList(at: .zero)
+    }
+    
+    func watchLast() -> AnyPublisher<ListChangeset<List<Self.Output.Element.Value>>, Self.Failure> {
+        last().watchList(at: .zero)
+    }
+}
