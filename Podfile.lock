@@ -11,7 +11,7 @@ DEPENDENCIES:
   - SwiftLint
 
 SPEC REPOS:
-  https://github.com/CocoaPods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Realm
     - RealmSwift
     - SwiftLint
@@ -23,4 +23,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 28387aee7ee634c7b0fc462f02ab6ad675a502d7
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.11.3

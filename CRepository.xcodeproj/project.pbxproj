@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		35B004B62A95F0450056EA73 /* ListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B004B52A95F0450056EA73 /* ListTests.swift */; };
+		35B004B82A95F28F0056EA73 /* ChatInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B004B72A95F28F0056EA73 /* ChatInfo.swift */; };
+		35D834832A950AAF0010AFD3 /* ListChangesetSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D834822A950AAF0010AFD3 /* ListChangesetSequence.swift */; };
+		35D834852A950AEF0010AFD3 /* ListManageable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D834842A950AEF0010AFD3 /* ListManageable.swift */; };
+		35D834872A950B560010AFD3 /* ListChangeset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D834862A950B560010AFD3 /* ListChangeset.swift */; };
 		6BC270D128EEAE8800A12081 /* Speaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC270D028EEAE8800A12081 /* Speaker.swift */; };
 		6DDC9E9E26F0637A74CC6E66 /* Pods_CRepository.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 806D6AFA337BAA336ACD593F /* Pods_CRepository.framework */; };
 		91959EC6F519C2869DA97F81 /* Pods_CRepositoryTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC6A0C71B8295603B059A63E /* Pods_CRepositoryTests.framework */; };
@@ -119,6 +124,11 @@
 
 /* Begin PBXFileReference section */
 		08C9B01D902A8511712A7154 /* Pods-CRepositoryTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRepositoryTests.release.xcconfig"; path = "Target Support Files/Pods-CRepositoryTests/Pods-CRepositoryTests.release.xcconfig"; sourceTree = "<group>"; };
+		35B004B52A95F0450056EA73 /* ListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTests.swift; sourceTree = "<group>"; };
+		35B004B72A95F28F0056EA73 /* ChatInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInfo.swift; sourceTree = "<group>"; };
+		35D834822A950AAF0010AFD3 /* ListChangesetSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListChangesetSequence.swift; sourceTree = "<group>"; };
+		35D834842A950AEF0010AFD3 /* ListManageable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListManageable.swift; sourceTree = "<group>"; };
+		35D834862A950B560010AFD3 /* ListChangeset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListChangeset.swift; sourceTree = "<group>"; };
 		473E49F2ABF4FC15943D2A0B /* Pods-Playground.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Playground.debug.xcconfig"; path = "Target Support Files/Pods-Playground/Pods-Playground.debug.xcconfig"; sourceTree = "<group>"; };
 		610D17DE331FA760D0B5E241 /* Pods-CRepository.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRepository.release.xcconfig"; path = "Target Support Files/Pods-CRepository/Pods-CRepository.release.xcconfig"; sourceTree = "<group>"; };
 		6BC270D028EEAE8800A12081 /* Speaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speaker.swift; sourceTree = "<group>"; };
@@ -244,6 +254,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		35D834812A950A350010AFD3 /* ListManageable */ = {
+			isa = PBXGroup;
+			children = (
+				35D834822A950AAF0010AFD3 /* ListChangesetSequence.swift */,
+				35D834842A950AEF0010AFD3 /* ListManageable.swift */,
+				35D834862A950B560010AFD3 /* ListChangeset.swift */,
+			);
+			path = ListManageable;
+			sourceTree = "<group>";
+		};
 		7475F44388774919E464AD27 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -357,6 +377,7 @@
 		DF4645FD29F5B5E800D88F41 /* Combine */ = {
 			isa = PBXGroup;
 			children = (
+				35B004B52A95F0450056EA73 /* ListTests.swift */,
 				DF46460529F5BCB700D88F41 /* RepositoryCombineTests.swift */,
 			);
 			path = Combine;
@@ -365,6 +386,7 @@
 		DF49E93D29E80E20009C9E88 /* Collections */ = {
 			isa = PBXGroup;
 			children = (
+				35D834812A950A350010AFD3 /* ListManageable */,
 				DF2929832A45B65100D9B86C /* RepositoryAsyncSequence */,
 				DF49E93B29E80D54009C9E88 /* QueuingCollection.swift */,
 				DFBF9EDE2A16BB7F009EC9E8 /* SymmetricComparator.swift */,
@@ -521,6 +543,7 @@
 			isa = PBXGroup;
 			children = (
 				F0C26FEE26C6A93E00211F15 /* ProductInfo.swift */,
+				35B004B72A95F28F0056EA73 /* ChatInfo.swift */,
 				F0C26FEC26C6A8ED00211F15 /* Company.swift */,
 				6BC270D028EEAE8800A12081 /* Speaker.swift */,
 			);
@@ -867,6 +890,7 @@
 				F0C2709026CAAA5C00211F15 /* RepositoryConfiguration.swift in Sources */,
 				DFFC248E2A20D2C00020D7A2 /* RepositorySectionedResult.swift in Sources */,
 				DF2929822A45AAEA00D9B86C /* PartialCompletion.swift in Sources */,
+				35D834872A950B560010AFD3 /* ListChangeset.swift in Sources */,
 				DF68EEA229B7843D00381CE1 /* RepositoryController.swift in Sources */,
 				F0C2709626CAAA5C00211F15 /* RepositoryError.swift in Sources */,
 				DFFC24902A20D30E0020D7A2 /* RepositoryUnsafeSectionedResult.swift in Sources */,
@@ -891,8 +915,10 @@
 				DF13F26529BB512D00369EF6 /* RealmRepository.swift in Sources */,
 				DFFC24882A1FD7E40020D7A2 /* SymmetricFreezeRemoveDuplicates.swift in Sources */,
 				DF6FD43A29D4E737007E6CAA /* RepositoryRepresentedChangesetWatcher.swift in Sources */,
+				35D834832A950AAF0010AFD3 /* ListChangesetSequence.swift in Sources */,
 				DF2929902A45FB7C00D9B86C /* AsyncPrefixSequence.swift in Sources */,
 				DFE5014829D2DADD00836713 /* RepositoryResultModifier.swift in Sources */,
+				35D834852A950AEF0010AFD3 /* ListManageable.swift in Sources */,
 				DF13F2AA29C2E3E300369EF6 /* RepositoryToucher.swift in Sources */,
 				DF701BA629D16CD300EF67F7 /* Results+Manageable.swift in Sources */,
 				DFE5014E29D2DB9300836713 /* Changeset.swift in Sources */,
@@ -917,11 +943,13 @@
 			files = (
 				DF46460629F5BCB700D88F41 /* RepositoryCombineTests.swift in Sources */,
 				F0C26FEF26C6A93E00211F15 /* ProductInfo.swift in Sources */,
+				35B004B82A95F28F0056EA73 /* ChatInfo.swift in Sources */,
 				DF937FB42A3C54AE00CDCB4A /* CombineTestCase.swift in Sources */,
 				DF937FB82A3C5C0800CDCB4A /* ConcurrencyTestCase.swift in Sources */,
 				DF937FB62A3C551400CDCB4A /* Configuration.swift in Sources */,
 				DF46460929F5BFAB00D88F41 /* Generator.swift in Sources */,
 				DF46460429F5B94D00D88F41 /* BaseTestCase.swift in Sources */,
+				35B004B62A95F0450056EA73 /* ListTests.swift in Sources */,
 				6BC270D128EEAE8800A12081 /* Speaker.swift in Sources */,
 				F0C26FED26C6A8ED00211F15 /* Company.swift in Sources */,
 			);

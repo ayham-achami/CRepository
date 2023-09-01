@@ -24,6 +24,7 @@
 //  SOFTWARE.
 
 import Foundation
+import RealmSwift
 
 // MARK: - ModelGenerator
 protocol ModelGenerator {
@@ -39,6 +40,8 @@ protocol ModelGenerator {
     func speakers(count: Int) -> [Speaker]
     
     func productInfos(count: Int) -> [ProductInfo]
+    
+    func chatInfo(id: Int) -> ChatInfo
 }
 
 // MARK: - ModelGenerator + Default
@@ -73,6 +76,10 @@ extension ModelGenerator {
             productInfo(id: id)
         }
     }
+    
+    func chatInfo(id: Int) -> ChatInfo {
+        .init(id: id, users: List(["0"]))
+    }
 }
 
 // MARK: - ManageableModelGenerator
@@ -89,6 +96,8 @@ protocol ManageableModelGenerator {
     func manageableSpeakers(count: Int) -> [ManageableSpeaker]
     
     func manageableProductInfos(count: Int) -> [ManageableProductInfo]
+    
+    func manageableChatInfo(id: Int) -> ManageableChatInfo
 }
 
 // MARK: - ManageableModelGenerator + Default
@@ -122,6 +131,10 @@ extension ManageableModelGenerator {
         (1...count).map { id in
             manageableProductInfo(id: id)
         }
+    }
+    
+    func manageableChatInfo(id: Int) -> ManageableChatInfo {
+        .init(id: id, users: List(["0"]))
     }
 }
 

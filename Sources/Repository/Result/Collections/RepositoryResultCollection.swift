@@ -550,8 +550,11 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
             Future { promise in
                 Task {
                     do {
+                        let startIndex = await result.startIndex
+                        let endIndex = await result.endIndex
+                        let isEmpty = await result.isEmpty
                         guard
-                            await result.startIndex < index, await result.endIndex > index
+                            !isEmpty, startIndex <= index, endIndex > index
                         else { throw RepositoryFetchError.notFound }
                         let element = await result[index]
                         promise(.success(element))
