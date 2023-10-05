@@ -287,6 +287,40 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         }
     }
     
+    func testFetchingAndMappingKeyPath() {
+        subscribe("Fetching ManageableSpeaker And Mapping") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(ManageableSpeaker.init(id: 1, name: "TestMappingKeyPath", isPinned: true, entryTime: .init())) // Given
+                .lazy()
+                .fetch(oneOf: ManageableSpeaker.self, with: 1, keyPath: \.name)  // When
+                .sink("Success Fetch ManageableSpeaker", expectation) { result in
+                    // Then
+                    XCTAssertEqual(result, "TestMappingKeyPath")
+                }
+        }
+    }
+    
+    func testFetchingAndMappingTransform() {
+        subscribe("Fetching ManageableSpeaker And Mapping") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(ManageableSpeaker.init(id: 1, name: "TestMappingTransform", isPinned: true, entryTime: .init())) // Given
+                .lazy()
+                .fetch(oneOf: ManageableSpeaker.self, with: 1) { speaker in // When
+                    speaker.name
+                }
+                .sink("Success Fetch ManageableSpeaker", expectation) { result in
+                    // Then
+                    XCTAssertEqual(result, "TestMappingTransform")
+                }
+        }
+    }
+    
     // MARK: - Test results
     
     func testResultFetching() {
@@ -563,6 +597,42 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
                 .delay(for: .seconds(1), scheduler: RunLoop.current)
                 .flatMap { $0.publishRemove(onOf: ManageableSpeaker.self, with: 4) }
                 .sink("Success Watch deletions of ManageableSpeaker", expectation)
+        }
+    }
+    
+    func testResultFetchingAndMappingKeyPath() {
+        subscribe("Fetching ManageableSpeaker And Mapping") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self) // When
+                .map(at: 3, keyPath: \.id)
+                .sink("Success Fetch ManageableSpeaker", expectation) { result in
+                    // Then
+                    XCTAssertEqual(result, 4)
+                }
+        }
+    }
+    
+    func testResultFetchingAndMappingTransform() {
+        subscribe("Fetching ManageableSpeaker And Mapping") { expectation in
+            repository
+                .inMemory
+                .publishManageable
+                .reset()
+                .put(allOf: speakers) // Given
+                .lazy()
+                .fetch(allOf: ManageableSpeaker.self)
+                .map(at: 3) { speaker in // When
+                    speaker.id
+                }
+                .sink("Success Fetch ManageableSpeaker", expectation) { result in
+                    // Then
+                    XCTAssertEqual(result, 4)
+                }
         }
     }
 }

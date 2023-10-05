@@ -34,7 +34,7 @@ public protocol RepositoryConfiguration: AnyObject {
     /// Ключи шифрования 
     var encryptionKey: Data { get throws }
     
-    /// файл хранилища является ли защищенным от изменения в спящем режиме устройства,
+    /// Файл хранилища является ли защищенным от изменения в спящем режиме устройства,
     /// если создавать конфигурацию с значением isFileProtection = false
     /// то добавить данные в хранилище будет запрещено в спящем режиме
     /// - See: https://github.com/realm/realm-cocoa/issues/4241

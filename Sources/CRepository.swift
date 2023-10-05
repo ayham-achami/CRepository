@@ -56,20 +56,20 @@ public protocol ManageableRepresented {
 
     /// Инициализация объекта модели с помощью объекта базы данных
     ///
-    /// - Parameter represented: Объект базы данных
-    init(from represented: RepresentedType)
+    /// - Parameter manageable: Объект базы данных
+    init(from manageable: RepresentedType)
 
     /// Инициализация объекта модели с помощью опционального  объекта базы данных
-    /// - Parameter represented: опциональный объект базы данных
-    init?(orNil represented: RepresentedType?)
+    /// - Parameter manageable: опциональный объект базы данных
+    init?(orNil manageable: RepresentedType?)
 }
 
 // MARK: - ManageableRepresented + Default
 public extension ManageableRepresented {
 
-    init?(orNil represented: RepresentedType?) {
-        guard let represented = represented else { return nil }
-        self.init(from: represented)
+    init?(orNil manageable: RepresentedType?) {
+        guard  let manageable else { return nil }
+        self.init(from: manageable)
     }
 }
 
@@ -79,19 +79,19 @@ public protocol ManageableSource: Manageable {
     associatedtype ManageableType: ManageableRepresented
 
     /// Инициализация
-    /// - Parameter manageable: Манаджабел объект
-    init(from manageable: ManageableType)
+    /// - Parameter represented: Манаджабел объект
+    init(from represented: ManageableType)
 
     /// Инициализация
-    /// - Parameter manageable: опциональный манаджабел объект
-    init?(orNil manageable: ManageableType?)
+    /// - Parameter represented: опциональный манаджабел объект
+    init?(orNil represented: ManageableType?)
 }
 
 // MARK: - ManageableSource + Default
 public extension ManageableSource {
 
-    init?(orNil manageable: ManageableType?) {
-        guard let manageable = manageable else { return nil }
-        self.init(from: manageable)
+    init?(orNil represented: ManageableType?) {
+        guard let represented else { return nil }
+        self.init(from: represented)
     }
 }

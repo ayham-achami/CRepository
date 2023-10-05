@@ -453,6 +453,34 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     }
     
     /// <#Description#>
+    /// - Parameter transform: <#transform description#>
+    /// - Returns: <#description#>
+    func mapFirst<T>(_ transform: @escaping (Self.Output.Element) -> T) -> AnyPublisher<T, Swift.Error> {
+        first().map(transform).eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter keyPath: <#keyPath description#>
+    /// - Returns: <#description#>
+    func mapFirst<T>(_ keyPath: KeyPath<Self.Output.Element, T>) -> AnyPublisher<T, Swift.Error> {
+        first().map(keyPath).eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter transform: <#transform description#>
+    /// - Returns: <#description#>
+    func mapLast<T>(_ transform: @escaping (Self.Output.Element) -> T) -> AnyPublisher<T, Swift.Error> {
+        last().map(transform).eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameter keyPath: <#keyPath description#>
+    /// - Returns: <#description#>
+    func mapLast<T>(_ keyPath: KeyPath<Self.Output.Element, T>) -> AnyPublisher<T, Swift.Error> {
+        last().map(keyPath).eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
     /// - Parameters:
     ///   - other: <#other description#>
     ///   - transform: <#transform description#>
@@ -565,6 +593,24 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
             }
             .receive(on: result.queue)
         }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - index: <#index description#>
+    ///   - transform: <#transform description#>
+    /// - Returns: <#description#>
+    func map<T>(at index: Self.Output.Index, _ transform: @escaping (Self.Output.Element) -> T) -> AnyPublisher<T, Swift.Error> {
+        element(at: index).map(transform).eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - index: <#index description#>
+    ///   - keyPath: <#keyPath description#>
+    /// - Returns: <#description#>
+    func map<T>(at index: Self.Output.Index, keyPath: KeyPath<Self.Output.Element, T>) -> AnyPublisher<T, Swift.Error> {
+        element(at: index).map(keyPath).eraseToAnyPublisher()
     }
 }
 

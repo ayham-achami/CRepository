@@ -26,7 +26,4 @@
 import XCTest
 import Foundation
 
-class ConcurrencyTestCase: BaseTestCase {
-    
-    
-}
+class ConcurrencyTestCase: BaseTestCase {}
