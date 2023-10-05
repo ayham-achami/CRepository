@@ -44,6 +44,14 @@ public protocol WatchRepository: RepositoryController {
     /// - Returns: <#description#>
     func watch<T>(countOf type: T.Type,
                   keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    /// - Returns: <#description#>
+    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<T, Swift.Error> where T: ManageableSource
 }
 
 // MARK: - WatchRepository + Default
@@ -91,6 +99,15 @@ public extension WatchRepository {
                                                                                                                 T.RepresentedType: ManageableSource,
                                                                                                                 T.RepresentedType.ManageableType == T {
         watch(countOf: type.RepresentedType, keyPaths: keyPaths)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    /// - Returns: <#description#>
+    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
+        watch(changeOf: type, with: primaryKey, keyPaths: nil)
     }
 }
 
@@ -158,5 +175,15 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
                                                                                                                 T.RepresentedType: ManageableSource,
                                                                                                                 T.RepresentedType.ManageableType == T {
         flatMap(maxPublishers: .max(1)) { $0.watch(countOf: type.RepresentedType, keyPaths: keyPaths) }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    /// - Returns: <#description#>
+    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]? = nil) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
+        flatMap(maxPublishers: .max(1)) { $0.watch(changeOf: type, with: primaryKey, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
 }

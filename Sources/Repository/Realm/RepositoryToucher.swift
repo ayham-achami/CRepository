@@ -444,4 +444,8 @@ extension RepositoryToucher: WatchRepository {
                   keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource {
         realm.watch(countOf: type, queue: queue, toucher: self)
     }
+    
+    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<T, Error> where T : ManageableSource {
+        realm.watch(changeOf: type, with: primaryKey, keyPaths: keyPaths, queue: queue)
+    }
 }

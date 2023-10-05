@@ -331,6 +331,22 @@ extension Realm {
     /// <#Description#>
     /// - Parameters:
     ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    /// - Returns: <#description#>
+    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]?, queue: DispatchQueue) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
+        guard let object = object(ofType: type, forPrimaryKey: primaryKey)
+        else { return Fail(error: RepositoryFetchError.notFound).eraseToAnyPublisher() }
+        return valuePublisher(object, keyPaths: keyPaths?.map(_name(for:)))
+            .receive(on: queue)
+            .share()
+            .eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
     ///   - key: <#key description#>
     /// - Returns: <#description#>
     private func object<Element, KeyType>(ofType type: Element.Type, for key: KeyType) throws -> Element where Element: ManageableSource {
