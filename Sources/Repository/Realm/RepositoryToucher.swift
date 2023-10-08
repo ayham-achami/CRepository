@@ -128,6 +128,10 @@ extension RepositoryToucher: LazyRepository {
         try await realm.fetch(oneOf: type, with: primaryKey, queue)
     }
     
+    func fetch<T>(mapperOf type: T.Type, with primaryKey: AnyHashable) async throws -> ManageableMapper<T> where T: ManageableSource {
+        .init(queue: queue, manageable: try await fetch(oneOf: type, with: primaryKey))
+    }
+    
     public func fetch<T>(allOf type: T.Type) async -> RepositoryResult<T> where T: ManageableSource {
         await realm.fetch(allOf: type, toucher: self, queue)
     }

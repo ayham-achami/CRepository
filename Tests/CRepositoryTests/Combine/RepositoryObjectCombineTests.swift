@@ -25,7 +25,7 @@
 
 import XCTest
 
-final class ObjectTests: CombineTestCase, ModelsGenerator {
+final class RepositoryObjectCombineTests: CombineTestCase, ModelsGenerator {
     
     override func setUp() async throws {
         try await repository

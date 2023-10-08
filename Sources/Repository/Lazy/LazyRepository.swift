@@ -37,6 +37,13 @@ public protocol LazyRepository: RepositoryController {
     func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) async throws -> T where T: ManageableSource
     
     /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    /// - Returns: <#description#>
+    func fetch<T>(mapperOf type: T.Type, with primaryKey: AnyHashable) async throws -> ManageableMapper<T> where T: ManageableSource
+    
+    /// <#Description#>
     /// - Parameter type: <#type description#>
     /// - Returns: <#description#>
     func fetch<T>(allOf type: T.Type) async -> RepositoryResult<T> where T: ManageableSource

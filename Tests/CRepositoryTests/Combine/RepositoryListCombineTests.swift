@@ -28,7 +28,7 @@ import Combine
 import RealmSwift
 import CRepository
 
-class ListTests: CombineTestCase, ModelsGenerator {
+final class RepositoryListCombineTests: CombineTestCase, ModelsGenerator {
     
     override func setUp() async throws {
         try await reservedRepository
@@ -245,7 +245,7 @@ class ListTests: CombineTestCase, ModelsGenerator {
 }
 
 // MARK: - ListTests + Watching first & last
-extension ListTests {
+extension RepositoryListCombineTests {
     
     // MARK: - Watch First
     func testWatchFirst() {

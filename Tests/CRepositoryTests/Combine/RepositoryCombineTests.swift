@@ -31,10 +31,8 @@ import CRepository
 // swiftlint:disable:next type_body_length
 final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
     
-    let speakersCount = 10
-    
     lazy var speakers: [ManageableSpeaker] = {
-        manageableSpeakers(count: speakersCount)
+        manageableSpeakers(count: 10)
     }()
     
     // MARK: - Test repository
