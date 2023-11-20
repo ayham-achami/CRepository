@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "CRepository",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v13),
         .macOS(.v10_15),
@@ -20,7 +21,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/realm/SwiftLint", from: "0.53.0"),
-        .package(url: "https://github.com/realm/realm-cocoa.git", .upToNextMajor(from: "10.38.0"))
+        .package(url: "https://github.com/realm/realm-cocoa", from: "10.44.0")
     ],
     targets: [
         .target(
@@ -48,3 +49,9 @@ let package = Package(
     ],
     swiftLanguageVersions: [.v5]
 )
+
+for target in package.targets {
+  var settings = target.swiftSettings ?? []
+  settings.append(.enableExperimentalFeature("StrictConcurrency=minimal"))
+  target.swiftSettings = settings
+}

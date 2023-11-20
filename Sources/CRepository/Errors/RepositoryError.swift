@@ -17,11 +17,11 @@ public enum RepositoryError: LocalizedError {
     public var errorDescription: String {
         switch self {
         case .initialization:
-            return "Failed to access data file".localized
+            return NSLocalizedString("Failed to access data file", comment: "Failed to access data file")
         case .conversion:
-            return "Failed to convert type".localized
+            return NSLocalizedString("Failed to convert type", comment: "Failed to convert type")
         case .transaction:
-            return "Requested transaction access".localized
+            return NSLocalizedString("Requested transaction access", comment: "Requested transaction access")
         }
     }
 }
@@ -34,8 +34,8 @@ public enum RepositoryFetchError: LocalizedError {
 
     public var errorDescription: String {
         switch self {
-        case .notFound:
-            return "Not found in repository".localized
+        case .notFound: // FIXME: 
+            return NSLocalizedString("Not found in repository", comment: "Not found in repository")
         }
     }
 }

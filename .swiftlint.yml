@@ -95,8 +95,7 @@ type_contents_order:
   severity: error
 file_types_order:
   order:
-    - [main_type, extension]
-    - supporting_type
+    - [main_type, extension, supporting_type]
     - preview_provider
     - library_content_provider
 closure_body_length:

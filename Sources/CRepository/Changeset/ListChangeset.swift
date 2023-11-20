@@ -6,28 +6,6 @@ import Foundation
 import RealmSwift
 
 /// <#Description#>
-public protocol CollectionChangeset {
-    
-    /// <#Description#>
-    associatedtype Collection: RealmCollection & RealmSubscribable
-    
-    /// <#Description#>
-    var kind: ChangesetKind { get }
-    
-    /// <#Description#>
-    var collection: Collection { get }
-    
-    /// <#Description#>
-    var deletions: [Int] { get }
-    
-    /// <#Description#>
-    var insertions: [Int] { get }
-    
-    /// <#Description#>
-    var modifications: [Int] { get }
-}
-
-/// <#Description#>
 public struct ListChangeset<Collection>: CollectionChangeset where Collection: RealmCollection,
                                                                    Collection: RealmSubscribable,
                                                                    Collection.Element: RealmCollectionValue {
@@ -56,5 +34,30 @@ public struct ListChangeset<Collection>: CollectionChangeset where Collection: R
         self.deletions = deletions
         self.insertions = insertions
         self.modifications = modifications
+    }
+}
+
+/// <#Description#>
+public struct ListChangesetSequence<Element> where Element: RealmCollectionValue {
+
+    public let indexes: IndexSet
+    public let elements: List<Element>
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - indexes: <#indexes description#>
+    ///   - elements: <#elements description#>
+    public init(_ indexes: IndexSet, _ elements: List<Element>) {
+        self.indexes = indexes
+        self.elements = elements
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - indexes: <#indexes description#>
+    ///   - elements: <#elements description#>
+    public init(_ indexes: [Int], _ elements: List<Element>) {
+        self.elements = elements
+        self.indexes = .init(indexes)
     }
 }
