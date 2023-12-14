@@ -186,7 +186,7 @@ public extension RepositoryRepresentedCollection {
         try await asyncThrowing {
             guard
                 let first = result.unsafe.first
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(Element.self) }
             return .init(from: first)
         }
     }
@@ -195,7 +195,7 @@ public extension RepositoryRepresentedCollection {
         try await asyncThrowing {
             guard
                 let last = result.unsafe.last
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(Element.self) }
             return .init(from: last)
         }
     }
@@ -300,7 +300,7 @@ public extension Publisher where Self.Output: RepositoryRepresentedCollection,
     /// - Returns: <#description#>
     func first() -> AnyPublisher<Self.Output.Element, Self.Failure> {
         tryMap { result in
-            guard let first = result.result.unsafe.first else { throw RepositoryFetchError.notFound }
+            guard let first = result.result.unsafe.first else { throw RepositoryFetchError.notFound(Self.Output.Element.self) }
             return .init(from: first)
         }.eraseToAnyPublisher()
     }
@@ -309,7 +309,7 @@ public extension Publisher where Self.Output: RepositoryRepresentedCollection,
     /// - Returns: <#description#>
     func last() -> AnyPublisher<Self.Output.Element, Self.Failure> {
         tryMap { result in
-            guard let last = result.result.unsafe.last else { throw RepositoryFetchError.notFound }
+            guard let last = result.result.unsafe.last else { throw RepositoryFetchError.notFound(Self.Output.Element.self) }
             return .init(from: last)
         }.eraseToAnyPublisher()
     }

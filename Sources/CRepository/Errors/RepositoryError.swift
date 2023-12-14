@@ -27,15 +27,16 @@ public enum RepositoryError: LocalizedError {
 }
 
 /// <#Description#>
-public enum RepositoryFetchError: LocalizedError {
+public enum RepositoryFetchError<T>: LocalizedError {
 
     /// <#Description#>
-    case notFound
+    case notFound(T.Type)
 
     public var errorDescription: String {
         switch self {
-        case .notFound: // FIXME: 
-            return NSLocalizedString("Not found in repository", comment: "Not found in repository")
+        case .notFound:
+            return .init(format: NSLocalizedString("Not found in repository %s", comment: "Not found in repository %s"),
+                         String(describing: T.self))
         }
     }
 }

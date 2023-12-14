@@ -64,7 +64,7 @@ final class Configuration: RepositoryConfiguration {
     let repositorySchemaVersion: UInt64 = SchemaVersion.one.rawValue
     
     func repositoryDidBeginMigration(with migration: MigrationController) {
-        // TODO: test migration
+        XCTFail("Migration required")
     }
 }
 
@@ -90,6 +90,6 @@ final class ReservedConfiguration: RepositoryConfiguration {
     let repositorySchemaVersion: UInt64 = SchemaVersion.one.rawValue
     
     func repositoryDidBeginMigration(with migration: MigrationController) {
-        // TODO: test migration
+        XCTFail("Migration required")
     }
 }

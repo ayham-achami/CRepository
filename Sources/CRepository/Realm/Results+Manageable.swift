@@ -12,7 +12,7 @@ public extension Results where Element: Manageable {
     /// <#Description#>
     var throwIfEmpty: Self {
         get throws {
-            guard !isEmpty else { throw RepositoryFetchError.notFound }
+            guard !isEmpty else { throw RepositoryFetchError.notFound(Element.self) }
             return self
         }
     }

@@ -1,6 +1,7 @@
 // swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import CompilerPluginSupport
 import PackageDescription
 
 let package = Package(
@@ -8,8 +9,8 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [
         .iOS(.v13),
-        .macOS(.v10_15),
-        .macCatalyst(.v14)
+        .macOS(.v12),
+        .macCatalyst(.v13)
     ],
     products: [
         .library(
@@ -21,13 +22,34 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/realm/SwiftLint", from: "0.53.0"),
-        .package(url: "https://github.com/realm/realm-cocoa", from: "10.44.0")
+        .package(url: "https://github.com/realm/realm-cocoa", from: "10.44.0"),
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0")
     ],
     targets: [
+        .macro(
+            name: "CRepositoryMacros",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+            ]
+        ),
         .target(
             name: "CRepository",
             dependencies: [
+                "CRepositoryMacros",
                 .product(name: "RealmSwift", package: "realm-cocoa")
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+            ]
+        ),
+        .executableTarget(
+            name: "CRepositoryClient",
+            dependencies: [
+                "CRepository"
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
@@ -39,9 +61,6 @@ let package = Package(
                 "CRepository"
             ],
             path: "CRepositoryTests",
-            exclude: [
-                "Info.plist"
-            ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
             ]

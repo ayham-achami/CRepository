@@ -1,14 +1,13 @@
 disabled_rules:
-opt_in_rules: 
+opt_in_rules:
   - attributes
   - array_init
   - empty_count
   - file_header
-  # - modifier_order
   - sorted_imports
   - implicit_return
   - file_types_order
-  - trailing_newline 
+  - trailing_newline
   - required_enum_case
   - type_contents_order
   - closure_body_length
@@ -33,7 +32,7 @@ analyzer_rules:
 force_cast: error
 force_try:
   severity: error
-line_length: 
+line_length:
   warning: 200
   error: 200
 function_body_length:
@@ -49,15 +48,15 @@ large_tuple:
   warning: 6
   error: 6
 type_name:
-  min_length: 3 
-  max_length: 
+  min_length: 3
+  max_length:
     warning: 40
     error: 40
-  excluded: iPhone 
+  excluded: iPhone
 identifier_name:
-  min_length: 
+  min_length:
     warning: 1
-  excluded: 
+  excluded:
     - id
     - URL
     - GlobalAPIKey
@@ -69,29 +68,52 @@ implicit_return:
   severity: error
 attributes:
   always_on_same_line:
-    ["@frozen", "@MainActor", "@objc", "@frozen", "@IBOutlet", "@IBAction", "@IBSegueAction", "@usableFromInline", "@inlinable", "@preconcurrency", "@Persisted"]
+    [
+      "@frozen",
+      "@MainActor",
+      "@objc",
+      "@IBOutlet",
+      "@IBAction",
+      "@IBSegueAction",
+      "@usableFromInline",
+      "@inlinable",
+      "@preconcurrency",
+      "@Persisted",
+    ]
   always_on_line_above:
-    ["@UIContactor", "@SyncAlias", "@available", "@discardableResult", "@warn_unqualified_access", "@RepositoryScheduledReceiveActor"]
+    [
+      "@UIContactor",
+      "@SyncAlias",
+      "@available",
+      "@discardableResult",
+      "@warn_unqualified_access",
+      "@RepositoryScheduledReceiveActor",
+    ]
 file_header:
   required_pattern: |
-                    \/\/
-                    \/\/  .*?\.swift
-                    \/\/
+    \/\/
+    \/\/  .*?\.swift
+    \/\/
   severity: error
-# modifier_order:
-#   preferred_modifier_order:
-#     [final, lazy, setterACL, override, required, convenience, acl, dynamic, mutators, typeMethods, owned]
 type_contents_order:
   order:
-    - [subtype, type_alias, associated_type, case, instance_property, type_property, subscript] 
+    - [
+        subtype,
+        type_alias,
+        associated_type,
+        case,
+        instance_property,
+        type_property,
+        subscript,
+        initializer,
+        deinitializer,
+        other_method,
+        type_method
+      ]
     - ib_inspectable
     - ib_outlet
-    - initializer
-    - deinitializer
-    - type_method
     - view_life_cycle_method
-    - ib_action 
-    - other_method
+    - ib_action
   severity: error
 file_types_order:
   order:
@@ -108,4 +130,4 @@ enum_case_associated_values_count:
   error: 3
 trailing_whitespace:
   ignores_empty_lines: true
-reporter: "xcode" 
+reporter: "xcode"

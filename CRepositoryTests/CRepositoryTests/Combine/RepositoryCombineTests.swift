@@ -170,7 +170,9 @@ final class RepositoryCombineTests: CombineTestCase, ModelsGenerator {
         var notificationTick = 0
         reservedRepository
             .inMemory
-            .publishWatch
+            .publishManageable
+            .reset()
+            .watcher()
             .watch(countOf: ManageableSpeaker.self)
             .sink { completion in
                 guard case let .failure(error) = completion else { return }

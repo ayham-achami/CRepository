@@ -221,7 +221,7 @@ public extension RepositoryResultCollection {
     func replaceEmpty(with defaultValue: Element) async throws -> Self {
         do {
             return try await self.throwIfEmpty
-        } catch RepositoryFetchError.notFound {
+        } catch {
             try await controller
                         .manageable
                         .put(defaultValue)
@@ -245,7 +245,7 @@ public extension RepositoryResultCollection {
         try await asyncThrowing {
             guard
                 let first = unsafe.first
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(Element.self) }
             return try transform(first)
         }
     }
@@ -254,7 +254,7 @@ public extension RepositoryResultCollection {
         try await asyncThrowing {
             guard
                 let last = unsafe.last
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(Element.self) }
             return try transform(last)
         }
     }
@@ -279,7 +279,7 @@ public extension RepositoryResultCollection {
         try await asyncThrowing {
             guard
                 let first = unsafe.first
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(Element.self) }
             return first
         }
     }
@@ -288,7 +288,7 @@ public extension RepositoryResultCollection {
         try await asyncThrowing {
             guard
                 let last = unsafe.last
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(Element.self) }
             return last
         }
     }
@@ -417,7 +417,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// - Returns: <#description#>
     func first() -> AnyPublisher<Self.Output.Element, Self.Failure> {
         tryMap { result in
-            guard let first = result.unsafe.first else { throw RepositoryFetchError.notFound }
+            guard let first = result.unsafe.first else { throw RepositoryFetchError.notFound(Self.Output.Element.self) }
             return first
         }.eraseToAnyPublisher()
     }
@@ -426,7 +426,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// - Returns: <#description#>
     func last() -> AnyPublisher<Self.Output.Element, Self.Failure> {
         tryMap { result in
-            guard let last = result.unsafe.last else { throw RepositoryFetchError.notFound }
+            guard let last = result.unsafe.last else { throw RepositoryFetchError.notFound(Self.Output.Element.self) }
             return last
         }.eraseToAnyPublisher()
     }
@@ -562,7 +562,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                         let isEmpty = await result.isEmpty
                         guard
                             !isEmpty, startIndex <= index, endIndex > index
-                        else { throw RepositoryFetchError.notFound }
+                        else { throw RepositoryFetchError.notFound(Self.Output.Element.self) }
                         let element = await result[index]
                         promise(.success(element))
                     } catch {

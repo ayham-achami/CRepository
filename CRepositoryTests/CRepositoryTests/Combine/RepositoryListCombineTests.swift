@@ -43,17 +43,17 @@ final class RepositoryListCombineTests: CombineTestCase, ModelsGenerator {
                     XCTAssertEqual(changeset.insertions, [3, 4])
                 case 3:
                     XCTAssertEqual(changeset.kind, .update)
-                    let array = Array(changeset.collection.elements)
+                    let array = Array(changeset.collection)
                     XCTAssertEqual(array[changeset.insertions.first!], "new member")
                 case 4:
                     XCTAssertEqual(changeset.kind, .update)
                     XCTAssertEqual(changeset.insertions, [3])
-                    let array = Array(changeset.collection.elements)
+                    let array = Array(changeset.collection)
                     XCTAssertEqual(array[changeset.insertions.first!], "insertion in the middle")
                 case 5:
                     XCTAssertEqual(changeset.kind, .update)
                     let elements = Array(changeset.collection)
-                    XCTAssertEqual(elements[1], "second")
+                    XCTAssertEqual(elements[changeset.insertions.last!], "second")
                     XCTAssertEqual(changeset.insertions, [2, 3])
                 default:
                     XCTFail("Receive unknown case")

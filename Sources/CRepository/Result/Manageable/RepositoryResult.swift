@@ -67,7 +67,7 @@ import RealmSwift
         try await asyncThrowing {
             guard
                 !unsafe.isEmpty, index < unsafe.endIndex
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(T.self) }
             return try transform(unsafe[index])
         }
     }

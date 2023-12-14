@@ -87,7 +87,8 @@ public extension WatchRepository {
     ///   - type: <#type description#>
     ///   - primaryKey: <#primaryKey description#>
     /// - Returns: <#description#>
-    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
+    func watch<T>(changeOf type: T.Type,
+                  with primaryKey: AnyHashable) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
         watch(changeOf: type, with: primaryKey, keyPaths: nil)
     }
 }

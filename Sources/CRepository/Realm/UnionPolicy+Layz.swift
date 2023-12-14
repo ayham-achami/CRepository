@@ -23,7 +23,7 @@ extension UnionPolicy {
             let result = await lazy.fetch(allOf: type)
             guard
                 await result.startIndex < index, await result.endIndex > index
-            else { throw RepositoryFetchError.notFound }
+            else { throw RepositoryFetchError.notFound(T.self) }
             return await result[index]
         case .query(let primaryKey):
             return try await lazy.fetch(oneOf: type, with: primaryKey)

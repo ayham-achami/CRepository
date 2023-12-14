@@ -1,6 +1,7 @@
 //
 //  Realm+Convert.swift
 //
+//
 
 import Combine
 import Foundation
@@ -336,8 +337,9 @@ extension Realm {
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
     func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]?, queue: DispatchQueue) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
-        guard let object = object(ofType: type, forPrimaryKey: primaryKey)
-        else { return Fail(error: RepositoryFetchError.notFound).eraseToAnyPublisher() }
+        guard
+            let object = object(ofType: type, forPrimaryKey: primaryKey)
+        else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
         return valuePublisher(object, keyPaths: keyPaths?.map(_name(for:)))
             .receive(on: queue)
             .share()
@@ -352,7 +354,7 @@ extension Realm {
     private func object<Element, KeyType>(ofType type: Element.Type, for key: KeyType) throws -> Element where Element: ManageableSource {
         guard
             let result = object(ofType: type, forPrimaryKey: key)
-        else { throw RepositoryFetchError.notFound }
+        else { throw RepositoryFetchError.notFound(Element.self) }
         return result
     }
     
@@ -448,7 +450,9 @@ extension Realm {
     }
     
     func writeChecking<Result>(_ perform: @escaping () throws -> Result) throws -> Result {
-        guard !isInWriteTransaction else { return try perform() }
+        guard
+            !isInWriteTransaction
+        else { return try perform() }
         return try write { try perform() }
     }
 }
