@@ -8,7 +8,7 @@ import Foundation
 import Realm
 import RealmSwift
 
-// MARK: - Realm + Functions 
+// MARK: - Realm + fetch
 extension Realm {
     
     /// <#Description#>
@@ -17,10 +17,10 @@ extension Realm {
     ///   - primaryKey: <#primaryKey description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func fetch<T>(oneOf type: T.Type,
+    func fetch<T>(oneOf _: T.Type,
                   with primaryKey: AnyHashable,
                   _ queue: DispatchQueue) async throws -> T where T: ManageableSource {
-        try await async(queue) { try object(ofType: type, for: primaryKey) }
+        try await async(queue) { try object(ofType: T.self, for: primaryKey) }
     }
     
     /// <#Description#>
@@ -29,10 +29,10 @@ extension Realm {
     ///   - toucher: <#toucher description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func fetch<T>(allOf type: T.Type,
+    func fetch<T>(allOf _: T.Type,
                   toucher: RepositoryToucher,
                   _ queue: DispatchQueue) async -> RepositoryResult<T> where T: ManageableSource {
-        await async(queue) { objects(of: type, queue, toucher) }
+        await async(queue) { objects(of: T.self, queue, toucher) }
     }
     
     /// <#Description#>
@@ -41,10 +41,10 @@ extension Realm {
     ///   - primaryKey: <#primaryKey description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishFetch<T>(oneOf type: T.Type,
+    func publishFetch<T>(oneOf _: T.Type,
                          with primaryKey: AnyHashable,
                          _ queue: DispatchQueue) -> Future<T, Swift.Error> where T: ManageableSource {
-        publishAsync(queue) { try object(ofType: type, for: primaryKey) }
+        publishAsync(queue) { try object(ofType: T.self, for: primaryKey) }
     }
     
     /// <#Description#>
@@ -53,15 +53,19 @@ extension Realm {
     ///   - toucher: <#toucher description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishFetch<T>(allOf type: T.Type,
+    func publishFetch<T>(allOf _: T.Type,
                          toucher: RepositoryToucher,
                          _ queue: DispatchQueue) -> AnyPublisher<RepositoryResult<T>, Swift.Error> where T: ManageableSource {
-        objects(type)
+        objects(T.self)
             .collectionPublisher
             .receive(on: queue)
             .map { results in RepositoryResult<T>(queue, results, toucher) }
             .eraseToAnyPublisher()
     }
+}
+
+// MARK: - Realm + Put
+extension Realm {
     
     /// <#Description#>
     /// - Parameters:
@@ -131,6 +135,10 @@ extension Realm {
                        _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishWrite(queue) { models.forEach { add($0, update: policy) } }
     }
+}
+
+// MARK: - Realm + Remove
+extension Realm {
     
     /// <#Description#>
     /// - Parameters:
@@ -138,12 +146,12 @@ extension Realm {
     ///   - primaryKey: <#primaryKey description#>
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
-    func remove<T>(onOf type: T.Type,
+    func remove<T>(onOf _: T.Type,
                    with primaryKey: AnyHashable,
                    _ isCascading: Bool,
                    _ queue: DispatchQueue) async throws where T: ManageableSource {
         try await write(queue) {
-            let model = try object(ofType: type, for: primaryKey)
+            let model = try object(ofType: T.self, for: primaryKey)
             if isCascading {
                 delete(cascade: model)
             } else {
@@ -197,11 +205,11 @@ extension Realm {
     ///   - type: <#type description#>
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
-    func remove<T>(allOfType type: T.Type,
+    func remove<T>(allOfType _: T.Type,
                    _ isCascading: Bool,
                    _ queue: DispatchQueue) async throws where T: ManageableSource {
         try await write(queue) {
-            let models = objects(type)
+            let models = objects(T.self)
             try writeChecking { isCascading ? delete(cascade: models) : delete(models) }
         }
     }
@@ -248,11 +256,11 @@ extension Realm {
     ///   - isCascading: <#isCascading description#>
     ///   - queue: <#queue description#>
     /// - Returns: <#description#>
-    func publishRemove<T>(allOfType type: T.Type,
+    func publishRemove<T>(allOfType _: T.Type,
                           _ isCascading: Bool,
                           _ queue: DispatchQueue) -> Future<Void, Swift.Error> where T: ManageableSource {
         publishAsync(queue) {
-            let models = objects(type)
+            let models = objects(T.self)
             try writeChecking {
                 if isCascading {
                     delete(cascade: models)
@@ -262,6 +270,10 @@ extension Realm {
             }
         }
     }
+}
+
+// MARK: - Realm + Reset
+extension Realm {
     
     /// <#Description#>
     /// - Parameter queue: <#queue description#>
@@ -271,7 +283,7 @@ extension Realm {
     }
 }
 
-// MARK: - Realm + Repository
+// MARK: - Realm + Watch
 extension Realm {
     
     /// <#Description#>
@@ -281,11 +293,73 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - toucher: <#toucher description#>
     /// - Returns: <#description#>
-    func watch<T>(changedOf type: T.Type,
+    func watch<T>(changeOf _: T.Type,
                   keyPaths: [PartialKeyPath<T>]? = nil,
                   queue: DispatchQueue,
                   toucher: RepositoryToucher) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Swift.Error> where T: ManageableSource {
-        objects(type)
+        watch(objects(T.self), keyPaths: keyPaths, queue: queue, toucher: toucher)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - query: <#query description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    ///   - toucher: <#toucher description#>
+    /// - Returns: <#description#>
+    func watch<T>(changeOf _: T.Type,
+                  query: RepositoryQuery<T>,
+                  keyPaths: [PartialKeyPath<T>]?,
+                  queue: DispatchQueue,
+                  toucher: RepositoryToucher) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Swift.Error> where T: ManageableSource {
+        watch(objects(T.self).where(query.query), keyPaths: keyPaths, queue: queue, toucher: toucher)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    /// - Returns: <#description#>
+    func watch<T>(changeOf _: T.Type,
+                  with primaryKey: AnyHashable,
+                  keyPaths: [PartialKeyPath<T>]?,
+                  queue: DispatchQueue) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
+        guard
+            let object = object(ofType: T.self, forPrimaryKey: primaryKey)
+        else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
+        return valuePublisher(object, keyPaths: keyPaths?.map(_name(for:)))
+            .receive(on: queue)
+            .share()
+            .eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - type: <#type description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    ///   - toucher: <#toucher description#>
+    /// - Returns: <#description#>
+    func watch<T>(countOf _: T.Type,
+                  keyPaths: [PartialKeyPath<T>]? = nil,
+                  queue: DispatchQueue,
+                  toucher: RepositoryToucher) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource {
+        objects(T.self)
+            .collectionPublisher(keyPaths: keyPaths?.map(_name(for:)))
+            .receive(on: queue)
+            .map { $0.count }
+            .share()
+            .eraseToAnyPublisher()
+    }
+    
+    private func watch<T>(_ results: Results<T>,
+                          keyPaths: [PartialKeyPath<T>]? = nil,
+                          queue: DispatchQueue,
+                          toucher: RepositoryToucher) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Swift.Error> where T: ManageableSource {
+        results
             .changesetPublisher(keyPaths: keyPaths?.map(_name(for:)))
             .receive(on: queue)
             .tryMap { (changset) -> RepositoryChangeset<RepositoryResult<T>> in
@@ -309,51 +383,19 @@ extension Realm {
             .share()
             .eraseToAnyPublisher()
     }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - type: <#type description#>
-    ///   - keyPaths: <#keyPaths description#>
-    ///   - queue: <#queue description#>
-    ///   - toucher: <#toucher description#>
-    /// - Returns: <#description#>
-    func watch<T>(countOf type: T.Type,
-                  keyPaths: [PartialKeyPath<T>]? = nil,
-                  queue: DispatchQueue,
-                  toucher: RepositoryToucher) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource {
-        objects(type)
-            .collectionPublisher(keyPaths: keyPaths?.map(_name(for:)))
-            .receive(on: queue)
-            .map { $0.count }
-            .share()
-            .eraseToAnyPublisher()
-    }
-    
-    /// <#Description#>
-    /// - Parameters:
-    ///   - type: <#type description#>
-    ///   - primaryKey: <#primaryKey description#>
-    ///   - keyPaths: <#keyPaths description#>
-    ///   - queue: <#queue description#>
-    /// - Returns: <#description#>
-    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]?, queue: DispatchQueue) -> AnyPublisher<T, Swift.Error> where T: ManageableSource {
-        guard
-            let object = object(ofType: type, forPrimaryKey: primaryKey)
-        else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
-        return valuePublisher(object, keyPaths: keyPaths?.map(_name(for:)))
-            .receive(on: queue)
-            .share()
-            .eraseToAnyPublisher()
-    }
+}
+
+// MARK: - Realm + Objects
+extension Realm {
     
     /// <#Description#>
     /// - Parameters:
     ///   - type: <#type description#>
     ///   - key: <#key description#>
     /// - Returns: <#description#>
-    private func object<Element, KeyType>(ofType type: Element.Type, for key: KeyType) throws -> Element where Element: ManageableSource {
+    private func object<Element, KeyType>(ofType _: Element.Type, for key: KeyType) throws -> Element where Element: ManageableSource {
         guard
-            let result = object(ofType: type, forPrimaryKey: key)
+            let result = object(ofType: Element.self, forPrimaryKey: key)
         else { throw RepositoryFetchError.notFound(Element.self) }
         return result
     }
@@ -364,10 +406,10 @@ extension Realm {
     ///   - queue: <#queue description#>
     ///   - toucher: <#toucher description#>
     /// - Returns: <#description#>
-    private func objects<Element>(of type: Element.Type,
+    private func objects<Element>(of _: Element.Type,
                                   _ queue: DispatchQueue,
                                   _ toucher: RepositoryToucher) -> RepositoryResult<Element> where Element: ManageableSource {
-        .init(queue, objects(type), toucher)
+        .init(queue, objects(Element.self), toucher)
     }
 }
 
@@ -475,7 +517,7 @@ extension Realm {
         while !toBeDeleted.isEmpty {
             guard
                 let element = toBeDeleted.removeFirst() as? Object,
-                    !element.isInvalidated
+                !element.isInvalidated
             else { continue }
             scan(element, &toBeDeleted)
         }

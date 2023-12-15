@@ -421,16 +421,25 @@ extension RepositoryToucher: RepresentedRepository {
 // MARK: - RepositoryToucher + WatchRepository
 extension RepositoryToucher: WatchRepository {
     
-    func watch<T>(changedOf type: T.Type, keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Error> where T: ManageableSource {
-        realm.watch(changedOf: type, queue: queue, toucher: self)
+    func watch<T>(changeOf _: T.Type,
+                  keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Error> where T: ManageableSource {
+        realm.watch(changeOf: T.self, queue: queue, toucher: self)
     }
     
-    func watch<T>(countOf type: T.Type,
+    func watch<T>(changeOf _: T.Type,
+                  with query: RepositoryQuery<T>,
+                  keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<RepositoryChangeset<RepositoryResult<T>>, Swift.Error> where T: ManageableSource {
+        realm.watch(changeOf: T.self, query: query, keyPaths: keyPaths, queue: queue, toucher: self)
+    }
+    
+    func watch<T>(countOf _: T.Type,
                   keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource {
-        realm.watch(countOf: type, queue: queue, toucher: self)
+        realm.watch(countOf: T.self, queue: queue, toucher: self)
     }
     
-    func watch<T>(changeOf type: T.Type, with primaryKey: AnyHashable, keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<T, Error> where T: ManageableSource {
-        realm.watch(changeOf: type, with: primaryKey, keyPaths: keyPaths, queue: queue)
+    func watch<T>(changeOf _: T.Type,
+                  with primaryKey: AnyHashable,
+                  keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<T, Error> where T: ManageableSource {
+        realm.watch(changeOf: T.self, with: primaryKey, keyPaths: keyPaths, queue: queue)
     }
 }
