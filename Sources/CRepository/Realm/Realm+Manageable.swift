@@ -368,7 +368,7 @@ extension Realm {
                       queue: DispatchQueue) -> AnyPublisher<ListChangeset<List<T.Value>>, Swift.Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
         guard
             let object = object(ofType: T.self, forPrimaryKey: primaryKey)
-        else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
+        else { return Just(ListChangeset<List<T.Value>>(kind: .initial, .init(), [], [], [])).setFailureType(to: Swift.Error.self).eraseToAnyPublisher() }
         return object.watch(keyPaths: keyPaths)
     }
     
