@@ -2,8 +2,8 @@
 //  RepositoryQuery.swift
 //
 
-import RealmSwift
 import Foundation
+import RealmSwift
 
 /// <#Description#>
 public struct RepositoryQuery<T> where T: ManageableSource {

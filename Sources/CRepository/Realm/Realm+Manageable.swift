@@ -355,6 +355,30 @@ extension Realm {
             .eraseToAnyPublisher()
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with primaryKey: AnyHashable,
+                      keyPaths: [PartialKeyPath<T.Value>]?,
+                      queue: DispatchQueue) -> AnyPublisher<ListChangeset<List<T.Value>>, Swift.Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
+        guard
+            let object = object(ofType: T.self, forPrimaryKey: primaryKey)
+        else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
+        return object.watch(keyPaths: keyPaths)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - results: <#results description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    ///   - toucher: <#toucher description#>
+    /// - Returns: <#description#>
     private func watch<T>(_ results: Results<T>,
                           keyPaths: [PartialKeyPath<T>]? = nil,
                           queue: DispatchQueue,

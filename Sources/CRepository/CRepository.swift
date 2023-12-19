@@ -12,7 +12,6 @@ public protocol Manageable: Object {}
 public protocol DynamicManageable {
 
     /// Получить значение свойства объекта
-    ///
     /// - Parameters:
     ///   - property: Название свойства
     ///   - type: Тип значения
@@ -20,7 +19,6 @@ public protocol DynamicManageable {
     func value<T>(of property: String, type: T.Type) -> T?
 
     /// Изменить значение свойства объекта
-    ///
     /// - Parameters:
     ///   - value: новое значение
     ///   - property: название свойства
@@ -34,7 +32,6 @@ public protocol ManageableRepresented {
     associatedtype RepresentedType: Manageable
 
     /// Инициализация объекта модели с помощью объекта базы данных
-    ///
     /// - Parameter manageable: Объект базы данных
     init(from manageable: RepresentedType)
 
@@ -69,6 +66,8 @@ public protocol ManageableSource: Manageable {
 // MARK: - ManageableSource + Default
 public extension ManageableSource {
 
+    /// <#Description#>
+    /// - Parameter represented: <#represented description#>
     init?(orNil represented: ManageableType?) {
         guard let represented else { return nil }
         self.init(from: represented)

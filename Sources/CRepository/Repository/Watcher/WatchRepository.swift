@@ -4,6 +4,7 @@
 
 import Combine
 import Foundation
+import RealmSwift
 
 /// <#Description#>
 public protocol WatchRepository: RepositoryController {
@@ -43,6 +44,16 @@ public protocol WatchRepository: RepositoryController {
     /// - Returns: <#description#>
     func watch<T>(countOf _: T.Type,
                   keyPaths: [PartialKeyPath<T>]?) -> AnyPublisher<Int, Swift.Error> where T: ManageableSource
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with primaryKey: AnyHashable,
+                      keyPaths: [PartialKeyPath<T.Value>]?) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource
 }
 
 // MARK: - WatchRepository + ManageableSource
@@ -157,6 +168,20 @@ public extension WatchRepository {
     }
 }
 
+// MARK: - WatchRepository + ListChangeset
+public extension WatchRepository {
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - primaryKey: <#primaryKey description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with primaryKey: AnyHashable) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
+        watchList(changeOf: T.self, with: primaryKey, keyPaths: nil)
+    }
+}
+
 // MARK: - Publisher + WatchRepository
 public extension Publisher where Self.Output == WatchRepository, Self.Failure == Swift.Error {
     
@@ -226,6 +251,7 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
         flatMap(maxPublishers: .max(1)) { $0.watch(countOf: T.self, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
 }
+
 // MARK: - Publisher + WatchRepository + ManageableRepresented
 public extension Publisher where Self.Output == WatchRepository, Self.Failure == Swift.Error {
     
