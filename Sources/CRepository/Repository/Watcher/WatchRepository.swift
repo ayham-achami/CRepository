@@ -308,3 +308,19 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
         flatMap(maxPublishers: .max(1)) { $0.watch(countOf: T.self, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
 }
+
+// MARK: - Publisher + WatchRepository + ListChangeset
+public extension Publisher where Self.Output == WatchRepository, Self.Failure == Swift.Error {
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - primaryKey: <#primaryKey description#>
+    ///   - keyPaths: <#keyPaths description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with primaryKey: AnyHashable,
+                      keyPaths: [PartialKeyPath<T.Value>]? = nil) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
+        flatMap(maxPublishers: .max(1)) { $0.watchList(changeOf: T.self, with: primaryKey, keyPaths: keyPaths) }.eraseToAnyPublisher()
+    }
+}
