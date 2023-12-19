@@ -368,8 +368,36 @@ extension Realm {
                       queue: DispatchQueue) -> AnyPublisher<ListChangeset<List<T.Value>>, Swift.Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
         guard
             let object = object(ofType: T.self, forPrimaryKey: primaryKey)
-        else { return Just(ListChangeset<List<T.Value>>(kind: .initial, .init(), [], [], [])).setFailureType(to: Swift.Error.self).eraseToAnyPublisher() }
+        else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
         return object.watch(keyPaths: keyPaths)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - query: <#query description#>
+    ///   - keyPaths: <#keyPaths description#>
+    ///   - queue: <#queue description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with query: RepositoryQuery<T>,
+                      keyPaths: [PartialKeyPath<T.Value>]?,
+                      queue: DispatchQueue) -> AnyPublisher<ListChangeset<List<T.Value>>, Swift.Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
+        objects(T.self).where(query.query)
+            .changesetPublisher
+            .receive(on: queue)
+            .tryMap { changset in
+                switch changset {
+                case let .update(result, deletions, insertions, modifications):
+                    guard let fisrt = result.first else { return .init(kind: .initial, .init(), [], [], []) }
+                    return .init(kind: .initial, fisrt.list, deletions, insertions, modifications)
+                case let .initial(result):
+                    guard let fisrt = result.first else { return .init(kind: .initial, .init(), [], [], []) }
+                    return .init(kind: .initial, fisrt.list, [], [], [])
+                case let .error(error):
+                    throw error
+                }
+            }.eraseToAnyPublisher()
     }
     
     /// <#Description#>

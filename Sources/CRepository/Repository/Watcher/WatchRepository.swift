@@ -54,6 +54,16 @@ public protocol WatchRepository: RepositoryController {
     func watchList<T>(changeOf _: T.Type,
                       with primaryKey: AnyHashable,
                       keyPaths: [PartialKeyPath<T.Value>]?) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - query: <#query description#>
+    ///   - keyPaths: <#keyPaths description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with query: RepositoryQuery<T>,
+                      keyPaths: [PartialKeyPath<T.Value>]?) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource
 }
 
 // MARK: - WatchRepository + ManageableSource
@@ -179,6 +189,16 @@ public extension WatchRepository {
     func watchList<T>(changeOf _: T.Type,
                       with primaryKey: AnyHashable) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
         watchList(changeOf: T.self, with: primaryKey, keyPaths: nil)
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - query: <#query description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with query: RepositoryQuery<T>) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
+        watchList(changeOf: T.self, with: query, keyPaths: nil)
     }
 }
 
@@ -322,5 +342,17 @@ public extension Publisher where Self.Output == WatchRepository, Self.Failure ==
                       with primaryKey: AnyHashable,
                       keyPaths: [PartialKeyPath<T.Value>]? = nil) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
         flatMap(maxPublishers: .max(1)) { $0.watchList(changeOf: T.self, with: primaryKey, keyPaths: keyPaths) }.eraseToAnyPublisher()
+    }
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - _: <#_ description#>
+    ///   - query: <#query description#>
+    ///   - keyPaths: <#keyPaths description#>
+    /// - Returns: <#description#>
+    func watchList<T>(changeOf _: T.Type,
+                      with query: RepositoryQuery<T>,
+                      keyPaths: [PartialKeyPath<T.Value>]? = nil) -> AnyPublisher<ListChangeset<List<T.Value>>, Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
+        flatMap(maxPublishers: .max(1)) { $0.watchList(changeOf: T.self, with: query, keyPaths: keyPaths) }.eraseToAnyPublisher()
     }
 }
