@@ -369,7 +369,7 @@ extension Realm {
         guard
             let object = object(ofType: T.self, forPrimaryKey: primaryKey)
         else { return Fail(error: RepositoryFetchError.notFound(T.self)).eraseToAnyPublisher() }
-        return object.watch(keyPaths: keyPaths)
+        return object.watch(keyPaths: keyPaths).receive(on: queue).eraseToAnyPublisher()
     }
     
     /// <#Description#>
@@ -383,7 +383,8 @@ extension Realm {
                       with query: RepositoryQuery<T>,
                       keyPaths: [PartialKeyPath<T.Value>]?,
                       queue: DispatchQueue) -> AnyPublisher<ListChangeset<List<T.Value>>, Swift.Error> where T: ManageableSource, T: ListManageable, T.Value: ManageableSource {
-        objects(T.self).where(query.query)
+        objects(T.self)
+            .where(query.query)
             .changesetPublisher
             .receive(on: queue)
             .tryMap { changset in

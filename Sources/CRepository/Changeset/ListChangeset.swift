@@ -38,6 +38,36 @@ public struct ListChangeset<Collection>: CollectionChangeset where Collection: R
 }
 
 /// <#Description#>
+public struct RepresentedListChangeset<Element> where Element: ManageableRepresented {
+    
+    public let kind: ChangesetKind
+    public let list: [Element]
+    
+    public let deletions: [Int]
+    public let insertions: [Int]
+    public let modifications: [Int]
+    
+    /// <#Description#>
+    /// - Parameters:
+    ///   - kind: <#kind description#>
+    ///   - list: <#list description#>
+    ///   - deletions: <#deletions description#>
+    ///   - insertions: <#insertions description#>
+    ///   - modifications: <#modifications description#>
+    init(kind: ChangesetKind,
+         _ list: [Element],
+         _ deletions: [Int],
+         _ insertions: [Int],
+         _ modifications: [Int]) {
+        self.kind = kind
+        self.list = list
+        self.deletions = deletions
+        self.insertions = insertions
+        self.modifications = modifications
+    }
+}
+
+/// <#Description#>
 public struct ListChangesetSequence<Element> where Element: RealmCollectionValue {
 
     public let indexes: IndexSet

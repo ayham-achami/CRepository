@@ -1,8 +1,5 @@
 //
 //  ListManageable.swift
-//  CRepository
-//
-//  ListManageable.swift
 //
 
 import Combine
@@ -13,7 +10,8 @@ import RealmSwift
 public protocol ListManageable {
     
     associatedtype Value: RealmCollectionValue
-                                    
+    
+    /// <#Description#>
     var list: List<Value> { get }
 }
 
@@ -155,7 +153,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     func resetting(at index: Self.Output.Index) -> AnyPublisher<Void, Self.Failure> {
         watchList(at: index).filter { changeset in
             changeset.kind == .update && !changeset.deletions.isEmpty && changeset.collection.isEmpty
-        }.map { _ in 
+        }.map { _ in
             ()
         }.eraseToAnyPublisher()
     }
