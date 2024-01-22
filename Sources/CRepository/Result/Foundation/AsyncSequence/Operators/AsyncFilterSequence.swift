@@ -104,7 +104,11 @@ extension RepositoryAsyncFilterSequence: RepositoryAsyncSequence {
                 let isFiltered = try await withCheckedThrowingContinuation { continuation in
                     queue.async { [isIncluded, element] in
                         do {
-                            continuation.resume(returning: try isIncluded(element))
+                            if element.isInvalidated {
+                                continuation.resume(returning: false)
+                            } else {
+                                continuation.resume(returning: try isIncluded(element))
+                            }
                         } catch {
                             continuation.resume(throwing: error)
                         }

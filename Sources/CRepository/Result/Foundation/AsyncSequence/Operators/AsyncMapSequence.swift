@@ -77,7 +77,11 @@ extension RepositoryAsyncMapSequence: RepositoryAsyncSequence {
                 return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Transformed?, Error>) in
                     queue.async { [transform, element] in
                         do {
-                            continuation.resume(returning: try transform(element))
+                            if element.isInvalidated {
+                                continuation.resume(returning: nil)
+                            } else {
+                                continuation.resume(returning: try transform(element))
+                            }
                         } catch {
                             continuation.resume(throwing: error)
                         }
