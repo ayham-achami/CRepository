@@ -314,8 +314,12 @@ extension RepositoryToucher: RepresentedRepository {
                                                                                             T.RepresentedType: ManageableSource,
                                                                                             T.RepresentedType.ManageableType == T {
         let model = try await realm.fetch(oneOf: type.RepresentedType.self, with: primaryKey, queue)
-        guard !model.isInvalidated else { throw RepositoryFetchError.notFound(type.RepresentedType.self) }
-        return await realm.async(queue) { .init(from: model) }
+        return await realm.async(queue) {
+            guard !model.isInvalidated else {
+                throw RepositoryFetchError.notFound(type.RepresentedType.self)
+            }
+            return .init(from: model)
+        }
     }
     
     func fetch<T>(allOf type: T.Type) async -> RepositoryRepresentedResult<T> where T: ManageableRepresented,
