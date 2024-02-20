@@ -178,7 +178,13 @@ public extension RepositoryAsyncSequence where Element: ManageableSource {
     func mapManageable<T>(_ transform: @escaping (Element) throws -> T) async throws -> [T] {
         var elements = [T]()
         for try await element in stream where !element.isInvalidated {
-            elements.append(try await asyncThrowing { try transform(element) })
+            let newElement = try await asyncThrowing {
+                guard !element.isInvalidated else {
+                    throw RepositoryError.conversion
+                }
+                return try transform(element)
+            }
+            elements.append(newElement)
         }
         return elements
     }
