@@ -4,6 +4,7 @@
 
 import Combine
 import Foundation
+import RealmSwift
 
 /// <#Description#>
 public protocol RepositoryAsyncIteratorProtocol {
@@ -93,7 +94,11 @@ public extension RepositoryAsyncSequence {
             let isContains = try await withCheckedThrowingContinuation { continuation in
                 queue.async {
                     do {
-                        continuation.resume(returning: try predicate(element))
+                        if let managableElement = element as? any ManageableSource, managableElement.isInvalidated {
+                            continuation.resume(returning: false)
+                        } else {
+                            continuation.resume(returning: try predicate(element))
+                        }
                     } catch {
                         continuation.resume(throwing: error)
                     }
