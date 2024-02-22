@@ -184,10 +184,11 @@ public extension RepositoryAsyncSequence where Element: ManageableSource {
         var elements = [T]()
         for try await element in stream where !element.isInvalidated {
             let newElement = try await asyncThrowing {
-                guard !element.isInvalidated else {
+                if !element.isInvalidated {
+                    return try transform(element)
+                } else {
                     throw RepositoryError.conversion
                 }
-                return try transform(element)
             }
             elements.append(newElement)
         }
