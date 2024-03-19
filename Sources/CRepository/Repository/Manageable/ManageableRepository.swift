@@ -174,6 +174,7 @@ public extension ManageableRepository {
     ///   - modification: <#modification description#>
     func modify<T>(_ type: T.Type, with primaryKey: AnyHashable, _ modification: @escaping (T) throws -> Void) async throws where T: ManageableSource {
         let model = try await lazy.fetch(oneOf: type, with: primaryKey)
+        guard !model.isInvalidated else { return }
         try await write { try modification(model) }
     }
     
