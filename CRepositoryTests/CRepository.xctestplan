@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "7D50E32A-0B03-4EDE-BB4C-8D5D3BE29298",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:CRepository.xcodeproj",
+        "identifier" : "F085199126C524CE00EDBCAB",
+        "name" : "CRepositoryTests"
+      }
+    }
+  ],
+  "version" : 1
+}

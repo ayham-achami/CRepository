@@ -16,6 +16,7 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 xcuserdata/
+xcshareddata/
 
 ## Other
 *.moved-aside
@@ -31,12 +32,6 @@ xcuserdata/
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
-
-# Swift Package Manager
-#
-# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
-# Packages/
-.build/
 
 # CocoaPods
 #
@@ -64,7 +59,16 @@ fastlane/profiles
 
 functions_build_analysis\.txt
 
-# Bundle 
+# Bundle
 vendor
+
+### SwiftPM ###
+Packages
+.build/
+xcuserdata
+DerivedData/
+*.xcodeproj
+.swiftpm/
+.netrc
 
 .DS_Store
