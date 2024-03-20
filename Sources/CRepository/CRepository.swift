@@ -42,7 +42,9 @@ public protocol ManageableRepresented {
 
 // MARK: - ManageableRepresented + Default
 public extension ManageableRepresented {
-
+    
+    /// Инициализация
+    /// - Parameter manageable: manageable объект
     init?(orNil manageable: RepresentedType?) {
         guard  let manageable else { return nil }
         self.init(from: manageable)
@@ -66,8 +68,8 @@ public protocol ManageableSource: Manageable {
 // MARK: - ManageableSource + Default
 public extension ManageableSource {
 
-    /// <#Description#>
-    /// - Parameter represented: <#represented description#>
+    /// Инициализация
+    /// - Parameter represented: represented объект
     init?(orNil represented: ManageableType?) {
         guard let represented else { return nil }
         self.init(from: represented)
