@@ -16,7 +16,7 @@ private extension DispatchQueue {
 /// <#Description#>
 public final class RealmRepository: Repository {
     
-    /// <#Description#>
+    /// Тип хранилища
     enum Kind {
 
         /// Базовый тип

@@ -4,7 +4,7 @@
 
 import Foundation
 
-/// <#Description#>
+/// Хранилище
 public protocol Repository: AnyObject {
 
     /// Базовый тип

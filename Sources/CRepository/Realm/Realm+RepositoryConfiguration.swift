@@ -56,12 +56,12 @@ extension Realm.Configuration {
         }
         switch kind {
         case .basic:
-            self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
+            self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration, objectTypes: configuration.objectTypes)
             fileURL = try path(for: self, and: configuration, category: "Default", lastComponent: "\(configuration.userName).realm")
         case .inMemory:
-            self.init(inMemoryIdentifier: "inMemory\(configuration.userName)", migrationBlock: migration)
+            self.init(inMemoryIdentifier: "inMemory\(configuration.userName)", migrationBlock: migration, objectTypes: configuration.objectTypes)
         case .encryption:
-            self.init(encryptionKey: try configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
+            self.init(encryptionKey: try configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration, objectTypes: configuration.objectTypes)
             fileURL = try path(for: self, and: configuration, category: "Encryption", lastComponent: "\(configuration.userName)Encryption.realm")
         }
     }

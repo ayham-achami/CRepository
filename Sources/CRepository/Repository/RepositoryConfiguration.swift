@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import RealmSwift
 
 /// конфигурация хранилища
 public protocol RepositoryConfiguration: AnyObject {
@@ -24,6 +25,9 @@ public protocol RepositoryConfiguration: AnyObject {
 
     /// Путь к директории, куда сохранить файлы хранилища
     var repositoryDirectory: String? { get }
+    
+    /// Типы объектов в хранилище
+    var objectTypes: [ObjectBase.Type]? { get }
 
     /// вызывается после изменения версия хранилища, для выполнения нужные изменения в сессии миграции
     ///
