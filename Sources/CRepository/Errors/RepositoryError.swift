@@ -26,7 +26,7 @@ public enum RepositoryError: LocalizedError {
     }
 }
 
-/// Ошибка 
+/// Ошибка
 public enum RepositoryFetchError: LocalizedError {
 
     /// Объект не был найден в базе

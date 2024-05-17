@@ -30,7 +30,7 @@ public protocol RepositoryConfiguration: AnyObject {
     /// Название баз например *MyProjectName*
     var userName: String { get }
     
-    /// Ключи шифрования 
+    /// Ключи шифрования
     var encryptionKey: Data { get throws }
     
     /// Тип управления хранилища
