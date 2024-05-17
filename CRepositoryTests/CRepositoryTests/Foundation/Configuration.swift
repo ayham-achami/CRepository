@@ -45,6 +45,16 @@ extension MigrationController {
 // MARK: - RepositoryConfiguration
 final class Configuration: RepositoryConfiguration {
     
+    struct Scheme: RepositoryPackageScheme {
+        
+        var manageables: [any ManageableSource.Type] {
+            [ManageableCompany.self,
+             ManageableSpeaker.self,
+             ManageableChatInfo.self,
+             ManageableProductInfo.self]
+        }
+    }
+    
     var encryptionKey: Data {
         get throws {
             /// длина ключа шифрования
@@ -58,10 +68,11 @@ final class Configuration: RepositoryConfiguration {
         }
     }
     
-    var userName: String = "CRepository"
+    let userName: String = "CRepository"
     let isFileProtection: Bool = false
     let repositoryDirectory: String? = "Database"
     let repositorySchemaVersion: UInt64 = SchemaVersion.one.rawValue
+    let drivenType: CRepository.RepositoryDrivenType = .package(Scheme.self)
     
     func repositoryDidBeginMigration(with migration: MigrationController) {
         XCTFail("Migration required")
@@ -71,6 +82,16 @@ final class Configuration: RepositoryConfiguration {
 // MARK: - RepositoryConfiguration
 final class ReservedConfiguration: RepositoryConfiguration {
     
+    struct Scheme: RepositoryPackageScheme {
+        
+        var manageables: [any ManageableSource.Type] {
+            [ManageableCompany.self,
+             ManageableSpeaker.self,
+             ManageableChatInfo.self,
+             ManageableProductInfo.self]
+        }
+    }
+    
     var encryptionKey: Data {
         get throws {
             /// длина ключа шифрования
@@ -84,10 +105,11 @@ final class ReservedConfiguration: RepositoryConfiguration {
         }
     }
     
-    var userName: String = "CRepositoryReserved"
+    let userName: String = "CRepositoryReserved"
     let isFileProtection: Bool = false
     let repositoryDirectory: String? = "DatabaseReserved"
     let repositorySchemaVersion: UInt64 = SchemaVersion.one.rawValue
+    let drivenType: CRepository.RepositoryDrivenType = .package(Scheme.self)
     
     func repositoryDidBeginMigration(with migration: MigrationController) {
         XCTFail("Migration required")

@@ -54,14 +54,20 @@ extension Realm.Configuration {
             let migrationController = MigrationContextProducer(configuration.repositorySchemaVersion, oldSchemaVersion, migration)
             configuration.repositoryDidBeginMigration(with: migrationController)
         }
+        let objectTypes: [Object.Type]?
+        if case let .package(repositorySchemeType) = configuration.drivenType {
+            objectTypes = repositorySchemeType.init().manageables
+        } else {
+            objectTypes = nil
+        }
         switch kind {
         case .basic:
-            self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
+            self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration, objectTypes: objectTypes)
             fileURL = try path(for: self, and: configuration, category: "Default", lastComponent: "\(configuration.userName).realm")
         case .inMemory:
-            self.init(inMemoryIdentifier: "inMemory\(configuration.userName)", migrationBlock: migration)
+            self.init(inMemoryIdentifier: "inMemory\(configuration.userName)", migrationBlock: migration, objectTypes: objectTypes)
         case .encryption:
-            self.init(encryptionKey: try configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration)
+            self.init(encryptionKey: try configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration, objectTypes: objectTypes)
             fileURL = try path(for: self, and: configuration, category: "Encryption", lastComponent: "\(configuration.userName)Encryption.realm")
         }
     }
