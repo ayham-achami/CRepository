@@ -3,6 +3,26 @@
 //
 
 import Foundation
+import RealmSwift
+
+/// Схема объектов пакета
+public protocol RepositoryPackageScheme {
+    
+    /// Инициализация
+    init()
+    
+    /// Объекты
+    var manageables: [any ManageableSource.Type] { get }
+}
+
+/// Тип хранилищя
+public enum RepositoryDrivenType {
+
+    /// Глобальное хранилище на уровне приложения
+    case globle
+    /// Хранилище на уровне пакета
+    case package(RepositoryPackageScheme.Type)
+}
 
 /// конфигурация хранилища
 public protocol RepositoryConfiguration: AnyObject {
@@ -10,8 +30,11 @@ public protocol RepositoryConfiguration: AnyObject {
     /// Название баз например *MyProjectName*
     var userName: String { get }
     
-    /// Ключи шифрования 
+    /// Ключи шифрования
     var encryptionKey: Data { get throws }
+    
+    /// Тип управления хранилища
+    var drivenType: RepositoryDrivenType { get }
     
     /// Файл хранилища является ли защищенным от изменения в спящем режиме устройства,
     /// если создавать конфигурацию с значением isFileProtection = false

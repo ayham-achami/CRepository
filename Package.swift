@@ -22,7 +22,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/realm/SwiftLint", from: "0.53.0"),
-        .package(url: "https://github.com/realm/realm-cocoa", from: "10.48.1"),
+        .package(url: "https://github.com/realm/realm-cocoa", exact: "10.48.1"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0")
     ],
     targets: [
