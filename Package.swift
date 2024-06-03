@@ -21,9 +21,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/realm/SwiftLint", from: "0.53.0"),
+        .package(url: "https://github.com/realm/SwiftLint", from: "0.55.1"),
         .package(url: "https://github.com/realm/realm-cocoa", exact: "10.50.1"),
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0")
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "510.0.2")
     ],
     targets: [
         .macro(
@@ -33,7 +33,7 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ],
             plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+                .plugin (name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
             ]
         ),
         .target(
@@ -43,7 +43,7 @@ let package = Package(
                 .product(name: "RealmSwift", package: "realm-cocoa")
             ],
             plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
             ]
         ),
         .executableTarget(
@@ -52,7 +52,7 @@ let package = Package(
                 "CRepository"
             ],
             plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
             ]
         ),
         .testTarget(
@@ -62,7 +62,7 @@ let package = Package(
             ],
             path: "CRepositoryTests",
             plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
             ]
         ),
     ],
