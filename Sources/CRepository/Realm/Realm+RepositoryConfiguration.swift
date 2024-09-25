@@ -182,11 +182,11 @@ extension Realm {
     ///   - kind: <#type description#>
     ///   - configuration: <#configuration description#>
     ///   - queue: <#queue description#>
-    init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration, _ queue: DispatchQueue) throws {
+    init(_ kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration) throws {
         if case .inMemory = kind, let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
             self = cachedRealm
         } else {
-            try self.init(configuration: try .init(kind, configuration), queue: queue)
+            try self.init(configuration: try .init(kind, configuration))
         }
         guard case .inMemory = kind else { return }
         Self.inMemoryCache.store(self, for: configuration.userName)

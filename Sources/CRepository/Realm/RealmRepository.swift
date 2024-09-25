@@ -46,6 +46,12 @@ extension RealmRepository {
     /// <#Description#>
     struct Controller: RepositoryController {
         
+        var raw: any RawRepository {
+            get throws {
+                try RepositoryToucher(kind: kind, configuration)
+            }
+        }
+        
         var lazy: LazyRepository {
             get async throws {
                 try await RepositoryToucher(kind: kind, configuration, queue)
