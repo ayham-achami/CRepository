@@ -22,15 +22,8 @@ public enum RepositoryDrivenType {
     case globle
     /// Хранилище на уровне пакета
     case package(RepositoryPackageScheme.Type)
-}
-
-/// Уровень хранилища
-public enum RepositoryLocation {
-
-    /// Глобальное хранилище на уровне приложения
-    case `default`
-    /// Хранилище на уровне пакета
-    case appGroup(String)
+    /// Хранилище для расширений
+    case container(String, RepositoryPackageScheme.Type)
 }
 
 /// конфигурация хранилища
@@ -56,19 +49,10 @@ public protocol RepositoryConfiguration: AnyObject {
 
     /// Путь к директории, куда сохранить файлы хранилища
     var repositoryDirectory: String? { get }
-    
-    /// Название appGroup для создания базы внутри этого контейнера
-    var location: RepositoryLocation { get }
 
     /// вызывается после изменения версия хранилища, для выполнения нужные изменения в сессии миграции
     ///
     /// - Parameter migration: контроллер миграции
     /// - See: `MigrationController`
     func repositoryDidBeginMigration(with controller: MigrationController)
-}
-
-/// По умолчанию хранилище на уровне приложения
-public extension RepositoryConfiguration {
-    
-    var location: RepositoryLocation { .default }
 }

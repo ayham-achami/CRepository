@@ -54,21 +54,30 @@ extension Realm.Configuration {
             let migrationController = MigrationContextProducer(configuration.repositorySchemaVersion, oldSchemaVersion, migration)
             configuration.repositoryDidBeginMigration(with: migrationController)
         }
+        
         let objectTypes: [Object.Type]?
-        if case let .package(repositorySchemeType) = configuration.drivenType {
-            objectTypes = repositorySchemeType.init().manageables
-        } else {
+        let appGroup: String?
+        switch configuration.drivenType {
+        case .globle:
+            appGroup = nil
             objectTypes = nil
+        case let .package(types):
+            appGroup = nil
+            objectTypes = types.init().manageables
+        case let .container(appGroupIdentifier, types):
+            appGroup = appGroupIdentifier
+            objectTypes = types.init().manageables
         }
+        
         switch kind {
         case .basic:
             self.init(schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration, objectTypes: objectTypes)
-            fileURL = try path(for: self, and: configuration, category: "Default", lastComponent: "\(configuration.userName).realm")
+            fileURL = try path(for: self, and: configuration, appGroup: appGroup, category: "Default", lastComponent: "\(configuration.userName).realm")
         case .inMemory:
             self.init(inMemoryIdentifier: "inMemory\(configuration.userName)", migrationBlock: migration, objectTypes: objectTypes)
         case .encryption:
             self.init(encryptionKey: try configuration.encryptionKey, schemaVersion: configuration.repositorySchemaVersion, migrationBlock: migration, objectTypes: objectTypes)
-            fileURL = try path(for: self, and: configuration, category: "Encryption", lastComponent: "\(configuration.userName)Encryption.realm")
+            fileURL = try path(for: self, and: configuration, appGroup: appGroup, category: "Encryption", lastComponent: "\(configuration.userName)Encryption.realm")
         }
     }
     
@@ -96,11 +105,12 @@ extension Realm.Configuration {
     /// - Returns: <#description#>
     private func path(for realmConfiguration: Realm.Configuration,
                       and repositoryConfiguration: RepositoryConfiguration,
+                      appGroup: String?,
                       category: String,
                       lastComponent: String) throws -> URL {
         let fileManager = FileManager.default
         let destinationDirectory: URL
-        let baseURL: URL? = if case .appGroup(let appGroup) = repositoryConfiguration.location {
+        let baseURL: URL? = if let appGroup {
             fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
         } else {
             fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
