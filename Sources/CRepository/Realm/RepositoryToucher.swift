@@ -33,6 +33,20 @@ struct RepositoryToucher {
         }
     }
     
+    init(kind: RealmRepository.Kind, _ configuration: RepositoryConfiguration) throws {
+        self.queue = .main
+        do {
+            self.realm = try Realm(kind, configuration)
+        } catch {
+            if case let RepositoryError.initialization(fileURL: url) = error, let url {
+                try FileManager.default.removeItem(at: url)
+                self.realm = try Realm(kind, configuration)
+            } else {
+                throw error
+            }
+        }
+    }
+    
     /// <#Description#>
     /// - Parameters:
     ///   - realm: <#realm description#>
@@ -64,6 +78,10 @@ struct RepositoryToucher {
 
 // MARK: - RepositoryToucher + RepositoryController
 extension RepositoryToucher {
+    
+    var raw: any RawRepository {
+        get throws { self }
+    }
     
     var lazy: LazyRepository {
         get async throws { self }
@@ -99,6 +117,37 @@ extension RepositoryToucher {
         Just(self as RepresentedRepository)
             .setFailureType(to: Swift.Error.self)
             .eraseToAnyPublisher()
+    }
+}
+
+// MARK: - RepositoryToucher + RawRepository
+extension RepositoryToucher: RawRepository {
+    
+    private var rawRealm: Realm {
+        get throws {
+            try Realm(configuration: realm.configuration)
+        }
+    }
+    
+    func put<T>(_ model: T, policy: RealmSwift.Realm.UpdatePolicy) throws where T: ManageableSource {
+        let realm = try rawRealm
+        try realm.writeChecking { realm.add(model, update: policy) }
+    }
+    
+    func put<T>(allOf models: T, policy: RealmSwift.Realm.UpdatePolicy) throws where T: Sequence, T.Element: ManageableSource {
+        let realm = try rawRealm
+        try realm.writeChecking { models.forEach { realm.add($0, update: policy) } }
+    }
+    
+    func fetch<T>(oneOf type: T.Type, with primaryKey: AnyHashable) throws -> T where T: ManageableRepresented, T == T.RepresentedType.ManageableType, T.RepresentedType: ManageableSource {
+        guard
+            let result = try rawRealm.object(ofType: T.RepresentedType.self, forPrimaryKey: primaryKey)
+        else { throw RepositoryFetchError.notFound(T.RepresentedType.self) }
+        return .init(from: result)
+    }
+    
+    func fetch<T>(allOf type: T.Type) throws -> [T] where T: ManageableRepresented, T == T.RepresentedType.ManageableType, T.RepresentedType: ManageableSource {
+        try rawRealm.objects(T.RepresentedType.self).map(T.init(from:))
     }
 }
 

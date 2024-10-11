@@ -22,6 +22,8 @@ public enum RepositoryDrivenType {
     case globle
     /// Хранилище на уровне пакета
     case package(RepositoryPackageScheme.Type)
+    /// Хранилище для расширений
+    case container(String, RepositoryPackageScheme.Type)
 }
 
 /// конфигурация хранилища

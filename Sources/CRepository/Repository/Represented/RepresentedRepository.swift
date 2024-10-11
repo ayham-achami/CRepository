@@ -326,6 +326,14 @@ public extension RepresentedRepository {
         try await put(allOf: models, policy: .default)
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - model: <#model description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - type: <#type description#>
+    ///   - unionPolicy: <#unionPolicy description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
     @discardableResult
     func union<T, U, M>(_ model: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
@@ -344,6 +352,14 @@ public extension RepresentedRepository {
         return self
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - models: <#models description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - type: <#type description#>
+    ///   - unionPolicy: <#unionPolicy description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
     @discardableResult
     func union<T, U, M>(allOf models: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
@@ -365,6 +381,13 @@ public extension RepresentedRepository {
         return self
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - model: <#model description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
     @discardableResult
     func union<T, U, M>(_ model: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
@@ -381,6 +404,13 @@ public extension RepresentedRepository {
         return self
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - models: <#models description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - unionized: <#unionized description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
     @discardableResult
     func union<T, U, M>(allOf models: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
@@ -613,6 +643,14 @@ public extension Publisher where Self.Output == RepresentedRepository, Self.Fail
         flatMap(maxPublishers: .max(1)) { $0.publishPut(allOf: models, policy: policy) }.eraseToAnyPublisher()
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - model: <#model description#>
+    ///   - updatePolicy: <#updatePolicy description#>
+    ///   - type: <#type description#>
+    ///   - unionPolicy: <#unionPolicy description#>
+    ///   - perform: <#perform description#>
+    /// - Returns: <#description#>
     func union<T, U, M>(_ model: T,
                         updatePolicy: Realm.UpdatePolicy = .default,
                         with type: U.Type,

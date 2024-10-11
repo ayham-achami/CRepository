@@ -9,6 +9,9 @@ import Foundation
 public protocol RepositoryController {
     
     /// <#Description#>
+    var raw: RawRepository { get throws }
+    
+    /// <#Description#>
     var lazy: LazyRepository { get async throws }
     
     /// <#Description#>
