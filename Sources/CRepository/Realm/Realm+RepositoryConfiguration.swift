@@ -100,14 +100,18 @@ extension Realm.Configuration {
                       lastComponent: String) throws -> URL {
         let fileManager = FileManager.default
         let destinationDirectory: URL
-        if let directory = repositoryConfiguration.repositoryDirectory,
-           let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+        let baseURL: URL? = if case .appGroup(let appGroup) = repositoryConfiguration.location {
+            fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+        } else {
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        }
+        if let directory = repositoryConfiguration.repositoryDirectory, let baseURL = baseURL {
             if #available(iOS 16.0, *) {
-                destinationDirectory = documentDirectory
+                destinationDirectory = baseURL
                     .appending(component: directory)
                     .appending(component: category)
             } else {
-                destinationDirectory = documentDirectory
+                destinationDirectory = baseURL
                     .appendingPathComponent(directory)
                     .appendingPathComponent(category)
             }
