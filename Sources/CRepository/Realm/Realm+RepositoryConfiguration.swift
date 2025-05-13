@@ -200,7 +200,12 @@ extension Realm {
         if case .inMemory = kind, let cachedRealm = Self.inMemoryCache.restore(for: configuration.userName) {
             self = cachedRealm
         } else {
-            try self.init(configuration: try .init(kind, configuration))
+            let realmConfiguration = try Configuration(kind, configuration)
+            do {
+                try self.init(configuration: realmConfiguration)
+            } catch {
+                throw RepositoryError.initialization(fileURL: realmConfiguration.fileURL)
+            }
         }
         guard case .inMemory = kind else { return }
         Self.inMemoryCache.store(self, for: configuration.userName)
