@@ -258,7 +258,10 @@ public extension Publisher where Self.Output: RepositoryAsyncSequence,
             Future { promise in
                 Task {
                     do {
-                        promise(.success(try await .init(sequence.prefix(count))))
+                        let prefixSequence = try await RepositorySequence<Self.Output.Element>(sequence.prefix(count))
+                        sequence.queue.async {
+                            promise(.success(prefixSequence))
+                        }
                     } catch {
                         promise(.failure(error))
                     }

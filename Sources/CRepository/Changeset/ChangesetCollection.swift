@@ -192,7 +192,9 @@ public extension Publisher where Self.Output: Changeset,
                 Task {
                     let isEmpty =  await changeset.result.isEmpty
                     guard !isEmpty else { return }
-                    promise(.success(changeset))
+                    changeset.queue.async {
+                        promise(.success(changeset))
+                    }
                 }
             }
         }.eraseToAnyPublisher()
