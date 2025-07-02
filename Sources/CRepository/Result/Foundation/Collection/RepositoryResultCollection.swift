@@ -605,7 +605,9 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
                 Task {
                     do {
                         let sequence = try await RepositorySequence(result)
-                        promise(.success(sequence))
+                        result.queue.async {
+                            promise(.success(sequence))
+                        }
                     } catch {
                         promise(.failure(error))
                     }
