@@ -261,7 +261,16 @@ private extension Publisher where Self.Output == Realm.Configuration, Self.Failu
     /// - Returns: <#description#>
     func create(_ queue: DispatchQueue) -> AnyPublisher<Realm, Self.Failure> {
         flatMap { configuration in
-            Realm.asyncOpen(configuration: configuration).receive(on: queue)
+            Future { promise in
+                Realm.asyncOpen(configuration: configuration, callbackQueue: queue) { result in
+                    switch result {
+                    case .success(let realm):
+                        return promise(.success(realm))
+                    case .failure(let error):
+                        return promise(.failure(error))
+                    }
+                }
+            }.receive(on: queue)
         }.eraseToAnyPublisher()
     }
 }
