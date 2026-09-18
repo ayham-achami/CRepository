@@ -503,7 +503,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// - Returns: <#description#>
     func prefix(maxLength: Int) -> AnyPublisher<RepositorySequence<Self.Output.Element>, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { result in
-            Future { promise in
+            Future<RepositorySequence<Self.Output.Element>, Self.Failure> { promise in
                 Task {
                     let prefix = await result.prefix(maxLength: maxLength)
                     promise(.success(prefix))
@@ -517,7 +517,7 @@ public extension Publisher where Self.Output: RepositoryResultCollection,
     /// - Returns: <#description#>
     func suffix(maxLength: Int) -> AnyPublisher<RepositorySequence<Self.Output.Element>, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { result in
-            Future { promise in
+            Future<RepositorySequence<Self.Output.Element>, Self.Failure> { promise in
                 Task {
                     let suffix = await result.suffix(maxLength: maxLength)
                     promise(.success(suffix))
