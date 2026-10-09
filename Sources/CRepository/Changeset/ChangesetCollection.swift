@@ -188,7 +188,7 @@ public extension Publisher where Self.Output: Changeset,
     /// - Returns: <#description#>
     func ignoreIfEmpty() -> AnyPublisher<Self.Output, Self.Failure> {
         flatMap { changeset in
-            Future { promise in
+            Future<Self.Output, Self.Failure> { promise in
                 Task {
                     let isEmpty =  await changeset.result.isEmpty
                     guard !isEmpty else { return }
@@ -262,7 +262,7 @@ public extension Publisher where Self.Output: Changeset,
     /// - Returns: <#description#>
     func freeze() -> AnyPublisher<Self.Output, Self.Failure> {
         flatMap(maxPublishers: .max(1)) { changeset in
-            Future { promise in
+            Future<Self.Output, Self.Failure> { promise in
                 changeset.queue.async {
                     promise(.success(changeset.freeze))
                 }
