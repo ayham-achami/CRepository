@@ -57,7 +57,7 @@
     {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-syntax.git",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
         "revision" : "1103c45ece4f7fe160b8f75b4ea1ee2e5fac1841",
         "version" : "601.0.0"

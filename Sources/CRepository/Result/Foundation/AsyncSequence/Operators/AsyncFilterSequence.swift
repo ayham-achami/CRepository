@@ -131,9 +131,3 @@ extension RepositoryAsyncFilterSequence: RepositoryAsyncSequence {
         .init(base.makeAsyncIterator(), queue, isIncluded)
     }
 }
-
-// MARK: - AsyncFilterSequence + Sendable
-extension AsyncFilterSequence: @unchecked Sendable where Base: Sendable, Base.Element: Sendable {}
-
-// MARK: - AsyncFilterSequence.Iterator + Sendable
-extension AsyncFilterSequence.Iterator: @unchecked Sendable where Base.AsyncIterator: Sendable, Base.Element: Sendable {}
