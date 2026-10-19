@@ -21,7 +21,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/realm/SwiftLint", from: "0.59.1"),
+        .package(url: "https://github.com/realm/SwiftLint", exact: "0.59.1"),
         .package(url: "https://github.com/realm/realm-cocoa", exact: "20.0.6"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0")
     ],
